@@ -1,0 +1,30 @@
+EESchema-LIBRARY Version 2.4
+#encoding utf-8
+#
+# AT24C02D-SSHM-B
+#
+DEF AT24C02D-SSHM-B IC 0 30 Y Y 1 F N
+F0 "IC" 850 300 50 H V L CNN
+F1 "AT24C02D-SSHM-B" 850 200 50 H V L CNN
+F2 "SOIC127P600X175-8N" 850 100 50 H I L CNN
+F3 "https://componentsearchengine.com/Datasheets/1/AT24C02D-SSHM-B.pdf" 850 0 50 H I L CNN
+F4 "EEPROM Serial-2Wire 2K-bit 256x8 Atmel AT24C02D-SSHM-B EEPROM Memory Chip, 2kbit, 1.7  3.6 V 8-Pin JEDEC SOIC" 850 -100 50 H I L CNN "Description"
+F5 "1.75" 850 -200 50 H I L CNN "Height"
+F6 "556-AT24C02D-SSHM-B" 850 -300 50 H I L CNN "Mouser Part Number"
+F7 "https://www.mouser.com/Search/Refine.aspx?Keyword=556-AT24C02D-SSHM-B" 850 -400 50 H I L CNN "Mouser Price/Stock"
+F8 "Microchip" 850 -500 50 H I L CNN "Manufacturer_Name"
+F9 "AT24C02D-SSHM-B" 850 -600 50 H I L CNN "Manufacturer_Part_Number"
+DRAW
+P 5 0 1 6 200 100 800 100 800 -400 200 -400 200 100 f
+X A0 1 0 0 200 R 50 50 0 0 W
+X A1 2 0 -100 200 R 50 50 0 0 W
+X A2 3 0 -200 200 R 50 50 0 0 W
+X GND 4 0 -300 200 R 50 50 0 0 W
+X SDA 5 1000 -300 200 L 50 50 0 0 B
+X SCL 6 1000 -200 200 L 50 50 0 0 B
+X WP 7 1000 -100 200 L 50 50 0 0 W
+X VCC 8 1000 0 200 L 50 50 0 0 W
+ENDDRAW
+ENDDEF
+#
+#End Library

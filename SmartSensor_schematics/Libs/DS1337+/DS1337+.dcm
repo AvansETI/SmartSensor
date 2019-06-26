@@ -1,0 +1,8 @@
+EESchema-DOCLIB  Version 2.0
+#
+$CMP DS1337+
+D Maxim DS1337+ Real Time Clock, 7B RAM 8-Pin PDIP
+F https://datasheets.maximintegrated.com/en/ds/DS1337-DS1337C.pdf
+$ENDCMP
+#
+#End Doc Library
