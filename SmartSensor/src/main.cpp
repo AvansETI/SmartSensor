@@ -147,7 +147,7 @@ void setup()
 
 	mcp.setResolution(2);
 	mcp.wake();
-	delay(130);
+	delay(2000);
 }
 
 void loop()
