@@ -1,4 +1,5 @@
 (fp_lib_table
   (lib (name DS1337+)(type Legacy)(uri ${KIPRJMOD}/Libs/DS1337+/DS1337+.mod)(options "")(descr ""))
   (lib (name LTC3536EMSEPBF)(type Legacy)(uri ${KIPRJMOD}/Libs/LTC3536.pretty/LTC3536EMSEPBF.mod)(options "")(descr ""))
+  (lib (name BatteryPack)(type KiCad)(uri ${KIPRJMOD}/Libs/BatteryPack)(options "")(descr ""))
 )
