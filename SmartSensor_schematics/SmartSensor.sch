@@ -756,7 +756,7 @@ Wire Notes Line
 	3250 4050 6100 4050
 Wire Notes Line
 	550  550  11150 550 
-Text Notes 5750 4200 0    50   ~ 0
+Text Notes 5250 4150 0    50   ~ 0
 RESET
 Wire Notes Line
 	6250 4400 6250 5950
@@ -1023,7 +1023,7 @@ Text Notes 7400 700  0    50   ~ 0
 ATmega328p
 Text Notes 650  700  0    50   ~ 0
 PMU
-Text Notes 600  6350 0    50   ~ 0
+Text Notes 600  6200 0    50   ~ 0
 APDS (light)
 Text Notes 7650 4550 0    50   ~ 0
 Vadap
@@ -1717,4 +1717,33 @@ F 3 "" H 4350 2100 50  0001 C CNN
 $EndComp
 Wire Wire Line
 	4350 2000 4350 2100
+$Comp
+L Device:Battery_Cell BT?
+U 1 1 5DD19F34
+P 5450 1900
+F 0 "BT?" H 5568 1996 50  0000 L CNN
+F 1 "Battery_Cell" H 5568 1905 50  0000 L CNN
+F 2 "BatteryPack:2460" V 5450 1960 50  0001 C CNN
+F 3 "~" V 5450 1960 50  0001 C CNN
+	1    5450 1900
+	1    0    0    -1  
+$EndComp
+$Comp
+L power:GND #PWR?
+U 1 1 5DD19FC8
+P 5450 2100
+F 0 "#PWR?" H 5450 1850 50  0001 C CNN
+F 1 "GND" H 5600 2050 50  0000 C CNN
+F 2 "" H 5450 2100 50  0001 C CNN
+F 3 "" H 5450 2100 50  0001 C CNN
+	1    5450 2100
+	1    0    0    -1  
+$EndComp
+Wire Wire Line
+	5450 2000 5450 2100
+Wire Wire Line
+	4800 1650 5450 1650
+Wire Wire Line
+	5450 1650 5450 1700
+Connection ~ 4800 1650
 $EndSCHEMATC
