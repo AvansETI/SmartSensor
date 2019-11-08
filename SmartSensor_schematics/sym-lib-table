@@ -1,4 +1,6 @@
 (sym_lib_table
   (lib (name LTC3536EMSEPBF)(type Legacy)(uri ${KIPRJMOD}/Libs/LTC3536/LTC3536EMSEPBF.lib)(options "")(descr ""))
   (lib (name DS1337+)(type Legacy)(uri ${KIPRJMOD}/Libs/DS1337+/DS1337+.lib)(options "")(descr ""))
+  (lib (name VEML7700-TT)(type Legacy)(uri ${KIPRJMOD}/Libs/VEML7700/VEML7700-TT.lib)(options "")(descr ""))
+  (lib (name SHT31-DIS-B)(type Legacy)(uri ${KIPRJMOD}/Libs/SHT31/SHT31-DIS-B.lib)(options "")(descr ""))
 )

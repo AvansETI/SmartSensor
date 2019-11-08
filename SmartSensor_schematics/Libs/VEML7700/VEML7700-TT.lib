@@ -1,0 +1,27 @@
+EESchema-LIBRARY Version 2.4
+#encoding utf-8
+#
+# VEML7700-TT
+#
+DEF VEML7700-TT IC 0 30 Y Y 1 F N
+F0 "IC" 350 250 50 H V L CNN
+F1 "VEML7700-TT" 150 150 50 H V L CNN
+F2 "VEML7700" 1150 800 50 H I L CNN
+F3 "https://www.arrow.com/en/products/veml7700-tt/vishay" 850 1150 50 H I L CNN
+F4 "16Bit Ambient Light Sensor I2C 6.8x2.3mm" 850 1050 50 H I L CNN "Description"
+F5 "Vishay" 1800 50 50 H I L CNN "Manufacturer_Name"
+F6 "VEML7700-TT" 1600 150 50 H I L CNN "Manufacturer_Part_Number"
+F7 "78-VEML7700-TT" 700 500 50 H I L CNN "Mouser Part Number"
+F8 "https://www.mouser.com/Search/Refine.aspx?Keyword=78-VEML7700-TT" 850 550 50 H I L CNN "Mouser Price/Stock"
+F9 "1226791P" 1850 -100 50 H I L CNN "RS Part Number"
+F10 "http://uk.rs-online.com/web/p/products/1226791P" 850 350 50 H I L CNN "RS Price/Stock"
+DRAW
+S 200 100 650 -200 0 1 0 f
+X SCL 1 850 0 200 L 50 50 0 0 B
+X VDD 2 0 0 200 R 50 50 0 0 W
+X GND 3 0 -100 200 R 50 50 0 0 W
+X SDA 4 850 -100 200 L 50 50 0 0 B
+ENDDRAW
+ENDDEF
+#
+#End Library

@@ -2,7 +2,8 @@ EESchema-DOCLIB  Version 2.0
 #
 $CMP SHT31-DIS-B
 D Temperature Humidity Sensor Digital DFN6 Sensirion SHT31-DIS-B Temperature & Humidity Sensor 8-Pin DFN, -40  +125 C
-F https://componentsearchengine.com/Datasheets/1/SHT31-DIS-B.pdf
+K
+F https://www.sensirion.com/fileadmin/user_upload/customers/sensirion/Dokumente/2_Humidity_Sensors/Sensirion_Humidity_Sensors_SHT3x_Datasheet_digital.pdf
 $ENDCMP
 #
 #End Doc Library
