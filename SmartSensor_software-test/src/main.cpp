@@ -24,13 +24,11 @@ void loop()
 {
 }
 
-// Method that tests all the element on the board.
 void test()
 {
-
 }
 
-void driver_init()
+static void driver_init()
 {
 	rh.begin(HDC1080_I2C_ADDR);
 	light_sensor.begin();
@@ -39,9 +37,7 @@ void driver_init()
 	light_sensor.setIntegrationTime(VEML7700_IT_800MS);
 }
 
-// Set up the pins of your HAT module here!
-// Default everything is set to INPUT.
-void setupHAT()
+static void setupHAT()
 {
     pinMode(HAT_AIO1, INPUT);
     pinMode(HAT_AIO2, INPUT);
@@ -63,29 +59,23 @@ void setupHAT()
 // Configure the Atmega according the hardware design!
 void setup()
 {
- Serial.begin(9600)   pinMode(VBAT_ADC0, INPUT);  //Battery measurement
+	Serial.begin(9600, SERIAL_8N1);
+	SPI.begin();
+	Wire.begin();
+
+    pinMode(VBAT_ADC0, INPUT);  //Battery measurement
     pinMode(INTA_ADC3, OUTPUT); // Realtime clock: /INTA
     //digitalWrite(INTA_ADC3, LOW); // ??
 
     pinMode(HDC1080_IO6, OUTPUT);   // HDC1080 Humidity/Temp On/Off
     digitalWrite(HDC1080_IO6, LOW); // Switch HDC1080 default off
 
-    pinMode(SPI_SS, OUTPUT); // SS
-    pinMode(SPI_MOSI, OUTPUT); // MOSI
-    pinMode(SPI_MISO, INPUT);  // MISO
-    pinMode(SPI_SCK, OUTPUT); // SCK
-
-    pinMode(I2C_SCL, OUTPUT);
-    pinMode(I2C_SDA, OUTPUT);
     pinMode(LED_IO8, OUTPUT);
     pinMode(Vadap_IO9, INPUT); // When adapter is plugged in 5V (Does it work?)
     
     pinMode(XBEE_SLEEP, OUTPUT);
     digitalWrite(XBEE_SLEEP, LOW); // ?? Check XBee documentation
 
-    pinMode(AVR_DBG_RX, INPUT); // The real UART!!
-    pinMode(AVR_DBG_TX, OUTPUT);
-    
     pinMode(XBEE_ON_OFF, OUTPUT); // XBee module
     digitalWrite(XBEE_ON_OFF, LOW);
 
