@@ -20,6 +20,7 @@ static Adafruit_VEML7700 light_sensor;
 
 void loop()
 {
+
 }
 
 // Set up the pins of your HAT module here!
@@ -49,8 +50,6 @@ void setup() {
     //digitalWrite(INTA_ADC3, LOW); // ??
 
     pinMode(HDC1080_IO6, OUTPUT);   // HDC1080 Humidity/Temp On/Off
-    digitalWrite(HDC1080_IO6, LOW); // Switch HDC1080 default off
-
     pinMode(SPI_SS, OUTPUT); // SS
     pinMode(SPI_MOSI, OUTPUT); // MOSI
     pinMode(SPI_MISO, INPUT);  // MISO
@@ -62,19 +61,21 @@ void setup() {
     pinMode(Vadap_IO9, INPUT); // When adapter is plugged in 5V (Does it work?)
     
     pinMode(XBEE_SLEEP, OUTPUT);
-    digitalWrite(XBEE_SLEEP, LOW); // ?? Check XBee documentation
 
     pinMode(AVR_DBG_RX, INPUT); // The real UART!!
     pinMode(AVR_DBG_TX, OUTPUT);
     
     pinMode(XBEE_ON_OFF, OUTPUT); // XBee module
-    digitalWrite(XBEE_ON_OFF, LOW);
 
     pinMode(AVR_RX, INPUT); // Soft UART??
     pinMode(AVR_TX, OUTPUT); // ??
 
     pinMode(VEML7700_IO5, OUTPUT); // Light sensor
-    digitalWrite(VEML7700_IO5, LOW);
+
+    disableHumiditySensor();
+    disableLightSensor();
+    disableXBee();
+    sleepXBee(LOW);
 
     rh.begin(HDC1080_I2C_ADDR);
 	light_sensor.begin();
