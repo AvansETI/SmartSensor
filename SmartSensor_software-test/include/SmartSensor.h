@@ -37,3 +37,5 @@
 #define VEML7700_IO5 PIND5
 #define HAT_DIO2 PIND6
 #define HAT_DIO31 PIND7
+
+static constexpr uint8_t HDC1080_I2C_ADDR = 0x40;

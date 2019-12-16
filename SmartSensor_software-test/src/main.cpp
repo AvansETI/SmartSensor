@@ -18,19 +18,8 @@
 static HDC1080 rh;
 static Adafruit_VEML7700 light_sensor;
 
-static constexpr uint8_t HDC1080_I2C_ADDR = 0x40;
-
 void loop()
 {
-}
-
-void setup()
-{
-	rh.begin(HDC1080_I2C_ADDR);
-	light_sensor.begin();
-
-	light_sensor.setGain(VEML7700_GAIN_1);
-	light_sensor.setIntegrationTime(VEML7700_IT_800MS);
 }
 
 // Set up the pins of your HAT module here!
@@ -86,6 +75,12 @@ void setup() {
 
     pinMode(VEML7700_IO5, OUTPUT); // Light sensor
     digitalWrite(VEML7700_IO5, LOW);
+
+    rh.begin(HDC1080_I2C_ADDR);
+	light_sensor.begin();
+
+	light_sensor.setGain(VEML7700_GAIN_1);
+	light_sensor.setIntegrationTime(VEML7700_IT_800MS);
 
     setupHAT();
 }
