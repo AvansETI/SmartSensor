@@ -2,6 +2,9 @@
    Defines to map the pins and hardware of the SmartSensor.
 */
 
+#pragma once
+#include <Arduino.h>
+
 #define VBAT_ADC0 PINA0
 #define HAT_AIO1 PINA1
 #define INTA_ADC3 PINA2
@@ -37,3 +40,13 @@
 #define VEML7700_IO5 PIND5
 #define HAT_DIO2 PIND6
 #define HAT_DIO31 PIND7
+
+static constexpr uint8_t HDC1080_I2C_ADDR = 0x40;
+
+extern void enableHumiditySensor();
+extern void disableHumiditySensor();
+extern void enableLightSensor();
+extern void disableLightSensor();
+extern void enableXBee();
+extern void disableXBee();
+extern void sleepXBee(uint8_t state);

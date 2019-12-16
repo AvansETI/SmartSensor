@@ -15,26 +15,12 @@
 #include <Adafruit_VEML7700.h>
 #include <SmartSensor.h>
 
-static HDC1080 rh;
-static Adafruit_VEML7700 light_sensor;
-
-static constexpr uint8_t HDC1080_I2C_ADDR = 0x40;
-
 void loop()
 {
 }
 
 void test()
 {
-}
-
-static void driver_init()
-{
-	rh.begin(HDC1080_I2C_ADDR);
-	light_sensor.begin();
-
-	light_sensor.setGain(VEML7700_GAIN_1);
-	light_sensor.setIntegrationTime(VEML7700_IT_800MS);
 }
 
 static void setupHAT()
@@ -74,16 +60,18 @@ void setup()
     pinMode(Vadap_IO9, INPUT); // When adapter is plugged in 5V (Does it work?)
     
     pinMode(XBEE_SLEEP, OUTPUT);
-    digitalWrite(XBEE_SLEEP, LOW); // ?? Check XBee documentation
 
     pinMode(XBEE_ON_OFF, OUTPUT); // XBee module
-    digitalWrite(XBEE_ON_OFF, LOW);
 
     pinMode(AVR_RX, INPUT); // Soft UART??
     pinMode(AVR_TX, OUTPUT); // ??
 
     pinMode(VEML7700_IO5, OUTPUT); // Light sensor
-    digitalWrite(VEML7700_IO5, LOW);
+
+    disableHumiditySensor();
+    disableLightSensor();
+    disableXBee();
+    sleepXBee(LOW);
 
     setupHAT();
 }
