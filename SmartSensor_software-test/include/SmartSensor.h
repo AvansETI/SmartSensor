@@ -4,6 +4,12 @@
 
 #pragma once
 #include <Arduino.h>
+#include <HDC1080.h>
+#include <XBee.h>
+#include <Adafruit_VEML7700.h>
+#include <SoftwareSerial.h>
+
+#include <smartsensor/referencewrapper.h>
 
 #define VBAT_ADC0 PINA0
 #define HAT_AIO1 PINA1
@@ -41,12 +47,65 @@
 #define HAT_DIO2 PIND6
 #define HAT_DIO31 PIND7
 
-static constexpr uint8_t HDC1080_I2C_ADDR = 0x40;
+namespace smartsensor
+{
+	class Application {
+	public:
+		static smartsensor::ReferenceWrapper<Application> Instance()
+		{
+			static Application application;
+			return smartsensor::MakeRef<Application>(application);
+		}
 
-extern void enableHumiditySensor();
-extern void disableHumiditySensor();
-extern void enableLightSensor();
-extern void disableLightSensor();
-extern void enableXBee();
-extern void disableXBee();
-extern void sleepXBee(uint8_t state);
+		void begin();
+
+		void measureAndSend() const;
+
+		void enableHumiditySensor()
+		{
+			digitalWrite(HDC1080_IO6, HIGH);
+		}
+
+		void disableHumiditySensor()
+		{
+			digitalWrite(HDC1080_IO6, LOW);
+		}
+
+		void enableLightSensor()
+		{
+			digitalWrite(VEML7700_IO5, HIGH);
+		}
+
+		void disableLightSensor()
+		{
+			digitalWrite(VEML7700_IO5, LOW);
+		}
+
+		void enableXBee()
+		{
+			digitalWrite(XBEE_ON_OFF, HIGH);
+		}
+
+		void disableXBee()
+		{
+			digitalWrite(XBEE_ON_OFF, LOW);
+		}
+
+		void sleepXBee(uint8_t state)
+		{
+			digitalWrite(XBEE_SLEEP, state);
+		}
+
+	private:
+		explicit Application();
+
+		static constexpr uint8_t HDC1080_I2C_ADDR = 0x40;
+		static constexpr uint8_t SOFT_RX_PIN = 11;
+		static constexpr uint8_t SOFT_TX_PIN = 12;
+		static constexpr uint8_t JSON_DOCUMENT_SIZE = 255; // Related to the max Xbee packet size.
+
+		mutable HDC1080 rh_sensor_;
+		mutable Adafruit_VEML7700 light_sensor_;
+		SoftwareSerial soft_serial_;
+	};
+}

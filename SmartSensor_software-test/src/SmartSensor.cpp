@@ -1,52 +1,48 @@
+/*
+ *
+ * @author Michel Megens
+ * @email  michel@michelmegens.net
+ */
+
 #include <SmartSensor.h>
-#include <HDC1080.h>
-#include <XBee.h>
-#include <Adafruit_VEML7700.h>
+#include <SoftwareSerial.h>
+#include <ArduinoJson.h>
 
-// TODO: fix? Move declartion to a neater place
-HDC1080 rh;
-Adafruit_VEML7700 light_sensor;
-
-void driver_init()
+namespace smartsensor
 {
-	rh.begin(HDC1080_I2C_ADDR);
-	light_sensor.begin();
+	Application::Application() : soft_serial_(SOFT_RX_PIN, SOFT_TX_PIN, false)
+	{
+	}
 
-	light_sensor.setGain(VEML7700_GAIN_1);
-	light_sensor.setIntegrationTime(VEML7700_IT_800MS);
-}
+	void Application::begin()
+	{
+		this->rh_sensor_.begin(HDC1080_I2C_ADDR);
+		this->light_sensor_.begin();
 
-void enableHumiditySensor()
-{
-	digitalWrite(HDC1080_IO6, HIGH);
-}
+		this->light_sensor_.setGain(VEML7700_GAIN_1);
+		this->light_sensor_.setIntegrationTime(VEML7700_IT_800MS);
 
-void disableHumiditySensor()
-{
-	digitalWrite(HDC1080_IO6, LOW);
-}
+		this->soft_serial_.begin(9600);
+	}
 
-void enableLightSensor()
-{
-	digitalWrite(VEML7700_IO5, HIGH);
-}
+	/**
+	 * @brief Measure and send data.
+	 * @note Precondition: all sensors have been enabled and have data available.
+	 * @note Precondition: The XBee is connected and ready to send data.
+	 */
+	void Application::measureAndSend() const
+	{
+		StaticJsonDocument<JSON_DOCUMENT_SIZE> doc;
+		String output;
 
-void disableLightSensor()
-{
-	digitalWrite(VEML7700_IO5, LOW);
-}
+		doc["t"]  = this->rh_sensor_.readTemperature();
+		doc["rh"] = this->rh_sensor_.readHumidity();
+		doc["l"]  = this->light_sensor_.readLux();
 
-void enableXBee()
-{
-	digitalWrite(XBEE_ON_OFF, HIGH);
-}
+		serializeJson(doc, output);
 
-void disableXBee()
-{
-	digitalWrite(XBEE_ON_OFF, LOW);
-}
+		Serial.printf(F("JSON document: \n%s"), output.c_str());
 
-void sleepXBee(uint8_t state)
-{
-	digitalWrite(XBEE_SLEEP, state);
+		// TODO: XBee
+	}
 }

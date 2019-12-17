@@ -17,6 +17,18 @@
 
 void loop()
 {
+	auto sensor = smartsensor::Application::Instance();
+
+	sensor->enableHumiditySensor();
+	sensor->enableLightSensor();
+	sensor->enableXBee();
+	sensor->sleepXBee(HIGH);
+
+	delay(800); // Sample time
+
+	sensor->measureAndSend();
+
+	delay(2000);
 }
 
 void test()
@@ -68,10 +80,8 @@ void setup()
 
     pinMode(VEML7700_IO5, OUTPUT); // Light sensor
 
-    disableHumiditySensor();
-    disableLightSensor();
-    disableXBee();
-    sleepXBee(LOW);
+	auto instance = smartsensor::Application::Instance();
+	instance->begin();
 
     setupHAT();
 }
