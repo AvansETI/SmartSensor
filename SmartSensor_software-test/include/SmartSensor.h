@@ -107,5 +107,6 @@ namespace smartsensor
 		mutable HDC1080 rh_sensor_;
 		mutable Adafruit_VEML7700 light_sensor_;
 		SoftwareSerial soft_serial_;
+		mutable XBee xbee_;
 	};
 }

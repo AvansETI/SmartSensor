@@ -10,7 +10,7 @@
 
 namespace smartsensor
 {
-	Application::Application() : soft_serial_(SOFT_RX_PIN, SOFT_TX_PIN, false)
+	Application::Application() : soft_serial_(SOFT_RX_PIN, SOFT_TX_PIN, false), xbee_()
 	{
 	}
 
@@ -23,6 +23,7 @@ namespace smartsensor
 		this->light_sensor_.setIntegrationTime(VEML7700_IT_800MS);
 
 		this->soft_serial_.begin(9600);
+		this->xbee_.begin(Serial);
 	}
 
 	/**
@@ -32,9 +33,10 @@ namespace smartsensor
 	 */
 	void Application::measureAndSend() const
 	{
-		StaticJsonDocument<JSON_DOCUMENT_SIZE> doc;
+		static StaticJsonDocument<JSON_DOCUMENT_SIZE> doc;
 		String output;
 
+		doc.clear();
 		doc["t"]  = this->rh_sensor_.readTemperature();
 		doc["rh"] = this->rh_sensor_.readHumidity();
 		doc["l"]  = this->light_sensor_.readLux();
@@ -43,6 +45,10 @@ namespace smartsensor
 
 		Serial.printf(F("JSON document: \n%s"), output.c_str());
 
-		// TODO: XBee
+		XBeeAddress64 addr(0, 0);
+		ZBTxRequest request(addr, (uint8_t*) output.c_str(), output.length());
+
+		request.setAddress16(0);
+		this->xbee_.send(request);
 	}
 }
