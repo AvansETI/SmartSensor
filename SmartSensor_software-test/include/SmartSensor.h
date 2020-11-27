@@ -3,6 +3,7 @@
 */
 
 #pragma once
+#include <avr/io.h>
 #include <Arduino.h>
 #include <HDC1080.h>
 #include <XBee.h>
