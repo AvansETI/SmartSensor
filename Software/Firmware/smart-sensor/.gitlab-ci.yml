@@ -1,0 +1,38 @@
+image: registry.gitlab.com/sendlab-sensors/docker-images/platformio:atmelavr
+
+stages:
+  - test
+  - build
+  - pages
+
+variables:
+  GIT_SUBMODULE_STRATEGY: recursive
+
+before_script:
+  - echo -e "machine gitlab.com\nlogin gitlab-ci-token\npassword ${CI_JOB_TOKEN}" > ~/.netrc
+
+test:
+  stage: test
+  script:
+    - pio test -e Local
+
+build:
+  stage: build
+  script:
+    - pio run -e SmartSensorR03
+  artifacts:
+    name: SmartSensor v0.3 Firmware
+    paths:
+      - .pio/build/SmartSensorR03/*.elf
+      - .pio/build/SmartSensorR03/*.hex
+
+pages:
+  stage: pages
+  image: registry.gitlab.com/sendlab-sensors/docker-images/doxygen:bionic
+  script:
+    - doxygen
+  artifacts:
+    paths:
+      - public
+  only:
+    - master
