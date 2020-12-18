@@ -1,7 +1,7 @@
 # Coordinator
 
 Coordinator ontwikkeld om de data van de SmartSensor te ontvangen en die door te sturen over MQTT.
-Voor development is Platformio gebruikt. Arduino Uno met een Zigbee Shield en een WiFi shield gebruikt.
+Voor development is Platformio gebruikt. Arduino Uno met een Zigbee Shield en een WiFi shield gebruikt. De Zigbee module moet wel ingesteld worden via DIGI XCTU. PANID, AT modus.
 
 
 ## Configuratie
