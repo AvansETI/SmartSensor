@@ -1,7 +1,6 @@
 (fp_lib_table
-  (lib (name DS1337+)(type Legacy)(uri ${KIPRJMOD}/Libs/DS1337+/DS1337+.mod)(options "")(descr ""))
-  (lib (name LTC3536EMSEPBF)(type Legacy)(uri ${KIPRJMOD}/Libs/LTC3536.pretty/LTC3536EMSEPBF.mod)(options "")(descr ""))
-  (lib (name BatteryPack)(type KiCad)(uri ${KIPRJMOD}/Libs/BatteryPack)(options "")(descr ""))
-  (lib (name VEML7700)(type KiCad)(uri ${KIPRJMOD}/Libs/VEML7700)(options "")(descr ""))
-  (lib (name SHT31-DIS-B)(type Legacy)(uri ${KIPRJMOD}/Libs/SHT31/SHT31-DIS-B.mod)(options "")(descr ""))
+  (lib (name SmartSensor)(type KiCad)(uri ${KIPRJMOD}/lib/SmartSensor.pretty)(options "")(descr ""))
+  (lib (name ATECC608B-SSHDA-B)(type Legacy)(uri ${KIPRJMOD}/lib/ATECC608B/ATECC608B-SSHDA-B.mod)(options "")(descr ""))
+  (lib (name XB24CZ7PIT-004)(type Legacy)(uri ${KIPRJMOD}/lib/XBee/XB24CZ7PIT-004.mod)(options "")(descr ""))
+  (lib (name LL3301AF065QJ)(type Legacy)(uri ${KIPRJMOD}/lib/Pushbutton/LL3301AF065QJ.mod)(options "")(descr ""))
 )

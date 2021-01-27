@@ -1,8 +1,0 @@
-EESchema-DOCLIB  Version 2.0
-#
-$CMP AT24C02D-SSHM-B
-D EEPROM Serial-2Wire 2K-bit 256x8 Atmel AT24C02D-SSHM-B EEPROM Memory Chip, 2kbit, 1.7  3.6 V 8-Pin JEDEC SOIC
-F https://componentsearchengine.com/Datasheets/1/AT24C02D-SSHM-B.pdf
-$ENDCMP
-#
-#End Doc Library
