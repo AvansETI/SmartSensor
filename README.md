@@ -39,4 +39,3 @@ De SmartSensor speelt steeds meer een rol binnen de onderzoeken naar slimme duur
 
 ## Interesse
 Interesse voor samenwerking? Neem contact met ons op!
->>>>>>> development
