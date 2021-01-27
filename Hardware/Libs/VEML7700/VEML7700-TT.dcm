@@ -1,8 +1,0 @@
-EESchema-DOCLIB  Version 2.0
-#
-$CMP VEML7700-TT
-D 16Bit Ambient Light Sensor I2C 6.8x2.3mm
-F https://www.arrow.com/en/products/veml7700-tt/vishay
-$ENDCMP
-#
-#End Doc Library
