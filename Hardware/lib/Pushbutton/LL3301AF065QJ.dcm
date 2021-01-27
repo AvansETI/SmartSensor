@@ -1,0 +1,9 @@
+EESchema-DOCLIB  Version 2.0
+#
+$CMP LL3301AF065QJ
+D Pushbutton Switches 50mA 12VDC F065 5.0mm J-Lead
+K
+F https://media.digikey.com/pdf/Data%20Sheets/E-Switch%20PDFs/LL3301AF065QJ.pdf
+$ENDCMP
+#
+#End Doc Library

@@ -1,0 +1,9 @@
+(sym_lib_table
+  (lib (name TPS61031PWPR)(type Legacy)(uri ${KIPRJMOD}/lib/TPS61031PWPR/TPS61031PWPR.lib)(options "")(descr ""))
+  (lib (name SmartSensor)(type Legacy)(uri ${KIPRJMOD}/lib/SmartSensor.lib)(options "")(descr ""))
+  (lib (name AT97SC3205T-X3A1C20B)(type Legacy)(uri ${KIPRJMOD}/lib/AT97SC3205T-X3A1C20B/AT97SC3205T-X3A1C20B.lib)(options "")(descr ""))
+  (lib (name VEML7700-TT)(type Legacy)(uri "${KIPRJMOD}/lib/VEML TT library/VEML7700-TT.lib")(options "")(descr ""))
+  (lib (name Transistor_FET)(type Legacy)(uri ${KIPRJMOD}/lib/Transistor_FET/Transistor_FET.lib)(options "")(descr ""))
+  (lib (name XB24CZ7PIT-004)(type Legacy)(uri ${KIPRJMOD}/lib/XBee/XB24CZ7PIT-004.lib)(options "")(descr ""))
+  (lib (name ATECC608B-SSHDA-B)(type Legacy)(uri ${KIPRJMOD}/lib/ATECC608B/ATECC608B-SSHDA-B.lib)(options "")(descr ""))
+)

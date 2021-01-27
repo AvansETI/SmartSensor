@@ -1,0 +1,9 @@
+EESchema-DOCLIB  Version 2.0
+#
+$CMP XB24CZ7PIT-004
+D Zigbee / 802.15.4 Modules XBee ZB S2C TH PCB Antenna
+K
+F http://www.digi.com/pdf/ds_xbee_zigbee.pdf
+$ENDCMP
+#
+#End Doc Library
