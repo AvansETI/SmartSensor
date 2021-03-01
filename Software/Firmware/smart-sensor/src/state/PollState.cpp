@@ -72,5 +72,5 @@ void PollState::update() {
 }
 
 void PollState::destroy() {
-    PinManager::digital_write(STATUS_LED_2_PIN, LOW);
+    //PinManager::digital_write(STATUS_LED_2_PIN, LOW);
 }

@@ -19,7 +19,7 @@ int main() {
     composer.init();
 
     PinManager::set_mode(STATUS_LED_1_PIN, OUTPUT);
-    PinManager::set_mode(STATUS_LED_2_PIN, OUTPUT);
+    //PinManager::set_mode(STATUS_LED_2_PIN, OUTPUT);
 
     _delay_ms(1000);
 
