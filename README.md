@@ -2,6 +2,7 @@
 Author: _Maurice Snoeren (Lectoraat Smart Energy en Datascience & ICT)_
 
 [![LICENSE](https://img.shields.io/badge/license-MIT-lightgrey.svg)](https://xxx)
+_Note: Current hardware version 1.0 is under test and some issues have been found ... it will be updated soon!_
 
 De SmartSensor is een resultaat van verschillende onderzoeken sinds 2018. Focus is gegeven aan laag vermogen, controle over energiestromen en eenvoud. Deze SmartSensor wordt binnen onderzoek en onderwijs toegepast.
 
