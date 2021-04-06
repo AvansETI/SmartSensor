@@ -1,9 +1,8 @@
 #!/usr/bin/python3
-
 import json
 import random
-from datetime import datetime
-
+from datetime import datetime, timezone
+import dateutil
 import paho.mqtt.client as mqtt # pip install paho-mqtt
 
 from influxdb_client import InfluxDBClient, Point, WritePrecision
@@ -53,7 +52,7 @@ def process_node_data(data):
             for item in measurement.keys():
                 if ( item != "timestamp" ):
                     point.field(item, measurement[item]);
-                    point.time(datetime.strptime(measurement["timestamp"], "%Y-%m-%dT%H:%M:%S.%f"), WritePrecision.NS);
+                    point.time(dateutil.parser.parse(measurement["timestamp"]), WritePrecision.NS);
         write_api.write("nodedata", org, point)
         mqtt_client.publish("node/" + str(data["id"]) + "/data", json.dumps(data)) # send it further!
 
@@ -70,9 +69,9 @@ def process_node_init(data):
         point.field("actuators", json.dumps(data["measurements"]));
         point.field("validated", 0);
         write_api.write("nodeinfo", org, point)
-        mqtt_send_message(data["id"], {"status": 1, "message": "Welcome, you have been added!"});
+        mqtt_send_message(data["id"], {"status": 1, "time": datetime.now(timezone.utc).isoformat(), "message": "Welcome, you have been added!"});
     else:
-        mqtt_send_message(data["id"], {"status": 1, "message": "Welcome back!"});
+        mqtt_send_message(data["id"], {"status": 1, "time": datetime.now(timezone.utc).isoformat(), "message": "Welcome back!"});
 
 # The callback for when the client receives a CONNACK response from the server.
 def on_connect(client, userdata, flags, rc):
@@ -113,5 +112,3 @@ mqtt_client.subscribe("node/data", qos=0)
 mqtt_client.subscribe("node/info", qos=0)
 
 mqtt_client.loop_forever();
-
-

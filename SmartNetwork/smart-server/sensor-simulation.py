@@ -1,8 +1,9 @@
-#!/usr/bin/python
+#!/usr/bin/python3
 
 import json
 import random
-from datetime import datetime
+from datetime import datetime, timezone
+
 import paho.mqtt.client as mqtt # pip install paho-mqtt
 
 sensor_id = "123456780";
@@ -74,7 +75,7 @@ while ( 1 ):
             "id": sensor_id,
             "nonce": int( random.random()*100000 ),
             "measurements": [{
-                "timestamp": datetime.now().isoformat(),
+                "timestamp": datetime.now(timezone.utc).isoformat(),
                 "temperature": temp,
                 "humidity": humidity,
             }],
