@@ -61,7 +61,7 @@ def process_node_data(data):
 
 def process_node_init(data):
     if ( not check_node_exist(data["id"]) ):
-        point = Point("info").tag("id", data["id"]).tag("type", data["type"]).tag("name", data["name"]);
+        point = Point("info").tag("version", data["version"]).tag("id", data["id"]).tag("type", data["type"]).tag("name", data["name"]);
         point.tag("location", "none").tag("reference", "none"); # Values filled in later
         point.field("pecc", data["pecc"]).field("pdhk", data["pdhk"]).field("nonce", data["nonce"]);
         point.field("hash", data["hash"]).field("sign", data["sign"]);
