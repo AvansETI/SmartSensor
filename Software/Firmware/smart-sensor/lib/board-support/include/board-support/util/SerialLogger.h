@@ -27,7 +27,7 @@ class SerialLogger {
          * @param message Message to print
          * @param format Format that gets applied to the message
          */
-        static void printf(char* format, ...);
+        static void printf(const char* format, ...);
 
         /**
          * Print information message
@@ -42,14 +42,14 @@ class SerialLogger {
          * @param message Message to print
          * @param format Format that gets applied to the message
          */
-        static void infof(char* format, ...);
+        static void infof(const char* format, ...);
 
         /**
          * Print warning message
          *
          * @param message Message to print
          */
-        static void warn(char* message);
+        static void warn(const char* message);
 
         /**
          * Print formatted warning message
@@ -57,14 +57,14 @@ class SerialLogger {
          * @param message Message to print
          * @param format Format that gets applied to the message
          */
-        static void warnf(char* format, ...);
+        static void warnf(const char* format, ...);
 
         /**
          * Print debug message
          *
          * @param message Message to print
          */
-        static void debug(char* message);
+        static void debug(const char* message);
 
         /**
          * Print formatted debug message
@@ -72,14 +72,14 @@ class SerialLogger {
          * @param message Message to print
          * @param format Format that gets applied to the message
          */
-        static void debugf(char* format, ...);
+        static void debugf(const char* format, ...);
 
         /**
          * Print error message
          *
          * @param message Message to print
          */
-        static void error(char* message);
+        static void error(const char* message);
 
         /**
          * Print formatted error message
@@ -87,10 +87,10 @@ class SerialLogger {
          * @param message Message to print
          * @param format Format that gets applied to the message
          */
-        static void errorf(char* format, ...);
+        static void errorf(const char* format, ...);
 
     private:
-        static void vprintf(char* format, va_list args);
+        static void vprintf(const char* format, va_list args);
 };
 
 #endif

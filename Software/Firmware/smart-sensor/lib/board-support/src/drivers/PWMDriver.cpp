@@ -12,24 +12,28 @@ bool PWMDriver::write(const PinPort pin_port, uint8_t duty_cycle, const PWMPresc
     switch (pin_port) {
         case PinPortB4: // 8-bit timer (0B)
             pwm_com = PWMCom::COMB;
+            __attribute__ ((fallthrough));
         case PinPortB3: // 8-bit timer (0A)
             PinManager::set_mode(pin_port, OUTPUT);
             return write_using_8_bit_timer(pin_port, TCCR0A, OCR0A, TCCR0B, duty_cycle, prescaler, pwm_com);
 
         case PinPortD4: // 16-bit timer (1B)
             pwm_com = PWMCom::COMB;
+            __attribute__ ((fallthrough));
         case PinPortD5: // 16-bit timer (1A)
             PinManager::set_mode(pin_port, OUTPUT);
             return write_using_16_bit_timer(pin_port, TCCR1A, ICR1, OCR1A, TCCR1B, duty_cycle, prescaler, pwm_com);
 
         case PinPortD6: // 8-bit timer with async operation (2B)
             pwm_com = PWMCom::COMB;
+            __attribute__ ((fallthrough));
         case PinPortD7: // 8-bit timer with async operation (2A)
             PinManager::set_mode(pin_port, OUTPUT);
             return write_using_8_bit_async_timer(pin_port, TCCR2A, OCR2A, TCCR2B, duty_cycle, prescaler, pwm_com);
 
         case PinPortB7: // 16-bit timer (3B) (PinPortB7 is also 4B, but is using 3B)
             pwm_com = PWMCom::COMB;
+            __attribute__ ((fallthrough));
         case PinPortB6: // 16-bit timer (3A)
             PinManager::set_mode(pin_port, OUTPUT);
             return write_using_16_bit_timer(pin_port, TCCR3A, ICR3, OCR3A, TCCR3B, duty_cycle, prescaler, pwm_com);
