@@ -23,6 +23,7 @@ def on_message(client, userdata, msg):
 # Init message
 sensor_init = {
     "type":  "simulation",
+    "mode": 0,
     "id":    sensor_id,
     "name":  "test 1",
     "pecc":  "public ecc key",
@@ -52,7 +53,8 @@ client.on_message = on_message
 
 #client.username_pw_set("server", password="servernode")
 client.username_pw_set("node", password="smartmeternode")
-client.connect("10.0.0.31", 1884, 60)
+#client.connect("10.0.0.31", 1884, 60)
+client.connect("sendlab.nl", 11884, 60)
 
 client.subscribe("node/" + sensor_id + "/message", qos=0)
 

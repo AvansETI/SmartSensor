@@ -1,6 +1,6 @@
 #!/usr/bin/python3
 import time
-from smartnetwork import SmartNetwork
+from smartnetwork.smartnetwork import SmartNetwork
 
 host = "http://localhost:8086"
 org = "smartsensor"

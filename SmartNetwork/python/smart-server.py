@@ -2,10 +2,10 @@
 import json
 import random
 from datetime import datetime, timezone
-import dateutil
+import dateutil # pip install python-dateutil
 import paho.mqtt.client as mqtt # pip install paho-mqtt
 
-from influxdb_client import InfluxDBClient, Point, WritePrecision
+from influxdb_client import InfluxDBClient, Point, WritePrecision # pip install influxdb-client
 from influxdb_client.client.write_api import SYNCHRONOUS
 
 mqtt_client = mqtt.Client()
@@ -105,7 +105,8 @@ mqtt_client.on_connect = on_connect
 mqtt_client.on_message = on_message
 
 mqtt_client.username_pw_set("server", password="servernode")
-mqtt_client.connect("10.0.0.31", 1884, 60)
+#mqtt_client.connect("10.0.0.31", 1884, 60)
+mqtt_client.connect("sendlab.nl", 11884, 60)
 
 mqtt_client.subscribe("node/init", qos=0)
 mqtt_client.subscribe("node/data", qos=0)
