@@ -22,7 +22,6 @@ def on_message(client, userdata, msg):
 
 # Init message
 sensor_init = {
-    "version": 1, # The version is important when it comes to security, version 1 is no security, 2 is symmetric, 3 is diffie helman, etc.
     "type":  "simulation",
     "id":    sensor_id,
     "name":  "test 1",
