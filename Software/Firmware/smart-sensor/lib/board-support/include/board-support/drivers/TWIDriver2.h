@@ -5,6 +5,7 @@
 #include <util/delay.h>
 #include <boardsupport.h>
 #include <avr/interrupt.h>
+#include <board-support/util/SerialLogger.h>
 
 enum class future_status {
     ready,
@@ -23,8 +24,10 @@ class optional {
 
     optional<T>& operator= (const T& t) {has_value = true; this->t = t;}
 
-    const T& operator*() { assert(has_value) ;return t; }
+    const T& operator*() { assert(has_value); return t; }
     operator bool() {return has_value;}
+
+    const T& value() { assert(has_value); return t;}
 
     void reset() {has_value = false;}
 };
@@ -93,7 +96,7 @@ namespace details {
             ValueGiven
         } volatile m_state = State::ValueGiven;
     };
-};
+}
 
 template <typename T>
 class future final {
@@ -116,6 +119,7 @@ class future final {
         return (m_frame->m_status_code == m_frame->m_expected_result_code) ? optional<uint8_t>(static_cast<uint8_t>(m_frame->m_value)) : optional<uint8_t>();
     }
     public:
+    ~future() { if (m_frame->m_state == details::future_frame::State::NoValue) SerialLogger::print("destructing future while task has not completed\n"); }
 
     future(const future&) = delete;
     future(future&&) = default;
@@ -195,7 +199,7 @@ class TWIDriver2 {
 
         assert(m_mode == TWIMode::MasterReciever);
 
-        m_frame.m_expected_result_code = 0x58;
+        m_frame.m_expected_result_code = acknowledge ? 0x50 : 0x58;
         m_frame.m_state = future_frame::State::NoValue;
 
         TWIControlRegister cr{0};
@@ -309,26 +313,7 @@ public:
 };
 
 #if TWI0_ENABLED
-static TWIDriver2<0xB9, 0xB8, 0xBA, 0xBB, 0xBC> TWI2_0;
-
-ISR(TWI0_vect) {
-    using namespace details;
-
-    future_frame& frame = get_future_frame(TWI2_0);
-
-    // @TODO can most likely be removed
-    if (frame.m_state != future_frame::State::NoValue) {
-        return;
-    }
-
-    frame.m_value = get_data_register(TWI2_0);
-    frame.m_status_code = get_status(TWI2_0);
-    frame.m_state = future_frame::State::Value;
-
-    TWIControlRegister cr{0};
-    cr.bits.twi_enable = 1;
-    TWI0_CR = cr;
-}
+extern TWIDriver2<0xB9, 0xB8, 0xBA, 0xBB, 0xBC> TWI2_0;
 #endif
 
 #if TWI1_ENABLED
