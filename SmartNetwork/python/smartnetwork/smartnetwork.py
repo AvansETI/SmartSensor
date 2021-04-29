@@ -11,6 +11,9 @@ import paho.mqtt.client as mqtt # pip install paho-mqtt
 from influxdb_client import InfluxDBClient, Point, WritePrecision #pip install influxdb-client
 from influxdb_client.client.write_api import SYNCHRONOUS
 
+from smartnetwork.smartnode0 import SmartNode0
+from smartnetwork.smartnode1 import SmartNode1
+
 """
 Author: Maurice Snoeren <mac.snoeren(at)avans.nl>
 Version: 0.1 beta (use at your own risk)
@@ -38,6 +41,7 @@ class SmartNetwork(threading.Thread):
         self.influx = InfluxDBClient(url=host, token=token)
         self.write  = self.influx.write_api(write_options=SYNCHRONOUS)
         self.query  = self.influx.query_api()
+        self.delete = self.influx.delete_api()
 
         # Initialize the smart network
         self.init_server()
@@ -63,7 +67,7 @@ class SmartNetwork(threading.Thread):
         self.debug_print("Connected with MQTT broker with result code " + str(rc) + ".")
 
     def mqtt_on_message(self, client, userdata, msg):
-        print("got message: " + msg.topic)
+        print("got message: " + str(msg.topic) + ": " + str(msg.payload))
         try:
             plJson = json.loads(msg.payload)
         except:
@@ -80,39 +84,94 @@ class SmartNetwork(threading.Thread):
         else:
             print("Unknown topic: " + msg.topic)
 
-    #SQL injection!!
+    def alert(level, type, id, message):
+        point = Point("alerts").tag("id", id).tag("level", level).tag("type", type)
+        point.field("message", message)
+        point.time(datetime.now(), WritePrecision.NS)
+        self.write.write("nodedata", self.org, point)
+
+    def get_influx_record(self, records):
+        results = {} #https://docs.influxdata.com/influxdb/cloud/tools/client-libraries/python/
+        for table in records:
+            for record in table.records:
+                results[record.get_field()] = record.get_value()
+            if ( len(table.records) > 0):
+                for tag in table.records[0].values.keys():
+                    if ( tag != "result" and tag != "table" and not re.match(r"^_", tag) ):
+                        results[tag] = table.records[0].values.get(tag)
+                results["time"] = table.records[0].get_time()
+                results["id"] = id
+        return results
+
     def get_node_from_id(self, id):
-        if ( not re.match(r"^[a-zA-Z0-9]+$", id) ):
+        if ( not re.match(r"^[a-zA-Z0-9]+$", id) ): # Check the ID to prevent injection!
             print("ID is not correct: " + id)
             return
 
         query = 'from(bucket: "nodeinfo")\
 |> range(start: 2020-01-01T00:00:00Z)\
-|> filter(fn: (r) => r["id"] == "' + id + '")\
-|> filter(fn: (r) => r["_field"] == "validated")'
+|> filter(fn: (r) => r["id"] == "' + id + '")'
 
-        tables = self.query.query(org=self.org, query=query)
-        for table in tables:
-            print(len(table.records))
-            for row in table.records:
-                print (row.values)
+        records = self.query.query(org=self.org, query=query)
+        if ( len(records) > 0 ): # This sensor ID exists!
+            return self.get_influx_record(records)
 
-        if ( len(tables) == 1 and len(tables[0].records) == 1 and tables[0].records[0].get_value() == 1 ): #exists
-            pass
-        print(tables[0])
+    def delete_all_node_info(self):
+        start = "1970-01-01T00:00:00Z"
+        stop = datetime.now(timezone.utc).isoformat()
+        self.delete.delete(start, stop, '_measurement="info"', bucket='nodeinfo', org=self.org)
+
+    def delete_all_node_data(self):
+        start = "1970-01-01T00:00:00Z"
+        stop = datetime.now(timezone.utc).isoformat()
+        self.delete.delete(start, stop, '_measurement="data"', bucket='nodedata', org=self.org)
+
+    def delete_all_node_alerts(self):
+        start = "1970-01-01T00:00:00Z"
+        stop = datetime.now(timezone.utc).isoformat()
+        self.delete.delete(start, stop, '_measurement="alert"', bucket='nodedata', org=self.org)
+
+    def get_smart_node(self, mode):
+        if ( mode == 1 ):
+            return SmartNode1(self)
+        else:
+            return SmartNode0(self)
 
     def process_node_init(self, data):
-        print("init")
-        print(data)
+        if not "id" in data:
+            return # Do nothing when id is not found in the data!
+
+        if not "mode" in data:
+            data["mode"] = 0 # Add the simplest mode to the sensor data!
+
+        node = self.get_node_from_id(data["id"])
+        smart_node = self.get_smart_node(data["mode"])
+        if ( node == None ):
+            smart_node.add_node_to_network(data)
+        else:
+            smart_node.welcome_node_to_network(data)
 
     def process_node_data(self, data):
-        print("data")
-        print(data)
-        self.get_node_from_id(data["id"])
+        if not "id" in data:
+            return # Do nothing when id is not found in the data!
+
+        node = self.get_node_from_id(data["id"])
+        if ( node != None ):
+            smart_node = self.get_smart_node(node["mode"])
+            smart_node.process_node_data(data)
+        else:
+            print("process_node_data: no sensor found!")
 
     def process_node_info(self, data):
-        print("info")
-        print(data)
+        if not "id" in data:
+            return # Do nothing when id is not found in the data!
+
+        node = self.get_node_from_id(data["id"])
+        if ( node != None ):
+            smart_node = self.get_smart_node(node["mode"])
+            smart_node.process_node_info(data)
+        else:
+            print("process_node_info: no sensor found!")
 
     def stop(self):
         """Stop the smart network."""

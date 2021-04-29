@@ -6,7 +6,7 @@ from datetime import datetime, timezone
 
 import paho.mqtt.client as mqtt # pip install paho-mqtt
 
-sensor_id = "123456780";
+sensor_id = "123456780"
 
 # The callback for when the client receives a CONNACK response from the server.
 def on_connect(client, userdata, flags, rc):
@@ -45,7 +45,7 @@ sensor_init = {
     }],
     "hash": "60A335487A7277CA00619D02038BAC48413832337E0CACA0A9673BCDC0D4B45A",
     "sign": "MEUCIHiBfZmjK1R92CifJ9rki3t66oh+hnZQik3oEtngSJoFAiEAv8jD44JMqlGQ+UGPQqJMymXOTkXacsP+KClyBnX0voQ="
-};
+}
     
 client = mqtt.Client()
 client.on_connect = on_connect

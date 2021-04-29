@@ -11,6 +11,9 @@ smartnetwork = SmartNetwork(host, org, token)
 smartnetwork.debug = True
 
 smartnetwork.start()
+smartnetwork.delete_all_node_info()
+smartnetwork.delete_all_node_data()
+smartnetwork.delete_all_node_alerts()
 
 print(smartnetwork)
 
