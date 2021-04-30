@@ -8,6 +8,11 @@ import dateutil
 from influxdb_client import InfluxDBClient, Point, WritePrecision #pip install influxdb-client
 from influxdb_client.client.write_api import SYNCHRONOUS
 
+# pip install cryptography
+from cryptography.hazmat.primitives import hashes
+from cryptography.hazmat.primitives.asymmetric import ec
+from cryptography.hazmat.primitives.kdf.hkdf import HKDF
+
 """
 Author: Maurice Snoeren <mac.snoeren(at)avans.nl>
 Version: 0.1 beta (use at your own risk)
@@ -44,12 +49,14 @@ class SmartNode1:
                 return
 
         point = Point("info").tag("id", data["id"]).tag("type", data["type"]).tag("name", data["name"])
-        point.tag("location", "none").tag("reference", "none").tag("mode", data["mode"])
+        point.tag("location", "none").tag("reference", "none").tag("mode", data["mode"]) # Values filled in later
+        point.field("pdhk", data["pdhk"])
+        point.field("hash", data["hash"]).field("sign", data["sign"])
         point.field("measurements", json.dumps(data["measurements"]))
-        point.field("actuators", json.dumps(data["actuators"]))
+        point.field("actuators", json.dumps(data["measurements"]))
         point.field("validated", 0)
         self.smartnetwork.write.write("nodeinfo", self.smartnetwork.org, point)
-        self.send_message_to_node(data["id"], {"status": 1, "time": datetime.now(timezone.utc).isoformat(), "message": "Welcome, you have been added to the network!"})
+        self.send_message_to_node(data["id"], {"status": 1, "time": datetime.now(timezone.utc).isoformat(), "message": "Welcome, you have been added to the network!", })
 
     def welcome_node_to_network(self, data):
         self.send_message_to_node(data["id"], {"status": 1, "time": datetime.now(timezone.utc).isoformat(), "message": "Welcome back to the network!"})

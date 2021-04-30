@@ -104,7 +104,7 @@ class SmartNetwork(threading.Thread):
         return results
 
     def get_node_from_id(self, id):
-        if ( not re.match(r"^[a-zA-Z0-9]+$", id) ): # Check the ID to prevent injection!
+        if ( not re.match(r"^[a-zA-Z0-9_-]+$", id) ): # Check the ID to prevent injection!
             print("ID is not correct: " + id)
             return
 
@@ -129,7 +129,7 @@ class SmartNetwork(threading.Thread):
     def delete_all_node_alerts(self):
         start = "1970-01-01T00:00:00Z"
         stop = datetime.now(timezone.utc).isoformat()
-        self.delete.delete(start, stop, '_measurement="alert"', bucket='nodedata', org=self.org)
+        self.delete.delete(start, stop, '_measurement="alerts"', bucket='nodedata', org=self.org)
 
     def get_smart_node(self, mode):
         if ( mode == 1 ):

@@ -61,6 +61,8 @@ class SmartNode0:
                 print("process_node_data: required field '" + required_field + " missing.")
                 return
 
+        # Check if the measurement field exist!
+
         for measurement in data["measurements"]:
             point = Point("data").tag("id", data["id"])
             for item in measurement.keys():

@@ -6,7 +6,15 @@ from datetime import datetime, timezone
 
 import paho.mqtt.client as mqtt # pip install paho-mqtt
 
-sensor_id = "_simulation_0"
+# pip install cryptography
+from cryptography.hazmat.primitives import hashes
+from cryptography.hazmat.primitives.asymmetric import ec
+from cryptography.hazmat.primitives.kdf.hkdf import HKDF
+
+sensor_id = "_simulation_1"
+
+#SECP256R1
+private_key = ec.generate_private_key( ec.SECP256R1() ) # Generate private/public key!
 
 # The callback for when the client receives a CONNACK response from the server.
 def on_connect(client, userdata, flags, rc):
@@ -23,7 +31,9 @@ def on_message(client, userdata, msg):
 # Init message
 sensor_init = {
     "type":  "simulation",
-    "mode": 0,
+    "mode": 1,
+    "ecc": "SECP256R1",
+    "pecc": private_key.public_key,
     "id":    sensor_id,
     "name":  "test 1",
     "measurements": [{
