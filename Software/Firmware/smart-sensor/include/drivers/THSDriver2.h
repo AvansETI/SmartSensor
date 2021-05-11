@@ -1,3 +1,10 @@
+#pragma once
+
+#include <stdint.h>
+
+template <typename T>
+class optional;
+
 class THSDriver2 {
     bool check_checksum(uint16_t data, uint8_t checksum);
 public:

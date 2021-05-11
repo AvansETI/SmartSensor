@@ -1,8 +1,9 @@
+#include "drivers/THSDriver2.h"
+
+#include <math.h>
+
 #include <boardsupport.h>
 #include <board-support/drivers/TWIDriver2.h>
-
-#include "drivers/THSDriver2.h"
-#include <math.h>
 
 THSDriver2 THS;
 

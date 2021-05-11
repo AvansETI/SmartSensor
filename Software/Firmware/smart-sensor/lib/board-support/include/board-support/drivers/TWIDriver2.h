@@ -109,13 +109,13 @@ class future final {
 
     template <typename Type = T>
     typename details::enable_if<details::is_same<Type, void>::value, bool>::type get_impl() {
-        //SerialLogger::printf("status_code := %x, expected_result_code := %x\n", m_frame->m_status_code, m_frame->m_expected_result_code);
+        //if (m_frame->m_status_code != m_frame->m_expected_result_code) SerialLogger::printf("\tstatus_code := %x, expected_result_code := %x\n", m_frame->m_status_code, m_frame->m_expected_result_code);
         return m_frame->m_status_code == m_frame->m_expected_result_code;
     }
 
     template <typename Type = T>
     typename details::enable_if<!details::is_same<Type, void>::value, optional<Type>>::type get_impl() {
-        //SerialLogger::printf("status_code := %x, expected_result_code := %x\n", m_frame->m_status_code, m_frame->m_expected_result_code);
+        //if (m_frame->m_status_code != m_frame->m_expected_result_code) SerialLogger::printf("\tstatus_code := %x, expected_result_code := %x\n", m_frame->m_status_code, m_frame->m_expected_result_code);
         return (m_frame->m_status_code == m_frame->m_expected_result_code) ? optional<uint8_t>(static_cast<uint8_t>(m_frame->m_value)) : optional<uint8_t>();
     }
     public:
@@ -127,7 +127,7 @@ class future final {
     future& operator=(const future&) = delete;
     future& operator=(future&&) = default;
 
-    auto get() { using namespace details; assert(m_frame->m_state == future_frame::State::Value); m_frame->m_state = future_frame::State::ValueGiven; return get_impl(); }
+    auto get() { using namespace details; if(m_frame->m_state != future_frame::State::Value) SerialLogger::print("invalid get\n"); assert(m_frame->m_state == future_frame::State::Value); m_frame->m_state = future_frame::State::ValueGiven; return get_impl(); }
     bool valid() { using namespace details; return m_frame->m_state != future_frame::State::ValueGiven; }
     future<T>& wait() { using namespace details; assert(m_frame->m_state != future_frame::State::ValueGiven); while (m_frame->m_state != future_frame::State::Value); return *this; }
     future_status wait_for_ms(double ms) = delete; // @TODO add impl
@@ -265,6 +265,7 @@ public:
         cr.bits.interrupt_flag = 1;
         ControlRegister() = cr;  
         while (TWIControlRegister(ControlRegister()).bits.STOP_condition);
+        m_in_transmission = false;
         m_mode = TWIMode::Indeterminate;
     }
 
