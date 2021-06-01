@@ -53,8 +53,9 @@ class SmartNetwork(threading.Thread):
 
     def init_server(self):
         """Initialization of smart network."""
-        self.mqtt.on_connect = lambda client, userdata, flags, rc: self.mqtt_on_connect(client, userdata, flags, rc)
-        self.mqtt.on_message = lambda client, userdata, msg: self.mqtt_on_message(client, userdata, msg)
+        self.mqtt.on_connect    = lambda client, userdata, flags, rc: self.mqtt_on_connect(client, userdata, flags, rc)
+        self.mqtt.on_disconnect = lambda client, userdata, rc:        self.mqtt_on_disconnect(client, userdata, rc)
+        self.mqtt.on_message    = lambda client, userdata, msg:       self.mqtt_on_message(client, userdata, msg)
 
         self.mqtt.username_pw_set("server", password="servernode")
         self.mqtt.connect("sendlab.nl", 11884, 60)
@@ -63,8 +64,13 @@ class SmartNetwork(threading.Thread):
         self.mqtt.subscribe("node/data", qos=0)
         self.mqtt.subscribe("node/info", qos=0)
 
+        self.mqtt.loop_start() # Start the loop thread of MQTT
+
     def mqtt_on_connect(self, client, userdata, flags, rc):
         self.debug_print("Connected with MQTT broker with result code " + str(rc) + ".")
+
+    def mqtt_on_disconnect(self, client, userdata, rc):
+        self.debug_print("Disconnected with MQTT broker with result code " + str(rc) + ".")
 
     def mqtt_on_message(self, client, userdata, msg):
         print("got message: " + str(msg.topic) + ": " + str(msg.payload))
@@ -74,7 +80,7 @@ class SmartNetwork(threading.Thread):
             print("Error processing node data: " + msg.payload)
             return
 
-        # Process the information from the nodes!
+        # Process the information from the SmartNodes!
         if   ( msg.topic == "node/init" ):
             self.process_node_init(plJson)
         elif ( msg.topic == "node/data" ):
@@ -183,13 +189,14 @@ class SmartNetwork(threading.Thread):
         """The main loop of the thread."""
         while not self.terminate_flag.is_set():  # Check whether the thread needs to be closed
             try:
-                self.mqtt.loop()
+                pass # Do things here!
                 
             except Exception as e:
                 raise e
 
-            time.sleep(0.01)
+            time.sleep(1) # Need to be smaller when we do real stuff!!
 
+        self.mqtt.loop_stop() # Stop the loop thread of MQTT
         print("Smart network stopped")
 
     def __str__(self):

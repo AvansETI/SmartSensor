@@ -16,6 +16,11 @@ def on_connect(client, userdata, flags, rc):
     # reconnect then subscriptions will be renewed.
     client.subscribe("$SYS/#")
 
+# The callback for when the client receives a CONNACK response from the server.
+def on_disconnect(client, userdata, rc):
+    if rc != 0:
+        print("Unexpected MQTT disconnection. Will auto-reconnect")
+
 # The callback for when a PUBLISH message is received from the server.
 def on_message(client, userdata, msg):
     print(msg.topic+" "+str(msg.payload))
@@ -44,6 +49,7 @@ sensor_init = {
     
 client = mqtt.Client()
 client.on_connect = on_connect
+client.on_disconnect = on_disconnect
 client.on_message = on_message
 
 #client.username_pw_set("server", password="servernode")
@@ -61,6 +67,7 @@ client.publish("node/init", json.dumps(sensor_init))
 # Other loop*() functions are available that give a threaded interface and a
 # manual interface.
 #client.loop_forever()
+client.loop_start()
 
 timestamp = datetime.now()
 temp = 21.4;
@@ -80,5 +87,8 @@ while ( 1 ):
         temp = temp + random.random()*1 - 0.5;
         humidity = humidity + random.random()*1 - 0.5;
         timestamp = datetime.now()
+        print(data)
 
-    client.loop();
+    #client.loop()
+
+client.loop_stop()
