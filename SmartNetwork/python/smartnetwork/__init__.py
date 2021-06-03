@@ -8,4 +8,4 @@ __author__ = 'Maurice Snoeren'
 __license__ = "GNU 3.0"
 __main__ = "smartnetwork"
 
-__all__ = ["smartnetwork"]
+__all__ = ["smartnetwork, smartnode, smartnode0, smartnode1, smartnode2"]
