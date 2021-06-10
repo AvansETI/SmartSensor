@@ -52,7 +52,7 @@ class SmartNode0 (SmartNode):
         # When a device does not have the correct time, it can sent its timestamp
         disrupted_timestamp_diff = None
         if "timestamp" in data:
-            disrupted_timestamp_diff = datetime.now(timezone.utz) - dateutil.parser.parse(data["timestamp"])
+            disrupted_timestamp_diff = datetime.now(timezone.utc) - dateutil.parser.parse(data["timestamp"])
 
         # Process the measurements!
         for measurement in data["measurements"]:
@@ -60,7 +60,7 @@ class SmartNode0 (SmartNode):
                 point_timestamp = dateutil.parser.parse(measurement["timestamp"])
 
                 if disrupted_timestamp_diff != None:
-                    print("Fixed timestamp: " + point_timestamp + " +> " + (point_timestamp + disrupted_timestamp_diff))
+                    print("Fixed timestamp: " + str(point_timestamp) + " +> " + str(point_timestamp + disrupted_timestamp_diff))
                     point_timestamp = point_timestamp + disrupted_timestamp_diff
 
                 point = Point("data").tag("id", data["id"])
