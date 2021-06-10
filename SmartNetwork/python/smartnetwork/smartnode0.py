@@ -49,16 +49,30 @@ class SmartNode0 (SmartNode):
                 print("process_node_data: required field '" + required_field + " missing.")
                 return
 
-        # TODO: Check if the measurement field exist!!
+        # When a device does not have the correct time, it can sent its timestamp
+        disrupted_timestamp_diff = None
+        if "timestamp" in data:
+            disrupted_timestamp_diff = datetime.now(timezone.utz) - dateutil.parser.parse(data["timestamp"])
 
+        # Process the measurements!
         for measurement in data["measurements"]:
-            point = Point("data").tag("id", data["id"])
-            for item in measurement.keys():
-                if ( item != "timestamp" ):
-                    point.field(item, measurement[item])
-                    point.time(dateutil.parser.parse(measurement["timestamp"]), WritePrecision.NS)
-        self.smartnetwork.write.write("nodedata", self.smartnetwork.org, point)
-        self.smartnetwork.mqtt.publish("node/" + str(data["id"]) + "/data", json.dumps(data)) # relay it further!
+            if "timestamp" in measurement: # timestamp is required!
+                point_timestamp = dateutil.parser.parse(measurement["timestamp"])
+
+                if disrupted_timestamp_diff != None:
+                    print("Fixed timestamp: " + point_timestamp + " +> " + (point_timestamp + disrupted_timestamp_diff))
+                    point_timestamp = point_timestamp + disrupted_timestamp_diff
+
+                point = Point("data").tag("id", data["id"])
+                for item in measurement.keys():
+                    if ( item != "timestamp" ):
+                        point.field(item, measurement[item])
+                        point.time(point_timestamp, WritePrecision.NS)
+                self.smartnetwork.write.write("nodedata", self.smartnetwork.org, point)
+                self.smartnetwork.mqtt.publish("node/" + str(data["id"]) + "/data", json.dumps(data)) # relay it further!
+           
+            else:
+                print("process_node_data: Measurement does not contain a timestamp!")
 
     def process_node_info(self, data):
         """Process the info that the node has send. No security checks, just relay it further."""
