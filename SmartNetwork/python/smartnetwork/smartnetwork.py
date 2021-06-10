@@ -76,20 +76,22 @@ class SmartNetwork(threading.Thread):
         print("got message: " + str(msg.topic) + ": " + str(msg.payload))
         try:
             plJson = json.loads(msg.payload)
-        except:
-            print("Error processing node data: " + msg.payload)
+
+            # Process the information from the SmartNodes!
+            if   ( msg.topic == "node/init" ):
+                self.process_node_init(plJson)
+            elif ( msg.topic == "node/data" ):
+                self.process_node_data(plJson)
+            elif ( msg.topic == "node/info" ):
+                self.process_node_info(plJson)
+            else:
+                print("Unknown topic: " + msg.topic)
+
+        except Exception as e: # work on python 2.x
+            print("Error processing node data: " + str(msg.payload))
+            print(str(e))
             return
-
-        # Process the information from the SmartNodes!
-        if   ( msg.topic == "node/init" ):
-            self.process_node_init(plJson)
-        elif ( msg.topic == "node/data" ):
-            self.process_node_data(plJson)
-        elif ( msg.topic == "node/info" ):
-            self.process_node_info(plJson)
-        else:
-            print("Unknown topic: " + msg.topic)
-
+            
     def alert(level, type, id, message):
         point = Point("alerts").tag("id", id).tag("level", level).tag("type", type)
         point.field("message", message)
