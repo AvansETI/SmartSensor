@@ -7,6 +7,7 @@ import dateutil
 
 from influxdb_client import InfluxDBClient, Point, WritePrecision #pip install influxdb-client
 from influxdb_client.client.write_api import SYNCHRONOUS
+from smartnetwork.smartnode import SmartNode
 
 """
 Author: Maurice Snoeren <mac.snoeren(at)avans.nl>
@@ -14,29 +15,14 @@ Version: 0.1 beta (use at your own risk)
 Date: 7-4-2021
 """
 
-class SmartNode0:
+class SmartNode0 (SmartNode):
 
     def __init__(self, smartnetwork):
-        """Create instance of a SmartNode0. A SmartNode that does not use any security. """
-        super(SmartNode0, self).__init__()
-
-        # Debugging on or off!
-        self.debug = False
-
-        self.smartnetwork = smartnetwork
-
-    def debug_print(self, message):
-        """When the debug flag is set to True, all debug messages are printed in the console."""
-        if self.debug:
-            print("DEBUG: " + message)
-
-    def send_message_to_node(self, id, message):
-        self.smartnetwork.mqtt.publish("node/" + str(id) + "/message", json.dumps(message))
-
-    def send_event_to_node(self, id, event):
-        self.smartnetwork.mqtt.publish("node/" + str(id) + "/event", json.dumps(event))
+        """Create instance of a SmartNode0. A SmartNode that does not implement any security. """
+        super().__init__(smartnetwork)
 
     def add_node_to_network(self, data):
+        """Add the node to the network."""
         required_fields = ("id", "type", "name", "mode", "measurements", "actuators") # Check required fields
         for required_field in required_fields:
             if ( not required_field in data ):
@@ -52,27 +38,44 @@ class SmartNode0:
         self.send_message_to_node(data["id"], {"status": 1, "time": datetime.now(timezone.utc).isoformat(), "message": "Welcome, you have been added to the network!"})
 
     def welcome_node_to_network(self, data):
+        """When the node is already added to the database, we wish the node a welcome back."""
         self.send_message_to_node(data["id"], {"status": 1, "time": datetime.now(timezone.utc).isoformat(), "message": "Welcome back to the network!"})
 
     def process_node_data(self, data):
+        """Process the node data that has been send."""
         required_fields = ("id", "measurements") # Check required fields
         for required_field in required_fields:
             if ( not required_field in data ):
                 print("process_node_data: required field '" + required_field + " missing.")
                 return
 
-        # Check if the measurement field exist!
+        # When a device does not have the correct time, it can sent its timestamp
+        disrupted_timestamp_diff = None
+        if "timestamp" in data:
+            disrupted_timestamp_diff = datetime.now(timezone.utz) - dateutil.parser.parse(data["timestamp"])
 
+        # Process the measurements!
         for measurement in data["measurements"]:
-            point = Point("data").tag("id", data["id"])
-            for item in measurement.keys():
-                if ( item != "timestamp" ):
-                    point.field(item, measurement[item])
-                    point.time(dateutil.parser.parse(measurement["timestamp"]), WritePrecision.NS)
-        self.smartnetwork.write.write("nodedata", self.smartnetwork.org, point)
-        self.smartnetwork.mqtt.publish("node/" + str(data["id"]) + "/data", json.dumps(data)) # relay it further!
+            if "timestamp" in measurement: # timestamp is required!
+                point_timestamp = dateutil.parser.parse(measurement["timestamp"])
+
+                if disrupted_timestamp_diff != None:
+                    print("Fixed timestamp: " + point_timestamp + " +> " + (point_timestamp + disrupted_timestamp_diff))
+                    point_timestamp = point_timestamp + disrupted_timestamp_diff
+
+                point = Point("data").tag("id", data["id"])
+                for item in measurement.keys():
+                    if ( item != "timestamp" ):
+                        point.field(item, measurement[item])
+                        point.time(point_timestamp, WritePrecision.NS)
+                self.smartnetwork.write.write("nodedata", self.smartnetwork.org, point)
+                self.smartnetwork.mqtt.publish("node/" + str(data["id"]) + "/data", json.dumps(data)) # relay it further!
+           
+            else:
+                print("process_node_data: Measurement does not contain a timestamp!")
 
     def process_node_info(self, data):
+        """Process the info that the node has send. No security checks, just relay it further."""
         self.smartnetwork.mqtt.publish("node/" + str(data["id"]) + "/info", json.dumps(data)) # relay it further!
 
     def __str__(self):

@@ -164,7 +164,6 @@ class SmartNetwork(threading.Thread):
             return # Do nothing when id is not found in the data!
 
         data["id"] = str(data["id"]) # Make sure the id is a string!
-        
         node = self.get_node_from_id(data["id"])
         if ( node != None ):
             smart_node = self.get_smart_node(node["mode"])
