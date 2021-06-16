@@ -5,8 +5,8 @@ $Descr A4 11693 8268
 encoding utf-8
 Sheet 2 6
 Title "SmartSensor"
-Date "2021-03-19"
-Rev "1.1"
+Date "2021-06-14"
+Rev "1.2"
 Comp "Avans Hogeschool"
 Comment1 "Maurice Snoeren"
 Comment2 "Expertise Centrum Technische Innovatie"
