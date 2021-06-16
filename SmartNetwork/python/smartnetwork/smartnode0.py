@@ -4,6 +4,7 @@ import json
 import random
 from datetime import datetime, timezone
 import dateutil
+import pytz
 
 from influxdb_client import InfluxDBClient, Point, WritePrecision #pip install influxdb-client
 from influxdb_client.client.write_api import SYNCHRONOUS
@@ -52,7 +53,11 @@ class SmartNode0 (SmartNode):
         # When a device does not have the correct time, it can sent its timestamp
         disrupted_timestamp_diff = None
         if "timestamp" in data:
-            disrupted_timestamp_diff = datetime.now(timezone.utc) - dateutil.parser.parse(data["timestamp"])
+            timestamp_node = dateutil.parser.parse(data["timestamp"])
+            if timestamp_node.tzinfo is None or timestamp_node.tzinfo.utcoffset(timestamp_node) is None:
+                timestamp_node = pytz.utc.localize(timestamp_node) # Make timestamp aware of timezone when this is not given
+                print("timestamp was naive!!")
+            disrupted_timestamp_diff = datetime.now(timezone.utc) - timestamp_node;
 
         # Process the measurements!
         for measurement in data["measurements"]:
