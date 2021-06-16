@@ -117,6 +117,8 @@
 
 #if defined(BOARD_REVISION_03)
     #include "boards/board-r03.h"
+#elif defined(BOARD_REVISION_10)
+    #include "boards/board-r10.h"
 #else
     #error "No supported board revision was defined!"
 #endif

@@ -38,9 +38,9 @@ void XbeeConnState::update() {
 	XBeeData data = XBeeData(20.0f, 15.0f, 600.0f);
 	//XBeeDriver::send(data);
 	
-	PinManager::digital_write(STATUS_LED_2_PIN, HIGH);
+	//PinManager::digital_write(STATUS_LED_2_PIN, HIGH);
     _delay_ms(1000);
-    PinManager::digital_write(STATUS_LED_2_PIN, LOW);
+    //PinManager::digital_write(STATUS_LED_2_PIN, LOW);
     
 	this->m_state_machine->set_state(S_IDLE);
 }

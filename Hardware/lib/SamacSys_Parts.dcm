@@ -1,0 +1,21 @@
+EESchema-DOCLIB  Version 2.0
+#
+$CMP NE555DR
+D Single Precision Timer
+K
+F http://www.ti.com/lit/ds/symlink/ne555.pdf
+$ENDCMP
+#
+$CMP VEML7700-TT
+D 16Bit Ambient Light Sensor I2C 6.8x2.3mm
+K
+F https://www.arrow.com/en/products/veml7700-tt/vishay
+$ENDCMP
+#
+$CMP LL3301FF065QJ
+D Pushbutton Switches 50mA 12VDC F065 7.0mm J-Lead
+K
+F http://spec_sheets.e-switch.com/specs/P010456.pdf
+$ENDCMP
+#
+#End Doc Library

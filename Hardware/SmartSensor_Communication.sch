@@ -1,13 +1,12 @@
 EESchema Schematic File Version 4
-LIBS:SmartSensor-cache
-EELAYER 29 0
+EELAYER 30 0
 EELAYER END
 $Descr A4 11693 8268
 encoding utf-8
-Sheet 5 6
+Sheet 4 6
 Title "SmartSensor"
-Date "2021-01-17"
-Rev "1.0"
+Date "2021-06-14"
+Rev "1.2"
 Comp "Avans Hogeschool"
 Comment1 "Maurice Snoeren"
 Comment2 "Expertise Centrum Technische Innovatie"
@@ -88,51 +87,17 @@ F 3 "~" H 3900 2450 50  0001 C CNN
 	1    3900 2450
 	1    0    0    -1  
 $EndComp
-Wire Wire Line
-	3800 2150 3750 2150
-Text GLabel 3750 2150 0    50   Input ~ 0
-XBEE_ENABLE
-Wire Wire Line
-	3800 2100 3800 2150
-Wire Wire Line
-	3800 1900 4100 1900
-$Comp
-L Device:R_Small R11
-U 1 1 60078572
-P 3800 2000
-F 0 "R11" H 3650 1950 50  0000 L CNN
-F 1 "100k" V 3900 1900 50  0000 L CNN
-F 2 "Resistor_SMD:R_0805_2012Metric" H 3800 2000 50  0001 C CNN
-F 3 "~" H 3800 2000 50  0001 C CNN
-	1    3800 2000
-	-1   0    0    1   
-$EndComp
-Connection ~ 3800 2150
-$Comp
-L Transistor_FET:DMG2301L Q5
-U 1 1 6007857A
-P 4000 2150
-F 0 "Q5" H 4204 2196 50  0000 L CNN
-F 1 "DMG2301L" H 4204 2105 50  0000 L CNN
-F 2 "Package_TO_SOT_SMD:SOT-23" H 4200 2075 50  0001 L CIN
-F 3 "https://www.diodes.com/assets/Datasheets/DMG2301L.pdf" H 4000 2150 50  0001 L CNN
-	1    4000 2150
-	1    0    0    -1  
-$EndComp
 $Comp
 L power:+3.3V #PWR032
 U 1 1 60078580
-P 4100 1900
-F 0 "#PWR032" H 4100 1750 50  0001 C CNN
-F 1 "+3.3V" H 4115 2073 50  0000 C CNN
-F 2 "" H 4100 1900 50  0001 C CNN
-F 3 "" H 4100 1900 50  0001 C CNN
-	1    4100 1900
+P 4100 2150
+F 0 "#PWR032" H 4100 2000 50  0001 C CNN
+F 1 "+3.3V" H 4115 2323 50  0000 C CNN
+F 2 "" H 4100 2150 50  0001 C CNN
+F 3 "" H 4100 2150 50  0001 C CNN
+	1    4100 2150
 	1    0    0    -1  
 $EndComp
-Connection ~ 4100 1900
-Wire Wire Line
-	4100 1950 4100 1900
 Wire Wire Line
 	4100 2350 4100 2900
 Wire Wire Line
@@ -199,22 +164,6 @@ Wire Wire Line
 Wire Wire Line
 	6650 3800 6550 3800
 $Comp
-L Switch:SW_Push SW?
-U 1 1 600A2160
-P 7550 2900
-AR Path="/600A2160" Ref="SW?"  Part="1" 
-AR Path="/5F76931A/600A2160" Ref="SW?"  Part="1" 
-AR Path="/5F877B3A/600A2160" Ref="SW2"  Part="1" 
-F 0 "SW2" H 7650 3000 50  0000 C CNN
-F 1 "COMMISSIONING" H 7550 3100 50  0000 C CNN
-F 2 "LL3301AF065QJ:LL3301FF065QJ" H 7550 3100 50  0001 C CNN
-F 3 "~" H 7550 3100 50  0001 C CNN
-	1    7550 2900
-	1    0    0    -1  
-$EndComp
-Wire Wire Line
-	6550 2900 7350 2900
-$Comp
 L Device:C_Small C15
 U 1 1 600A4C34
 P 3200 2450
@@ -280,11 +229,6 @@ Wire Wire Line
 	7900 3400 8000 3400
 Wire Wire Line
 	8000 3400 8000 3450
-Wire Wire Line
-	7750 2900 8000 2900
-Wire Wire Line
-	8000 2900 8000 3400
-Connection ~ 8000 3400
 Text Notes 3050 2750 0    50   ~ 0
 Place C near pin 1
 Text HLabel 3150 5350 0    50   Output ~ 0
@@ -305,8 +249,6 @@ Text GLabel 1600 6500 2    50   Input ~ 0
 XBEE_PWM0
 Text GLabel 1600 6600 2    50   Input ~ 0
 XBEE_PWM1
-Text GLabel 1600 6100 2    50   Input ~ 0
-XBEE_RF_ENABLE
 Text GLabel 4000 5250 2    50   Input ~ 0
 XBEE_UART_RTS
 Text GLabel 1600 5650 2    50   Input ~ 0
@@ -339,8 +281,6 @@ Text HLabel 1500 5900 0    50   Input ~ 0
 XBEE_SLEEP
 Text HLabel 1500 6000 0    50   Input ~ 0
 XBEE_RESET
-Text HLabel 1500 6100 0    50   Input ~ 0
-XBEE_ENABLE
 Text HLabel 1500 6300 0    50   BiDi ~ 0
 XBEE_AD1
 Text HLabel 1500 6400 0    50   UnSpc ~ 0
@@ -364,8 +304,6 @@ Wire Wire Line
 Wire Wire Line
 	1600 6000 1500 6000
 Wire Wire Line
-	1500 6100 1600 6100
-Wire Wire Line
 	1600 6300 1500 6300
 Wire Wire Line
 	1500 6400 1600 6400
@@ -380,59 +318,53 @@ XBee S2C (Pro)
 $Comp
 L Connector_Generic:Conn_02x04_Odd_Even J9
 U 1 1 600DD28A
-P 9400 3200
-F 0 "J9" H 9450 3517 50  0000 C CNN
-F 1 "Conn_02x04_Odd_Even" H 9450 3426 50  0000 C CNN
-F 2 "Connector_PinHeader_2.54mm:PinHeader_2x04_P2.54mm_Vertical" H 9400 3200 50  0001 C CNN
-F 3 "~" H 9400 3200 50  0001 C CNN
-	1    9400 3200
+P 8750 2150
+F 0 "J9" H 8800 2467 50  0000 C CNN
+F 1 "Conn_02x04_Odd_Even" H 8800 2376 50  0000 C CNN
+F 2 "Connector_PinHeader_2.54mm:PinHeader_2x04_P2.54mm_Vertical" H 8750 2150 50  0001 C CNN
+F 3 "~" H 8750 2150 50  0001 C CNN
+	1    8750 2150
 	1    0    0    -1  
 $EndComp
-Text Notes 9100 3600 0    50   ~ 0
+Text Notes 8450 2550 0    50   ~ 0
 Module: nRF24L01
 $Comp
 L power:GND #PWR035
 U 1 1 600DF1A1
-P 9900 3600
-F 0 "#PWR035" H 9900 3350 50  0001 C CNN
-F 1 "GND" H 9905 3427 50  0000 C CNN
-F 2 "" H 9900 3600 50  0001 C CNN
-F 3 "" H 9900 3600 50  0001 C CNN
-	1    9900 3600
+P 9250 2550
+F 0 "#PWR035" H 9250 2300 50  0001 C CNN
+F 1 "GND" H 9255 2377 50  0000 C CNN
+F 2 "" H 9250 2550 50  0001 C CNN
+F 3 "" H 9250 2550 50  0001 C CNN
+	1    9250 2550
 	1    0    0    -1  
 $EndComp
-Text HLabel 9100 3100 0    50   Output ~ 0
+Text HLabel 8450 2050 0    50   Output ~ 0
 RF_IRQ
-Text HLabel 9800 3300 2    50   Input ~ 0
+Text HLabel 9150 2250 2    50   Input ~ 0
 RF_CE
 Wire Wire Line
-	9100 3100 9200 3100
+	8450 2050 8550 2050
 Wire Wire Line
-	9700 3300 9800 3300
+	9050 2250 9150 2250
 Text Notes 7600 4300 0    50   ~ 0
 NOTE: XBEE or RF can be connected!
 Wire Wire Line
-	9900 3600 9900 3400
+	9250 2550 9250 2350
 Wire Wire Line
-	9900 3400 9700 3400
-Text GLabel 9100 3200 0    50   Input ~ 0
+	9250 2350 9050 2350
+Text GLabel 8450 2150 0    50   Input ~ 0
 XBEE_SPI_MOSI
 Wire Wire Line
-	9100 3200 9200 3200
-Wire Wire Line
-	8400 3400 8400 2350
-Wire Wire Line
-	8400 2350 4100 2350
-Wire Wire Line
-	8400 3400 9200 3400
-Text GLabel 9800 3100 2    50   Input ~ 0
+	8450 2150 8550 2150
+Text GLabel 9150 2050 2    50   Input ~ 0
 XBEE_SPI_MISO
 Wire Wire Line
-	9800 3100 9700 3100
-Text GLabel 9800 3200 2    50   Input ~ 0
+	9150 2050 9050 2050
+Text GLabel 9150 2150 2    50   Input ~ 0
 XBEE_SPI_CLK
 Wire Wire Line
-	9800 3200 9700 3200
+	9150 2150 9050 2150
 $Comp
 L Connector:Conn_01x06_Male J8
 U 1 1 60242760
@@ -485,8 +417,41 @@ Wire Wire Line
 	3150 5350 3250 5350
 Wire Wire Line
 	3150 5450 3250 5450
-Text GLabel 9100 3300 0    50   Input ~ 0
+Text GLabel 8450 2250 0    50   Input ~ 0
 XBEE_SPI_SSEL
 Wire Wire Line
-	9100 3300 9200 3300
+	8450 2250 8550 2250
+$Comp
+L SamacSys_Parts:LL3301FF065QJ S2
+U 1 1 605B688A
+P 8100 2900
+F 0 "S2" H 8700 3165 50  0000 C CNN
+F 1 "LL3301FF065QJ" H 8700 3074 50  0000 C CNN
+F 2 "SamacSys_Parts:LL3301FF065QJ" H 9150 3000 50  0001 L CNN
+F 3 "http://spec_sheets.e-switch.com/specs/P010456.pdf" H 9150 2900 50  0001 L CNN
+F 4 "Pushbutton Switches 50mA 12VDC F065 7.0mm J-Lead" H 9150 2800 50  0001 L CNN "Description"
+F 5 "7.3" H 9150 2700 50  0001 L CNN "Height"
+F 6 "612-LL3301FF065QJ" H 9150 2600 50  0001 L CNN "Mouser Part Number"
+F 7 "https://www.mouser.co.uk/ProductDetail/E-Switch/LL3301FF065QJ/?qs=QtyuwXswaQgkr0cFSIRaTA%3D%3D" H 9150 2500 50  0001 L CNN "Mouser Price/Stock"
+F 8 "E-Switch" H 9150 2400 50  0001 L CNN "Manufacturer_Name"
+F 9 "LL3301FF065QJ" H 9150 2300 50  0001 L CNN "Manufacturer_Part_Number"
+	1    8100 2900
+	1    0    0    -1  
+$EndComp
+Wire Wire Line
+	4100 2350 8550 2350
+Wire Wire Line
+	6550 2900 8100 2900
+Wire Wire Line
+	8100 3000 8000 3000
+Wire Wire Line
+	8000 3000 8000 3400
+Connection ~ 8000 3400
+NoConn ~ 9300 2900
+NoConn ~ 9300 3000
+Text Notes 8300 3200 0    50   ~ 0
+SWITCH COMMISSION
+Wire Wire Line
+	4100 2150 4100 2350
+NoConn ~ 7800 -150
 $EndSCHEMATC

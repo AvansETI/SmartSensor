@@ -6,7 +6,7 @@ _Note: Current hardware version 1.0 is under test and some issues have been foun
 
 De SmartSensor is een resultaat van verschillende onderzoeken sinds 2018. Focus is gegeven aan laag vermogen, controle over energiestromen en eenvoud. Deze SmartSensor wordt binnen onderzoek en onderwijs toegepast.
 
-<img src="Documentation/SmartSensor v1 Board.png" width="400px"/>
+<img src="Documentation/SmartSensor v1.1 Board.png" width="400px"/>
 
 _3D generated model_
 

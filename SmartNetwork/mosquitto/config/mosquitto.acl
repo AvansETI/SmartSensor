@@ -1,0 +1,51 @@
+########################
+# SMARTMETER - SENDLAB #
+########################
+
+user smartmeter
+topic write smartmeter/raw
+
+user smartmeter_data
+topic read smartmeter/data
+
+user smartmeter_admin
+topic smartmeter/raw
+topic smartmeter/data
+topic smartmeter/log
+topic smartmeter/debug
+
+#########################################
+# SENSOR AND ACTUATOR NETWORK - SENDLAB #
+#########################################
+# smartmeternode, servernode, controllernode
+
+user node
+topic write node/init
+topic write node/data
+topic write node/info
+
+topic read  node/+/message
+topic read  node/+/event
+
+user server
+topic read node/init
+topic read node/data
+topic read node/info
+
+topic read controller/init
+topic read controller/event
+topic read controller/info
+
+topic write node/+/data
+topic write node/+/info
+topic write node/+/message
+topic write node/+/event
+
+
+user controller_test
+topic read node/+/data
+topic read node/+/info
+topic read controller/+/message
+
+topic write controller/init
+topic write controller/event

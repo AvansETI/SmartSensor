@@ -1,13 +1,12 @@
 EESchema Schematic File Version 4
-LIBS:SmartSensor-cache
-EELAYER 29 0
+EELAYER 30 0
 EELAYER END
 $Descr A4 11693 8268
 encoding utf-8
 Sheet 2 6
 Title "SmartSensor"
-Date "2021-01-16"
-Rev "1.0"
+Date "2021-06-14"
+Rev "1.2"
 Comp "Avans Hogeschool"
 Comment1 "Maurice Snoeren"
 Comment2 "Expertise Centrum Technische Innovatie"
@@ -54,9 +53,11 @@ Text Notes 4350 3100 0    50   ~ 0
 Text Notes 4550 3100 0    50   ~ 0
 -
 $Comp
-L Connector:USB_B_Micro J1
+L SmartSensor-rescue:USB_B_Micro-Connector J1
 U 1 1 5F3DAB52
 P 3700 3850
+AR Path="/5F3DAB52" Ref="J1"  Part="1" 
+AR Path="/5F2DAD2E/5F3DAB52" Ref="J1"  Part="1" 
 F 0 "J1" H 3757 4317 50  0000 C CNN
 F 1 "USB_B_Micro" H 3757 4226 50  0000 C CNN
 F 2 "Connector_USB:USB_Micro-B_Amphenol_10103594-0001LF_Horizontal" H 3850 3800 50  0001 C CNN
@@ -106,22 +107,7 @@ Wire Wire Line
 Wire Wire Line
 	4250 4300 4000 4300
 Connection ~ 4000 4300
-$Comp
-L Transistor_FET:DMG2301L Q1
-U 1 1 5F3DAB7D
-P 4550 3650
-F 0 "Q1" H 4754 3696 50  0000 L CNN
-F 1 "DMG2301L" H 4754 3605 50  0000 L CNN
-F 2 "Package_TO_SOT_SMD:SOT-23" H 4750 3575 50  0001 L CIN
-F 3 "https://www.diodes.com/assets/Datasheets/DMG2301L.pdf" H 4550 3650 50  0001 L CNN
-	1    4550 3650
-	1    0    0    -1  
-$EndComp
-Wire Wire Line
-	4350 3650 4250 3650
 Connection ~ 4250 3650
-Wire Wire Line
-	4650 3400 4650 3450
 Text Notes 4650 3100 0    50   ~ 0
 +
 Text Notes 4850 3100 0    50   ~ 0
@@ -130,8 +116,6 @@ Wire Wire Line
 	4550 3200 4750 3200
 Wire Wire Line
 	4450 3200 4450 3350
-Wire Wire Line
-	4450 3400 4650 3400
 $Comp
 L power:GND #PWR03
 U 1 1 5F3DAB8F
@@ -320,8 +304,6 @@ Text GLabel 4950 3850 2    50   Input ~ 0
 V_IN
 Wire Wire Line
 	4250 3650 4250 3500
-Wire Wire Line
-	4650 3850 4950 3850
 Connection ~ 3600 4300
 Text GLabel 5900 3450 0    50   Input ~ 0
 V_USB
@@ -406,4 +388,23 @@ Text Notes 8900 3600 0    50   ~ 0
 3.3V @ 1200mA
 Text Notes 5650 3850 0    50   ~ 0
 Range: 1.5 - 5.5V
+$Comp
+L Transistor_FET:DMG2301L Q1
+U 1 1 5F3DAB7D
+P 4600 3650
+F 0 "Q1" H 4804 3696 50  0000 L CNN
+F 1 "DMG2301L" H 4804 3605 50  0000 L CNN
+F 2 "Package_TO_SOT_SMD:SOT-23" H 4800 3575 50  0001 L CIN
+F 3 "https://www.diodes.com/assets/Datasheets/DMG2301L.pdf" H 4600 3650 50  0001 L CNN
+	1    4600 3650
+	1    0    0    1   
+$EndComp
+Wire Wire Line
+	4400 3650 4250 3650
+Wire Wire Line
+	4700 3450 4700 3400
+Wire Wire Line
+	4700 3400 4450 3400
+Wire Wire Line
+	4950 3850 4700 3850
 $EndSCHEMATC
