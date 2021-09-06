@@ -9,14 +9,14 @@ THSDriver::THSDriver() : TWIDriver(TWI0) {
 bool THSDriver::update() {
     if (!twi_start()) {
 		#if defined(DEBUG_LOG)
-        	SerialLogger::error("[THS]: TWI Unavailable");
+        	SerialLogger0.error("[THS]: TWI Unavailable");
 		#endif
         return false;
     }
 
     if (!twi_select(TWI_THS_ADDRESS, Write)) {
 		#if defined(DEBUG_LOG)
-        	SerialLogger::error("[THS]: Failed to request measurement");
+        	SerialLogger0.error("[THS]: Failed to request measurement");
 		#endif
         twi_stop();
         return false;
@@ -32,7 +32,7 @@ bool THSDriver::update() {
     twi_start();
     if (!twi_select(TWI_THS_ADDRESS, Read)) {
 		#if defined(DEBUG_LOG)
-        	SerialLogger::error("[THS]: Failed to read measurement");
+        	SerialLogger0.error("[THS]: Failed to read measurement");
 		#endif
         twi_stop();
         return false;
@@ -47,11 +47,11 @@ bool THSDriver::update() {
     if (m_last_status != THSStatus::NORMAL) {
         if (m_last_status == THSStatus::STALE) {
 			#if defined(DEBUG_LOG)
-            	SerialLogger::warn("[THS]: Using stale measurement, try decreasing update rate.");
+            	SerialLogger0.warn("[THS]: Using stale measurement, try decreasing update rate.");
 			#endif
         } else {
 			#if defined(DEBUG_LOG)
-            	SerialLogger::warn("[THS]: Incorrect status received, is THS in command mode?");
+            	SerialLogger0.warn("[THS]: Incorrect status received, is THS in command mode?");
 			#endif
             twi_stop();
             return false;

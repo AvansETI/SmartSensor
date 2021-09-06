@@ -66,7 +66,7 @@
 /**
  * Whether USART2 should be enabled
  */
-#define USART2_ENABLED          0
+#define USART2_ENABLED          1
 
 /**
  * Baud rate for USART2
@@ -92,12 +92,12 @@
  */
 #define TWI0_SCL_CLOCK          100'000UL
 
-#define TWI1_ENABLED            0
+#define TWI1_ENABLED            1
 
 /**
  * TWI1 SCL Clock in Hz
  */
-#define TWI1_SCL_CLOCK          100'000UL
+#define TWI1_SCL_CLOCK          10'000UL
 
 /**
  * Digital Driver

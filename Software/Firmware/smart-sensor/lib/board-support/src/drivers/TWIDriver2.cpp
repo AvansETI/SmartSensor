@@ -19,6 +19,29 @@ ISR(TWI0_vect) {
 
     TWIControlRegister cr{0};
     cr.bits.twi_enable = 1;
-    TWI0_CR = cr;
+    get_control_register(TWI2_0) = cr;
+}
+#endif
+
+#if TWI1_ENABLED
+TWIDriver2<0xD9, 0xD8, 0xDA, 0xDB, 0xDC> TWI2_1;
+
+ISR(TWI1_vect) {
+    using namespace details;
+
+    future_frame& frame = get_future_frame(TWI2_1);
+
+    // @TODO can most likely be removed
+    if (frame.m_state != future_frame::State::NoValue) {
+        return;
+    }
+
+    frame.m_value = get_data_register(TWI2_1);
+    frame.m_status_code = get_status(TWI2_1);
+    frame.m_state = future_frame::State::Value;
+
+    TWIControlRegister cr{0};
+    cr.bits.twi_enable = 1;
+    get_control_register(TWI2_1) = cr;
 }
 #endif

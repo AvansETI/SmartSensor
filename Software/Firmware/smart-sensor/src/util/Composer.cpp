@@ -18,7 +18,7 @@ Composer::Composer() : m_idle_state(IdleState(&m_s_machine)),
 void Composer::init() {
     // Behavior States
 
-	//SerialLogger::debug("Adding the states");
+	//SerialLogger0.debug("Adding the states");
 
     this->m_s_machine.add_state(&m_idle_state, S_IDLE);
     this->m_s_machine.add_state(&m_poll_state, S_POLL);
@@ -29,7 +29,7 @@ void Composer::init() {
 #endif
 
 	
-    //SerialLogger::info("Setting idle as start state");
+    //SerialLogger0.info("Setting idle as start state");
     this->m_s_machine.set_state(S_IDLE);
 }
 

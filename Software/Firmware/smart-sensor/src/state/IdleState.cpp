@@ -18,7 +18,7 @@ void IdleState::init() {
 
 void IdleState::update() {
 	#if defined(DEBUG_LOG)
-    	SerialLogger::debug("Went to idle state, sleeping for 20 seconds...");
+    	SerialLogger0.debug("Went to idle state, sleeping for 20 seconds...");
 	#endif
     _delay_ms(2000);
     this->m_state_machine->set_state(S_POLL);

@@ -15,14 +15,14 @@ enum class future_status {
 
 template<typename T>
 class optional {
-    T t;
     bool has_value;
+    T t;
 
     public:
     optional() : has_value(false) {};
     optional(const T& t) : has_value(true), t(t) {}
 
-    optional<T>& operator= (const T& t) {has_value = true; this->t = t;}
+    optional<T>& operator= (const T& t) {has_value = true; this->t = t; return *this; }
 
     const T& operator*() { assert(has_value); return t; }
     operator bool() {return has_value;}
@@ -59,6 +59,10 @@ namespace details {
 
     template<typename T> auto& get_data_register(T& t) {
         return t.DataRegister();
+    }
+
+    template<typename T> auto& get_control_register(T& t) {
+        return t.ControlRegister();
     }
 
     template<typename T> uint8_t get_status(T& t) {
@@ -109,17 +113,17 @@ class future final {
 
     template <typename Type = T>
     typename details::enable_if<details::is_same<Type, void>::value, bool>::type get_impl() {
-        //if (m_frame->m_status_code != m_frame->m_expected_result_code) SerialLogger::printf("\tstatus_code := %x, expected_result_code := %x\n", m_frame->m_status_code, m_frame->m_expected_result_code);
+        //if (m_frame->m_status_code != m_frame->m_expected_result_code) SerialLogger0.printf("\tstatus_code := %x, expected_result_code := %x\n", m_frame->m_status_code, m_frame->m_expected_result_code);
         return m_frame->m_status_code == m_frame->m_expected_result_code;
     }
 
     template <typename Type = T>
     typename details::enable_if<!details::is_same<Type, void>::value, optional<Type>>::type get_impl() {
-        //if (m_frame->m_status_code != m_frame->m_expected_result_code) SerialLogger::printf("\tstatus_code := %x, expected_result_code := %x\n", m_frame->m_status_code, m_frame->m_expected_result_code);
+        //if (m_frame->m_status_code != m_frame->m_expected_result_code) SerialLogger0.printf("\tstatus_code := %x, expected_result_code := %x\n", m_frame->m_status_code, m_frame->m_expected_result_code);
         return (m_frame->m_status_code == m_frame->m_expected_result_code) ? optional<uint8_t>(static_cast<uint8_t>(m_frame->m_value)) : optional<uint8_t>();
     }
     public:
-    ~future() { if (m_frame->m_state == details::future_frame::State::NoValue) SerialLogger::print("destructing future while task has not completed\n"); }
+    ~future() { if (m_frame->m_state == details::future_frame::State::NoValue) SerialLogger0.print("destructing future while task has not completed\n"); }
 
     future(const future&) = delete;
     future(future&&) = default;
@@ -127,7 +131,7 @@ class future final {
     future& operator=(const future&) = delete;
     future& operator=(future&&) = default;
 
-    auto get() { using namespace details; if(m_frame->m_state != future_frame::State::Value) SerialLogger::print("invalid get\n"); assert(m_frame->m_state == future_frame::State::Value); m_frame->m_state = future_frame::State::ValueGiven; return get_impl(); }
+    auto get() { using namespace details; if(m_frame->m_state != future_frame::State::Value) SerialLogger0.print("invalid get\n"); assert(m_frame->m_state == future_frame::State::Value); m_frame->m_state = future_frame::State::ValueGiven; return get_impl(); }
     bool valid() { using namespace details; return m_frame->m_state != future_frame::State::ValueGiven; }
     future<T>& wait() { using namespace details; assert(m_frame->m_state != future_frame::State::ValueGiven); while (m_frame->m_state != future_frame::State::Value); return *this; }
     future_status wait_for_ms(double ms) = delete; // @TODO add impl
@@ -148,6 +152,7 @@ template <uintptr_t _StatusRegister, uintptr_t _BitRateRegister, uintptr_t _Peri
 class TWIDriver2 {
     template<typename T> friend auto& details::get_future_frame(T& t);
     template<typename T> friend auto& details::get_data_register(T& t);
+    template<typename T> friend auto& details::get_control_register(T& t);
     template<typename T> friend uint8_t details::get_status(T& t);
 
     inline auto& StatusRegister() { return _SFR_MEM8(_StatusRegister); }
@@ -179,6 +184,7 @@ class TWIDriver2 {
 
         assert(m_frame.m_state == future_frame::State::ValueGiven);
         assert(mode == TWIMode::MasterReciever || mode == TWIMode::MasterTransmitter);
+
         m_mode = mode;
         m_in_transmission = true;
 
@@ -190,7 +196,7 @@ class TWIDriver2 {
         cr.bits.START_condition = 1;
         cr.bits.interrupt_flag = 1;
         cr.bits.interupt_enable = 1;
-        TWI0_CR = cr;
+        ControlRegister() = cr;
         return future<void>(&m_frame);
     }
 
@@ -226,11 +232,11 @@ public:
         using namespace details;
 
         if(TWIControlRegister(ControlRegister()).bits.twi_enable) 
-            SerialLogger::print("calling TWIDriver::enable() even though the TWI was already enabled\n");
+            SerialLogger0.print("calling TWIDriver::enable() even though the TWI was already enabled\n");
 
         m_in_transmission = false;
         m_mode = TWIMode::Indeterminate;
-        TWIControlRegister cr;
+        TWIControlRegister cr{0};
         cr.bits.twi_enable = 1;
         ControlRegister() = cr;
     }
@@ -239,7 +245,7 @@ public:
         using namespace details;
 
         if(!TWIControlRegister(ControlRegister()).bits.twi_enable) 
-            SerialLogger::print("calling TWIDriver::disable() even though the TWI was already disabled\n");
+            SerialLogger0.print("calling TWIDriver::disable() even though the TWI was already disabled\n");
 
         m_in_transmission = false;
         m_mode = TWIMode::Indeterminate;
@@ -278,11 +284,11 @@ public:
         m_frame.m_state = future_frame::State::NoValue;
 
         TWIControlRegister cr{0};
-        TWI0_DR = adress | (m_mode == TWIMode::MasterReciever);
+        DataRegister() = adress | (m_mode == TWIMode::MasterReciever);
         cr.bits.twi_enable = 1;
         cr.bits.interrupt_flag = 1;
         cr.bits.interupt_enable = 1;
-        TWI0_CR = cr;
+        ControlRegister() = cr;
 
         return future<void>(&m_frame);
     }
@@ -296,11 +302,11 @@ public:
         m_frame.m_state = future_frame::State::NoValue;
 
         TWIControlRegister cr{0};
-        TWI0_DR = data;
+        DataRegister() = data;
         cr.bits.twi_enable = 1;
         cr.bits.interrupt_flag = 1;
         cr.bits.interupt_enable = 1;
-        TWI0_CR = cr;  
+        ControlRegister() = cr;  
         return future<void>(&m_frame);
     }
 
@@ -318,11 +324,5 @@ extern TWIDriver2<0xB9, 0xB8, 0xBA, 0xBB, 0xBC> TWI2_0;
 #endif
 
 #if TWI1_ENABLED
-static TWIDriver2<0, 0, 0, 0, 0> TWI2_0;
-
-ISR(TWI1_vect) {
-    //SerialLogger::print("*** TWI0 interupt\n");
-    if (!TWIControlRegister(TWI0_CR).bits.interrupt_flag)
-        return;
-}
+extern TWIDriver2<0xD9, 0xD8, 0xDA, 0xDB, 0xDC> TWI2_1;
 #endif
