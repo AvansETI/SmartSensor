@@ -11,11 +11,12 @@
 
 #include <board-support/drivers/UsartDriver.h>
 #include <board-support/drivers/TWIDriver2.h>
-#include "drivers/THSDriver2.h"
+#include "drivers/THSDriver2.h" // HELP: Why driver 2?
 #include "drivers/ALSDriver.h"
 #include "drivers/WemosDriver.h"
 #include "drivers/RTCDriver.h"
 #include "drivers/CO2Driver.h"
+#include "drivers/TPMDriver.h"
 #include <stdio.h>
 
 #define FIRMWARE_VERSION "v0.9"
@@ -35,21 +36,25 @@ volatile unsigned char usart1_buffer[256];
 volatile uint8_t usart1_buffer_read_index = 0;
 volatile uint8_t usart1_buffer_write_index = 0;
 
+// TODO: This is a cyclic buffer that should be implemented by a class?!
 void usart1_buffer_write(unsigned char c) {
     usart1_buffer[usart1_buffer_write_index] = c;
     usart1_buffer_write_index = usart1_buffer_write_index == 0xFF ? 0 : usart1_buffer_write_index + 1;
 }
 
+// TODO: This is a cyclic buffer that should be implemented by a class?!
 bool usart1_buffer_has_data() {
     return usart1_buffer_read_index != usart1_buffer_write_index;
 }
 
+// TODO: This is a cyclic buffer that should be implemented by a class?!
 unsigned usart1_buffer_read() {
     const auto res = usart1_buffer[usart1_buffer_read_index];
     usart1_buffer_read_index = usart1_buffer_read_index == 0xFF ? 0 : usart1_buffer_read_index + 1;
     return res;
 }
 
+// INTERRUPT HANDLING: Recieved byte via the UART1
 ISR(USART1_RX_vect) {
     // HELP: What is happening here? Does it belong to the coordinator?
     //if (is_coordinator) UDR2 = UDR1;
@@ -57,9 +62,10 @@ ISR(USART1_RX_vect) {
     usart1_buffer_write(UDR1);
 }
 
+// INTERRUPT HANDLING: Recieved byte via the UART2
 ISR(USART2_RX_vect) {
     // HELP: What is happening here?
-    UDR1 = UDR2;
+    UDR1 = UDR2; // HELP: Is this correct??
 }
 
 // HELP: What is happening here?
@@ -70,6 +76,8 @@ void xbee_buffer_reset() {
     xbee_buffer_index = 0;
 }
 
+
+// HELP: Explain?!
 void send_to_xbee(const char* msg, uint16_t msg_length) {
 
     auto length = msg_length + 14;
@@ -102,16 +110,19 @@ void send_to_xbee(const char* msg, uint16_t msg_length) {
     Usart1.transmitChar(0xFF - (checksum & 0xFF));
 }
 
+// Method to print a 1 or 0 depending on the boolean value to reduce the memory footprint!
+void serial_print_boolean(bool value) {
+    if (value) SerialLogger0.print("1\n"); else SerialLogger0.print("0\n");
+}
+
+// HELP: Explain?!
 uint8_t read_from_xbee(char *buffer) {
     //while (true) UDR0 = Usart1.receiveChar();
 
     auto debug_byte = []{auto val = Usart1.receiveChar(); /*UDR0 = val;*/ return val; };
 
-    while (debug_byte() != 0x7E);
-    //SerialLogger0.print("in frame\n");
-
-    
-    
+    while (debug_byte() != 0x7E); // HELP: POTENTIAL SECURITY ISSUE!!
+    //SerialLogger0.print("in frame\n");    
 
     uint8_t h = debug_byte();
     uint8_t l = debug_byte();
@@ -140,7 +151,57 @@ uint8_t read_from_xbee(char *buffer) {
 }
 
 int main() {
-    if (is_coordinator) { // send xbee to wemos
+    /* Print the versions to the serial */
+	SerialLogger0.print("SmartSensor ");
+    SerialLogger0.print(BOARD_VERSION);
+    SerialLogger0.print(", Firmware ");
+    SerialLogger0.print(FIRMWARE_VERSION);
+    SerialLogger0.print("\n");
+
+    /* Setup the hardware */
+    TWI2_0.setBitrate(TWI0_SCL_CLOCK);
+    TWI2_1.setBitrate(TWI1_SCL_CLOCK);
+
+    PinManager::set_mode(CO2_INT_PIN, INPUT);
+    //PinManager::set_mode(CO2_ENABLE_PIN, OUTPUT); // NOT USED ANYMORE
+    PinManager::set_mode(CO2_WAKE_PIN, OUTPUT);
+
+    //PinManager::set_mode(LS_ENABLE_PIN, OUTPUT); // NOT USED ANYMORE
+    //PinManager::set_mode(THS_ENABLE_PIN, OUTPUT); // NOT USED ANYMORE
+
+    // HELP: What is this?
+    PinManager::set_mode(ATM_MOSI_PIN, OUTPUT);
+    PinManager::digital_write(ATM_MOSI_PIN, HIGH);
+    PinManager::set_mode(ATM_MISO_PIN, OUTPUT);
+    PinManager::digital_write(ATM_MISO_PIN, HIGH);
+      
+    //PinManager::set_mode(XBEE_ENABLE_PIN, OUTPUT); // NOT USED ANYMORE
+    //PinManager::digital_write(XBEE_ENABLE_PIN, LOW); // NOT USED ANYMORE
+    // HELP: What is this? It looks like communication with XBee_D18?! 
+    PinManager::set_mode(PinPortA0, OUTPUT);
+    PinManager::digital_write(PinPortA0, LOW);
+
+    PinManager::set_mode(XBEE_SLEEP_PIN, INPUT); // HELP: INPUT? What is this then?
+    //PinManager::set_mode(XBEE_SS_PIN, OUTPUT); // Why not?
+
+    PinManager::set_mode(STATUS_LED_1_PIN, OUTPUT);
+
+    //_delay_ms(1000);
+    //PinManager::digital_write(CO2_ENABLE_PIN, HIGH); // NOT USED ANYMORE
+    PinManager::digital_write(CO2_WAKE_PIN, HIGH);
+
+    //PinManager::digital_write(LS_ENABLE_PIN, HIGH); // NOT USED ANYMORE
+    //PinManager::digital_write(THS_ENABLE_PIN, LOW); // NOT USED ANYMORE
+
+    /* Blink led for one second to show it is started. */
+    PinManager::digital_write(STATUS_LED_1_PIN, LOW);
+    _delay_ms(1000);
+    PinManager::digital_write(STATUS_LED_1_PIN, HIGH);
+    _delay_ms(1000);
+
+    // HELP: What is this?
+    // TODO: Logic to detect wheter the software required to be a coordinator.
+    if (is_coordinator) { // send xbee to wemos (HELP: What do you mean?)
         UCSR1B = 0b1001'1000;
         UCSR2B = 0b1001'1000;
         while (true);
@@ -149,85 +210,56 @@ int main() {
         //UCSR1B = 0b1001'1000;
     }
 
-    /* Print the versions to the serial */
-	SerialLogger0.print("SmartSensor ");
-    SerialLogger0.print(BOARD_VERSION);
-    SerialLogger0.print(", Firmware ");
-    SerialLogger0.print(FIRMWARE_VERSION);
-    SerialLogger0.print("\n");
-
     // HELP: What is this?
     /*PRR0 = 0b1000'0000;
     PRR1 = 0;
     PRR2 = 0;*/
-
-    TWI2_0.setBitrate(TWI0_SCL_CLOCK);
-    //TWI2_1.setBitrate(TWI1_SCL_CLOCK); // HELP: What is this?
-
-    PinManager::set_mode(CO2_INT_PIN, INPUT);
-    PinManager::set_mode(CO2_ENABLE_PIN, OUTPUT);
-    PinManager::set_mode(CO2_WAKE_PIN, OUTPUT);
-
-    PinManager::set_mode(LS_ENABLE_PIN, OUTPUT);
-    PinManager::set_mode(THS_ENABLE_PIN, OUTPUT);
-
-    PinManager::set_mode(ATM_MOSI_PIN, OUTPUT);
-    PinManager::digital_write(ATM_MOSI_PIN, HIGH);
-    PinManager::set_mode(ATM_MISO_PIN, OUTPUT);
-    PinManager::digital_write(ATM_MISO_PIN, HIGH);
-    
-    PinManager::digital_write(XBEE_ENABLE_PIN, LOW);
-    PinManager::set_mode(XBEE_ENABLE_PIN, OUTPUT);
-    PinManager::set_mode(PinPortA0, OUTPUT);
-    PinManager::digital_write(PinPortA0, LOW);
-    //PinManager::digital_write(XBEE_ENABLE_PIN, LOW);
-
-    PinManager::set_mode(XBEE_SLEEP_PIN, INPUT);
-    //PinManager::set_mode(XBEE_SS_PIN, OUTPUT);
-
-    PinManager::set_mode(STATUS_LED_1_PIN, OUTPUT);
-
-    //_delay_ms(1000);
-    PinManager::digital_write(CO2_ENABLE_PIN, HIGH);
-    PinManager::digital_write(CO2_WAKE_PIN, HIGH);
-
-    PinManager::digital_write(LS_ENABLE_PIN, HIGH);
-    PinManager::digital_write(THS_ENABLE_PIN, LOW);
-
-
     
     //PinManager::digital_write(XBEE_SLEEP_PIN, LOW);
     //PinManager::digital_write(XBEE_SS_PIN, HIGH);
+    /* Is not used any more!
     _delay_ms(1);
     PinManager::digital_write(XBEE_ENABLE_PIN, LOW);
     _delay_ms(1);
+    */
 
-    PinManager::digital_write(CO2_WAKE_PIN, HIGH);
+    //PinManager::digital_write(CO2_WAKE_PIN, HIGH); // HELP: ALREADY SET HIGH!
 
     //PinManager::digital_write(XBEE_SLEEP_PIN, LOW);
 
-    _delay_ms(1000);
+    //_delay_ms(1000); // HELP: Already waited to blink the led!
 
-    SerialLogger0.print("Initialized\n");
-    _delay_ms(10);
+    //SerialLogger0.print("Initialized\n");
+    //_delay_ms(10);
+
+    /* Enable the interrupts */
     sei();
-    SerialLogger0.print("Interupts enabled\n");
+    //SerialLogger0.print("Interupts enabled\n");
     _delay_ms(10);
 
     //SerialLogger0.printf("res := %d\n", (int)res);
-    if (RTC.isConnected()) SerialLogger0.print("able to select RTC\n"); else SerialLogger0.print("unable to select RTC\n");
+    /* Perform hardware check! */
+    SerialLogger0.print("RTC:");
+    serial_print_boolean(RTC.isConnected());
     _delay_ms(1);
 
-    if (RTC.startClock()) SerialLogger0.print("able to start clock\n"); else SerialLogger0.print("unable to start clock\n");
+    SerialLogger0.print("CLOCK:");
+    serial_print_boolean(RTC.startClock());
     _delay_ms(1);
 
-    if (THS.isConnected()) SerialLogger0.print("able to select THS\n"); else SerialLogger0.print("unable to select THS\n");
+    SerialLogger0.print("THS:");
+    serial_print_boolean(THS.isConnected());
     _delay_ms(1);
 
-    if (ALS.isConnected()) ALS.setupSensor(), SerialLogger0.print("able to select ALS\n"); else SerialLogger0.print("unable to select ALS\n");
+    SerialLogger0.print("ALS:");
+    serial_print_boolean(ALS.isConnected());
+    ALS.setupSensor();
     _delay_ms(1);
 
-    if (TWI2_0.start(TWIMode::MasterTransmitter).wait().get()) if (TWI2_0.select(TWI_TPM_ADDRESS).wait().get()) TWI2_0.stop(), TWI2_0.disable(), SerialLogger0.print("able to select TPM\n"); else TWI2_0.stop(), TWI2_0.disable(), SerialLogger0.print("unable to select TPM\n");
+    // HELP: What is this? Why not created a lib for this like the rest TPMDriver?! Lazy?
+    SerialLogger0.print("TPM:");
+    serial_print_boolean(TPM.isConnected());
+    TPM.setup();
     _delay_ms(1);
 
     //PinManager::digital_write(CO2_WAKE_PIN, LOW);

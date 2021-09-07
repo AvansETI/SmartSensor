@@ -97,7 +97,7 @@
 /**
  * TWI1 SCL Clock in Hz
  */
-#define TWI1_SCL_CLOCK          10'000UL
+#define TWI1_SCL_CLOCK          100'000UL
 
 /**
  * Digital Driver
