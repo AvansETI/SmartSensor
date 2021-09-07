@@ -83,14 +83,14 @@ optional<THSDriver2::measurement> THSDriver2::takeMeasurement() {
     TWI2_0.disable();
 
     if (checksum_mismatch) {
-        SerialLogger::print("checksum mismatch\n");
+        SerialLogger0.print("THS checksum mismatch\n");
         return {};
     }
 
     const auto relative_humidity = 100 * float(avg_humidity/num_samples) / 65536.0f;
     const auto tempature = 175 * float(avg_temperature/num_samples) / 65536.0f - 45.0f;
 
-    SerialLogger::printf("relative_humidity := %f, tempature := %f\n", relative_humidity, tempature);
+    //SerialLogger0.printf("relative_humidity := %f, tempature := %f\n", relative_humidity, tempature);
 
     return {{tempature, relative_humidity}};
 }

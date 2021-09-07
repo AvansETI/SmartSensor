@@ -21,7 +21,7 @@ XBeeData::XBeeData(float temperature, float humidity, float illuminance) {
 }
 
 void XBeeData::initialize_packet() {
-	SerialLogger::printf("{\"temperature\": %f,\"humidity\": %f,\"illuminance\": %f }\n", this->m_temperature, this->m_humidity, this->m_illuminance);
+	SerialLogger0.printf("{\"temperature\": %f,\"humidity\": %f,\"illuminance\": %f }\n", this->m_temperature, this->m_humidity, this->m_illuminance);
 
 
 

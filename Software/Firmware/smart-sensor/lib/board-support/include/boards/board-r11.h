@@ -27,13 +27,12 @@
 #define TWI0_CR                 TWCR0       // TWI Control Register 0 [TWINT[7](interrupt flag), TWEA[6](enable acknowledge), TWSTA[5](START condition), TWSTO[4](STOP condition), TWWC[3](write collision flag), TWEN[2](TWI enable), -[1], TWIE[0](interurupt enable)]
 
 // TWI1
-#define TWI1_ENABLED            0
+#define TWI1_ENABLED            1
 #define TWI1_SR                 TWSR1       // TWI Status Register 0 [TWS7[7], TWS6[6], TWS5[5], TWS4[4], TWS3[3], -[2], TWPS[1:0](prescaler)]
 #define TWI1_BR                 TWBR1       // TWI Bit Rate Register 0 [TWBR[7:0]]
 #define TWI1_PA                 TWAR1       // TWI Peripheral Adress Register 0 [TWA[7:1](peripheral adress), TWGCE[0](general call enable)]
-#define TWI1_CR                 TWCR1       // TWI Data Register 0 [TWD[7:0](data)]
 #define TWI1_DR                 TWDR1       // TWI Control Register 0 [TWINT[7](interrupt flag), TWEA[6](enable acknowledge), TWSTA[5](START condition), TWSTO[4](STOP condition), TWWC[3](write collision flag), TWEN[2](TWI enable), -[1], TWIE[0](interurupt enable)]
-
+#define TWI1_CR                 TWCR1       // TWI Data Register 0 [TWD[7:0](data)]
 
 /**
  * USART Configuration

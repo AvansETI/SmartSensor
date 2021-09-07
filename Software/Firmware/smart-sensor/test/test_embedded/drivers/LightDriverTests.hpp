@@ -9,65 +9,65 @@ namespace test_drivers_LightDriverTests {
 
     void test_LightDriver_begin() {
         TEST_ASSERT_TRUE(lightDriver.begin());
-        SerialLogger::debug("LightDriver initialized");
+        SerialLogger0.debug("LightDriver initialized");
     }
 
     void test_LightDriver_enableInterrupts() {
         TEST_ASSERT_TRUE(lightDriver.set_interrupts(true))
-        SerialLogger::debug("Enabled interrupts");
+        SerialLogger0.debug("Enabled interrupts");
     }
 
     void test_LightDriver_disableInterrupts() {
         TEST_ASSERT_TRUE(lightDriver.set_interrupts(false))
-        SerialLogger::debug("Disabled interrupts");
+        SerialLogger0.debug("Disabled interrupts");
     }
 
     void test_LightDriver_enablePower() {
         TEST_ASSERT_TRUE(lightDriver.set_power(true))
-        SerialLogger::debug("Turned power on");
+        SerialLogger0.debug("Turned power on");
     }
 
     void test_LightDriver_disablePower() {
         TEST_ASSERT_TRUE(lightDriver.set_power(false))
-        SerialLogger::debug("Turned power off");
+        SerialLogger0.debug("Turned power off");
     }
 
     void test_LightDriver_enablePowerSaving() {
         TEST_ASSERT_TRUE(lightDriver.set_power_saving(true))
-        SerialLogger::debug("Enabled power saving");
+        SerialLogger0.debug("Enabled power saving");
     }
 
     void test_LightDriver_disablePowerSaving() {
         TEST_ASSERT_TRUE(lightDriver.set_power_saving(false))
-        SerialLogger::debug("Disabled power saving");
+        SerialLogger0.debug("Disabled power saving");
     }
 
     void test_LightDriver_getALS() {
         uint16_t als;
         TEST_ASSERT_TRUE(lightDriver.get_als(als))
-        SerialLogger::debug("Retrieved ALS");
-        SerialLogger::debugf("ALS: %d", als);
+        SerialLogger0.debug("Retrieved ALS");
+        SerialLogger0.debugf("ALS: %d", als);
     }
 
     void test_LightDriver_getALSLux() {
         float lux;
         TEST_ASSERT_TRUE(lightDriver.get_als_lux(lux))
-        SerialLogger::debug("Retrieved ALS Lux");
-        SerialLogger::debugf("Lux: %f", lux);
+        SerialLogger0.debug("Retrieved ALS Lux");
+        SerialLogger0.debugf("Lux: %f", lux);
     }
 
     void test_LightDriver_getWhite() {
         uint16_t white;
         TEST_ASSERT_TRUE(lightDriver.get_white(white))
-        SerialLogger::debug("Retrieved White");
-        SerialLogger::debugf("White: %d", white);
+        SerialLogger0.debug("Retrieved White");
+        SerialLogger0.debugf("White: %d", white);
     }
 
     void test_LightDriver_getWhiteLux() {
         float lux;
         TEST_ASSERT_TRUE(lightDriver.get_white_lux(lux))
-        SerialLogger::debug("Retrieved White Lux");
-        SerialLogger::debugf("Lux: %f", lux);
+        SerialLogger0.debug("Retrieved White Lux");
+        SerialLogger0.debugf("Lux: %f", lux);
     }
 
     void test_LightDriver_setGain() {
@@ -120,30 +120,30 @@ namespace test_drivers_LightDriverTests {
 
     void test_LightDriver_setPersistence() {
         TEST_ASSERT_TRUE(lightDriver.set_persistence(LightDriver::ALS_PERSISTENCE_2))
-        SerialLogger::debug("Persistence changed to ALS_PERSISTENCE_2");
+        SerialLogger0.debug("Persistence changed to ALS_PERSISTENCE_2");
 
         TEST_ASSERT_TRUE(lightDriver.set_persistence(LightDriver::ALS_PERSISTENCE_4))
-        SerialLogger::debug("Persistence changed to ALS_PERSISTENCE_4");
+        SerialLogger0.debug("Persistence changed to ALS_PERSISTENCE_4");
 
         TEST_ASSERT_TRUE(lightDriver.set_persistence(LightDriver::ALS_PERSISTENCE_8))
-        SerialLogger::debug("Persistence changed to ALS_PERSISTENCE_8");
+        SerialLogger0.debug("Persistence changed to ALS_PERSISTENCE_8");
 
         TEST_ASSERT_TRUE(lightDriver.set_persistence(LightDriver::ALS_PERSISTENCE_1))
-        SerialLogger::debug("Persistence changed to ALS_PERSISTENCE_1");
+        SerialLogger0.debug("Persistence changed to ALS_PERSISTENCE_1");
     }
 
     void test_LightDriver_setPowerSavingMode() {
         TEST_ASSERT_TRUE(lightDriver.set_power_saving_mode(LightDriver::ALS_POWER_MODE_1))
-        SerialLogger::debug("Power saving mode changed to ALS_POWER_MODE_1");
+        SerialLogger0.debug("Power saving mode changed to ALS_POWER_MODE_1");
 
         TEST_ASSERT_TRUE(lightDriver.set_power_saving_mode(LightDriver::ALS_POWER_MODE_2))
-        SerialLogger::debug("Power saving mode changed to ALS_POWER_MODE_2");
+        SerialLogger0.debug("Power saving mode changed to ALS_POWER_MODE_2");
 
         TEST_ASSERT_TRUE(lightDriver.set_power_saving_mode(LightDriver::ALS_POWER_MODE_3))
-        SerialLogger::debug("Power saving mode changed to ALS_POWER_MODE_3");
+        SerialLogger0.debug("Power saving mode changed to ALS_POWER_MODE_3");
 
         TEST_ASSERT_TRUE(lightDriver.set_power_saving_mode(LightDriver::ALS_POWER_MODE_4))
-        SerialLogger::debug("Power saving mode changed to ALS_POWER_MODE_4");
+        SerialLogger0.debug("Power saving mode changed to ALS_POWER_MODE_4");
     }
 
     void run() {

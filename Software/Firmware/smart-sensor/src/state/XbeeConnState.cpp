@@ -21,7 +21,7 @@ XbeeConnState::XbeeConnState(StateMachine *s_machine) : State(s_machine) {
 
 void XbeeConnState::init() {
 	#if defined(DEBUG_LOG)
-    SerialLogger::debug("- [XBEE] - initing XBEE");
+    SerialLogger0.debug("- [XBEE] - initing XBEE");
 	#endif
 }
 
@@ -32,7 +32,7 @@ void XbeeConnState::update() {
     PinManager::digital_write(STATUS_LED_1_PIN, LOW);
 
 
-	//SerialLogger::debug("- [XBEE] - In the XBEE state update loop");
+	//SerialLogger0.debug("- [XBEE] - In the XBEE state update loop");
 	
 
 	XBeeData data = XBeeData(20.0f, 15.0f, 600.0f);

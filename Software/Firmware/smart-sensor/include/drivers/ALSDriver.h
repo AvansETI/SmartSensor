@@ -1,10 +1,15 @@
 #pragma once
 
+#include <board-support/drivers/TWIDriver2.h>
+
 class ALSDriver {
     public:
 
+    //ADD settings and proper conversions
+
     bool isConnected();
-    void takeMeasurement();
+    void setupSensor();
+    optional<float> takeMeasurement();
 };
 
 extern ALSDriver ALS;

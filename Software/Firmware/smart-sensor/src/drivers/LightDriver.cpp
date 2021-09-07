@@ -184,14 +184,14 @@ bool LightDriver::get_white_lux(float &lux) {
 bool LightDriver::send_data(uint8_t command, uint16_t data) {
     if (!twi_start()) {
 		#if defined(DEBUG_LOG)
-        SerialLogger::error("[Light]: TWI Unavailable (send_data)");
+        SerialLogger0.error("[Light]: TWI Unavailable (send_data)");
 		#endif
         return false;
     }
 
     if (!twi_select(TWI_ALS_ADDRESS, Write)) {
 		#if defined(DEBUG_LOG)
-        SerialLogger::error("[Light]: Failed to request measurement (send_data)");
+        SerialLogger0.error("[Light]: Failed to request measurement (send_data)");
 		#endif
         twi_stop();
         return false;
@@ -206,14 +206,14 @@ bool LightDriver::send_data(uint8_t command, uint16_t data) {
 bool LightDriver::get_data(uint8_t command, uint16_t &data) {
     if (!twi_start()) {
 		#if defined(DEBUG_LOG)
-        SerialLogger::error("[Light]: TWI Unavailable (get_data)");
+        SerialLogger0.error("[Light]: TWI Unavailable (get_data)");
 		#endif
         return false;
     }
 
     if (!twi_select(TWI_ALS_ADDRESS, Write)) {
 		#if defined(DEBUG_LOG)
-        SerialLogger::error("[Light]: Failed to request measurement (get_data write)");
+        SerialLogger0.error("[Light]: Failed to request measurement (get_data write)");
 		#endif
         twi_stop();
         return false;
@@ -224,14 +224,14 @@ bool LightDriver::get_data(uint8_t command, uint16_t &data) {
 
     if (!twi_start()) {
 		#if defined(DEBUG_LOG)
-        SerialLogger::error("[Light]: TWI Unavailable (get_data)");
+        SerialLogger0.error("[Light]: TWI Unavailable (get_data)");
 		#endif
         return false;
     }
 
     if (!twi_select(TWI_ALS_ADDRESS, Read)) {
 		#if defined(DEBUG_LOG)
-        SerialLogger::error("[Light]: Failed to request measurement (get_data read)");
+        SerialLogger0.error("[Light]: Failed to request measurement (get_data read)");
 		#endif
         twi_stop();
         return false;

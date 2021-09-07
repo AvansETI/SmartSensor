@@ -1,9 +1,11 @@
 #include "board-support/util/SerialLogger.h"
 #include "board-support/drivers/UsartDriver.h"
 
+SerialLogger::SerialLogger(UsartDriver& driver) : m_driver(driver) {}
+
 void SerialLogger::print(const char* message) {
     while (*message) {
-        Usart0.transmitChar(*message++);
+        m_driver.transmitChar(*message++);
     }
 }
 
@@ -18,7 +20,7 @@ void SerialLogger::info(const char *message) {
 #if LOGGER_LEVEL >= 1
     print("[INFO] ");
     print(message);
-    Usart0.transmitChar('\n');
+    m_driver.transmitChar('\n');
 #endif
 }
 
@@ -36,7 +38,7 @@ void SerialLogger::warn(const char* message) {
 #if LOGGER_LEVEL >= 2
     print("\033[1;33m[WARN]\033[0m ");
     print(message);
-    Usart0.transmitChar('\n');
+    m_driver.transmitChar('\n');
 #endif
 }
 
@@ -54,7 +56,7 @@ void SerialLogger::debug(const char* message) {
 #if LOGGER_LEVEL >= 3
     print("\033[1;34m[DEBU]\033[0m ");
     print(message);
-    Usart0.transmitChar('\n');
+    m_driver.transmitChar('\n');
 #endif
 }
 
@@ -73,7 +75,7 @@ void SerialLogger::error(const char* message) {
     //print("\033[1;31m[ERRO]\033[0m ");
     print("[1;31m[ERRO][0m ");
     print(message);
-    Usart0.transmitChar('\n');
+    m_driver.transmitChar('\n');
 #endif
 }
 
@@ -110,41 +112,41 @@ void SerialLogger::vprintf(const char* format, va_list arg_p) {
                     v_int16 = va_arg(arg_p, signed int);
                     if (v_int16 < 0) {
                         v_int16 = -v_int16;
-                        Usart0.transmitChar('-');
+                        m_driver.transmitChar('-');
                     }
-                    Usart0.transmitNumber(UsartDriver::DECIMAL, v_int16, 0xffu);
+                    m_driver.transmitNumber(UsartDriver::DECIMAL, v_int16, 0xffu);
                     break;
                 case 'x':
                     v_uint16 = va_arg(arg_p, uint16_t);
-                    Usart0.transmitNumber(UsartDriver::HEX, v_uint16, 2);
+                    m_driver.transmitNumber(UsartDriver::HEX, v_uint16, 2);
                     break;
                 case 'u':
                     v_uint16 = va_arg(arg_p, uint16_t);
-                    Usart0.transmitNumber(UsartDriver::DECIMAL, v_uint16, 0xffu);
+                    m_driver.transmitNumber(UsartDriver::DECIMAL, v_uint16, 0xffu);
                     break;
                 case 'b':  /* Argument type is of binary,Read int and convert to binary */
                     v_uint16 = va_arg(arg_p, uint16_t);
 
-                    Usart0.transmitNumber(UsartDriver::BINARY, v_uint16, 8);
+                    m_driver.transmitNumber(UsartDriver::BINARY, v_uint16, 8);
                     break;
                 case 'c':
                     ch = va_arg(arg_p, int);
-                    Usart0.transmitChar(ch);
+                    m_driver.transmitChar(ch);
                     break;
                 case 'f':
                     v_float32 = va_arg(arg_p, double);
-                    Usart0.transmitFloat(v_float32);
+                    m_driver.transmitFloat(v_float32);
                     break;
                 case 's':
                     v_str = va_arg(arg_p, char*);
                     print(v_str);
                     break;
                 case '%':
-                    Usart0.transmitChar('%');
+                    m_driver.transmitChar('%');
                     break;
             }
         } else {
-            Usart0.transmitChar(ch);
+            m_driver.transmitChar(ch);
         }
     }
 }

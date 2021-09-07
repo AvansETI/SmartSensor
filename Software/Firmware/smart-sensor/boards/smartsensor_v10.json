@@ -1,0 +1,16 @@
+{
+    "build": {
+      "extra_flags": "-DHELLO_PLATFORMIO",
+      "f_cpu": "20000000L",
+      "mcu": "atmega324pb"
+    },
+    "frameworks": [],
+    "platforms": ["atmelavr"],
+    "name": "smartsensor_v10",
+    "upload": {
+      "maximum_ram_size": 2000,
+      "maximum_size": 32000
+    },
+    "url": "https://www.avans.nl",
+    "vendor": "Avans"
+  }

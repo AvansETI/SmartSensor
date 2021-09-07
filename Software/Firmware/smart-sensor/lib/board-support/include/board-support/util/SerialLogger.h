@@ -2,6 +2,7 @@
 #define SERIAL_LOGGER_H_
 
 #include <boardsupport.h>
+#include <board-support/drivers/UsartDriver.h>
 
 #ifndef LOGGER_LEVEL
 /**
@@ -14,12 +15,18 @@
 #endif
 
 class SerialLogger {
+    UsartDriver& m_driver;
+
     public:
+        SerialLogger(UsartDriver& driver);
+        SerialLogger() = delete;
+        SerialLogger(const SerialLogger&) = delete;
+
         /**
          * Print message
          * @param message Message to print
          */
-        static void print(const char* message);
+        void print(const char* message);
 
         /**
          * Print formatted message
@@ -27,14 +34,14 @@ class SerialLogger {
          * @param message Message to print
          * @param format Format that gets applied to the message
          */
-        static void printf(const char* format, ...);
+        void printf(const char* format, ...);
 
         /**
          * Print information message
          *
          * @param message Message to print
          */
-        static void info(const char* message);
+        void info(const char* message);
 
         /**
          * Print formatted information message
@@ -42,14 +49,14 @@ class SerialLogger {
          * @param message Message to print
          * @param format Format that gets applied to the message
          */
-        static void infof(const char* format, ...);
+        void infof(const char* format, ...);
 
         /**
          * Print warning message
          *
          * @param message Message to print
          */
-        static void warn(const char* message);
+        void warn(const char* message);
 
         /**
          * Print formatted warning message
@@ -57,14 +64,14 @@ class SerialLogger {
          * @param message Message to print
          * @param format Format that gets applied to the message
          */
-        static void warnf(const char* format, ...);
+        void warnf(const char* format, ...);
 
         /**
          * Print debug message
          *
          * @param message Message to print
          */
-        static void debug(const char* message);
+        void debug(const char* message);
 
         /**
          * Print formatted debug message
@@ -72,14 +79,14 @@ class SerialLogger {
          * @param message Message to print
          * @param format Format that gets applied to the message
          */
-        static void debugf(const char* format, ...);
+        void debugf(const char* format, ...);
 
         /**
          * Print error message
          *
          * @param message Message to print
          */
-        static void error(const char* message);
+        void error(const char* message);
 
         /**
          * Print formatted error message
@@ -87,10 +94,23 @@ class SerialLogger {
          * @param message Message to print
          * @param format Format that gets applied to the message
          */
-        static void errorf(const char* format, ...);
+        void errorf(const char* format, ...);
 
     private:
-        static void vprintf(const char* format, va_list args);
+        void vprintf(const char* format, va_list args);
 };
+
+
+#if USART0_ENABLED
+static SerialLogger SerialLogger0{Usart0};
+#endif
+
+#if USART1_ENABLED
+static SerialLogger SerialLogger1{Usart1};
+#endif
+
+#if USART2_ENABLED
+static SerialLogger SerialLogger2{Usart2};
+#endif
 
 #endif
