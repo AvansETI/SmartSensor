@@ -1,7 +1,7 @@
 /**
  * Entry point of the application
  * @date 12 May 2020
- * @author Patrick de Jong, Paul Hobbel, Sergen Peker, Carlos Cadel
+ * @author Patrick de Jong, Paul Hobbel, Sergen Peker, Carlos Cadel, Floris Bob van Elzelingen, Maurice Snoeren
  */
 #ifndef UNIT_TEST
 #include <boardsupport.h>
@@ -18,10 +18,17 @@
 #include "drivers/CO2Driver.h"
 #include <stdio.h>
 
+#define FIRMWARE_VERSION "v0.9"
+
+// Hard coded coordinator variable to select the required functionality
+// TODO: The software needs to detect this automatically
 volatile bool is_coordinator = false;
 
+// The unique sensor ID that should be taken from the TPM chip
+// TODO: The software needs to get a unique ID based on the hardware automatically
 optional<int16_t> sensor_id{1};
 
+// HELP: I do not know what this is?!
 volatile char bitbuffer = 0;
 
 volatile unsigned char usart1_buffer[256];
@@ -44,15 +51,18 @@ unsigned usart1_buffer_read() {
 }
 
 ISR(USART1_RX_vect) {
+    // HELP: What is happening here? Does it belong to the coordinator?
     //if (is_coordinator) UDR2 = UDR1;
     //else usart1_buffer_write(UDR1);
     usart1_buffer_write(UDR1);
 }
 
 ISR(USART2_RX_vect) {
+    // HELP: What is happening here?
     UDR1 = UDR2;
 }
 
+// HELP: What is happening here?
 char xbee_buffer[512];
 uint16_t xbee_buffer_index = 0;
 
@@ -135,19 +145,24 @@ int main() {
         UCSR2B = 0b1001'1000;
         while (true);
     } else {
+        // HELP: What is this?
         //UCSR1B = 0b1001'1000;
     }
 
-	//SerialLogger0.print("===========================================\n\nStarting Smart Sensor\n\n===========================================\n");
+    /* Print the versions to the serial */
+	SerialLogger0.print("SmartSensor ");
+    SerialLogger0.print(BOARD_VERSION);
+    SerialLogger0.print(", Firmware ");
+    SerialLogger0.print(FIRMWARE_VERSION);
+    SerialLogger0.print("\n");
 
-	//SerialLogger0.print("Initializing...\n");
-
+    // HELP: What is this?
     /*PRR0 = 0b1000'0000;
     PRR1 = 0;
     PRR2 = 0;*/
 
     TWI2_0.setBitrate(TWI0_SCL_CLOCK);
-    //TWI2_1.setBitrate(TWI1_SCL_CLOCK);
+    //TWI2_1.setBitrate(TWI1_SCL_CLOCK); // HELP: What is this?
 
     PinManager::set_mode(CO2_INT_PIN, INPUT);
     PinManager::set_mode(CO2_ENABLE_PIN, OUTPUT);

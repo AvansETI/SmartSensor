@@ -9,6 +9,11 @@
 #include <board-support/util/PinPort.h>
 
 /**
+ * Board version information
+ */
+#define BOARD_VERSION          "v0.3"
+
+/**
  * TWI Configuration
  */
 #define TWI_RTC_ADDRESS         0xDC        // Real-time Clock (MCP7940N)
