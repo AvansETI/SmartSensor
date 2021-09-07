@@ -44,7 +44,7 @@
 /**
  * Whether USART1 should be enabled
  */
-#define USART1_ENABLED          0
+#define USART1_ENABLED          1
 
 /**
  * Baud rate for USART1
@@ -90,14 +90,14 @@
 /**
  * TWI0 SCL Clock in Hz
  */
-#define TWI0_SCL_CLOCK          200000UL
+#define TWI0_SCL_CLOCK          100'000UL
 
 #define TWI1_ENABLED            0
 
 /**
  * TWI1 SCL Clock in Hz
  */
-#define TWI1_SCL_CLOCK          200000UL
+#define TWI1_SCL_CLOCK          100'000UL
 
 /**
  * Digital Driver
@@ -119,6 +119,8 @@
     #include "boards/board-r03.h"
 #elif defined(BOARD_REVISION_10)
     #include "boards/board-r10.h"
+#elif defined(BOARD_REVISION_11)
+    #include "boards/board-r11.h"
 #else
     #error "No supported board revision was defined!"
 #endif

@@ -12,8 +12,7 @@
 /**
  * TWI Configuration
  */
-//#define TWI_RTC_ADDRESS         0xDC        // Real-time Clock (MCP7940N) => OLD FROM MAURICE
-#define TWI_RTC_ADDRESS         0xDE        // Real-time Clock (MCP7940N) => NEW FROM FLOBO
+#define TWI_RTC_ADDRESS         0xDE        // Real-time Clock (MCP7940N)
 #define TWI_THS_ADDRESS         0xE0        // Temperature and Humidity Sensor (SHTC3)
 #define TWI_ALS_ADDRESS         0x20        // Ambient Light Sensor (VEML7700)
 #define TWI_CO2_ADDRESS         0xB4        // CO2 Sensor (CCS811)
