@@ -6,7 +6,8 @@
 #include "ArduinoJson-v6.18.0.h"
 
 //Sendlab netwerk ww: SENDLAB / SEnDLab@LA121
-
+// MS: No comments at all and very difficult written code!
+// MS: No feedback implemented?
 WiFiClient espClient;
 PubSubClient client(espClient);
 

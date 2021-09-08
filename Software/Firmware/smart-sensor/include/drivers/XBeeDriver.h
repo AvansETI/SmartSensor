@@ -7,6 +7,11 @@
 class XBeeDriver {
     public:
         /**
+         * Setup the XBee chip to function proparly
+         */
+        static void setup();
+
+        /**
          * Sends data to the XBee to send using the ZigBee protocol
          *
          * @param data Data to send

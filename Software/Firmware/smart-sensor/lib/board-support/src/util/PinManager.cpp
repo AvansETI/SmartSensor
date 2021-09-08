@@ -22,6 +22,7 @@ void PinManager::set_mode(PinPort pin, PinMode mode) {
         PinUtil::get_ddr_address(pin) &= ~(1u << pin_number);
     }
 
+    // BUG: set_mode should not write a value to a pin! That should be done by the main application!
     digital_write(pin, LOW);
 }
 
@@ -32,9 +33,10 @@ void PinManager::digital_write(PinPort port, DigitalValues value) {
     uint8_t port_number = PinUtil::get_number(port);
 
     if (DigitalValues::HIGH == value) {
-        address &= ~(1u << port_number);
-    } else {
         address |= (1u << port_number);
+
+    } else {
+        address &= ~(1u << port_number);
     }
 }
 

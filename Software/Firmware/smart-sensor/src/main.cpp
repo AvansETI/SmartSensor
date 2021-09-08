@@ -3,6 +3,7 @@
  * @date 12 May 2020
  * @author Patrick de Jong, Paul Hobbel, Sergen Peker, Carlos Cadel, Floris Bob van Elzelingen, Maurice Snoeren
  */
+
 #ifndef UNIT_TEST
 #include <boardsupport.h>
 #include <board-support/drivers/TWIDriver.h>
@@ -69,6 +70,7 @@ ISR(USART2_RX_vect) {
 }
 
 // HELP: What is happening here?
+// HELP: this belongs to the XBee driver? And in fact to the communication class!
 char xbee_buffer[512];
 uint16_t xbee_buffer_index = 0;
 
@@ -193,9 +195,13 @@ int main() {
     //PinManager::digital_write(LS_ENABLE_PIN, HIGH); // NOT USED ANYMORE
     //PinManager::digital_write(THS_ENABLE_PIN, LOW); // NOT USED ANYMORE
 
-    /* Blink led for one second to show it is started. */
+    /* Blink led for one second and a flash to show it has been started. */
     PinManager::digital_write(STATUS_LED_1_PIN, LOW);
     _delay_ms(1000);
+    PinManager::digital_write(STATUS_LED_1_PIN, HIGH);
+    _delay_ms(1000);
+    PinManager::digital_write(STATUS_LED_1_PIN, LOW);
+    _delay_ms(100);
     PinManager::digital_write(STATUS_LED_1_PIN, HIGH);
     _delay_ms(1000);
 
@@ -204,7 +210,7 @@ int main() {
     if (is_coordinator) { // send xbee to wemos (HELP: What do you mean?)
         UCSR1B = 0b1001'1000;
         UCSR2B = 0b1001'1000;
-        while (true);
+        while (true); //HELP: ??
     } else {
         // HELP: What is this?
         //UCSR1B = 0b1001'1000;
@@ -234,10 +240,8 @@ int main() {
 
     /* Enable the interrupts */
     sei();
-    //SerialLogger0.print("Interupts enabled\n");
     _delay_ms(10);
 
-    //SerialLogger0.printf("res := %d\n", (int)res);
     /* Perform hardware check! */
     SerialLogger0.print("RTC:");
     serial_print_boolean(RTC.isConnected());
@@ -262,12 +266,12 @@ int main() {
     TPM.setup();
     _delay_ms(1);
 
-    //PinManager::digital_write(CO2_WAKE_PIN, LOW);
-    //_delay_us(100); // should be 50
-    if (CO2.isConnected()) CO2.setupSensor(), SerialLogger0.print("able to select CO2\n"); else SerialLogger0.print("unable to select CO2\n");
-    //PinManager::digital_write(CO2_WAKE_PIN, HIGH);
+    SerialLogger0.print("CO2:");
+    serial_print_boolean(CO2.isConnected());
+    CO2.setupSensor();
     _delay_ms(1);
 
+    // HELP: Below debug code?!
     //TWI2_0.start().wait().get();
     
     /*while (true) {
@@ -300,17 +304,20 @@ int main() {
         SerialLogger0.print("\n");
     }*/
 
+    // HELP: ?!
     bool flip = false;
 
+    // HELP: ?!
     uint8_t data_to_write = 1;
 
     /*while (!sensor_id) {
         SerialLogger1.printf("{ \"")
     }*/
 
+    // HELP: does it belong to the XBee driver?!
     xbee_buffer_reset();
 
-    _delay_ms(2000);
+    //_delay_ms(2000); // MS: A lot of delay!
     /*PinManager::digital_write(PinPortA0, HIGH);
     //while (true) Usart0.transmitChar(Usart1.receiveChar());
     while (true) {
@@ -332,20 +339,28 @@ int main() {
         _delay_ms(100);
     }*/
 
-    if (is_coordinator) while(true);
+    // HELP: I do not understand this?!
+    if (is_coordinator) while(true); 
 
    // SerialLogger0.print("sending init to coordinator...");
+   // MS: This should have been implemented in a method!
     xbee_buffer_index = sprintf(xbee_buffer, "!SmartSensor-%d"
     , *sensor_id);
     send_to_xbee(xbee_buffer, xbee_buffer_index);
-    //SerialLogger0.print("done\n");
-    
+    //SerialLogger0.print("done\n");   
 
-    
-
+    // MS: No state machine has been implemented.
+    // MS: No generic method of measuring has been implemented?!
+    // MS: A very simple approach have been implemented!
+    // MS: I do not see any initialization of the XBee and also not the status of the XBee?!
+    // MS: The XBee driver does not implement anything around the configuration of the XBee?!
+    // MS: The coordinator does not measure things?!
+    // MS: No configuration like sampling frequency as discussed implemented. (Less far?!?!)
+    // MS: System does not check nor wait for the XBee?!
     while (true) {
         _delay_ms(2000);
 
+        // HELP: Only THS?
         if (auto res = THS.takeMeasurement(); res && sensor_id) {
             xbee_buffer_reset();
             xbee_buffer_index = sprintf(xbee_buffer,
@@ -364,7 +379,11 @@ R"!(
         }
         
 
+        //SerialLogger0.print(xbee_buffer);
+        //SerialLogger0.print("\n");
+
         //ALS.takeMeasurement();
+        // MS: This should have been implemented by a state machine, so we also have an idea that everything is correctly handled.
         PinManager::digital_write(STATUS_LED_1_PIN, (flip = !flip) ? HIGH : LOW);
 
         //assert(flip);
@@ -462,6 +481,5 @@ R"!(
         flip = !flip;
     }*/
 }
-
 
 #endif
