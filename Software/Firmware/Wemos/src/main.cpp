@@ -8,6 +8,7 @@
 //Sendlab netwerk ww: SENDLAB / SEnDLab@LA121
 // MS: No comments at all and very difficult written code!
 // MS: No feedback implemented?
+// MS: No friendly interface for the user implemented :(.
 WiFiClient espClient;
 PubSubClient client(espClient);
 
@@ -38,6 +39,7 @@ void setup() {
   pinMode(BUILTIN_LED, OUTPUT);
 
   // put your setup code here, to run once:
+  // HELP: How is the setup?
   Serial.begin(9600);
   Serial1.begin(9600);
 

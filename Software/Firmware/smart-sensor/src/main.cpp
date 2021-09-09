@@ -13,7 +13,7 @@
 #include <board-support/drivers/UsartDriver.h>
 #include <board-support/drivers/TWIDriver2.h>
 #include "drivers/THSDriver2.h" // HELP: Why driver 2?
-#include "drivers/ALSDriver.h"
+#include "drivers/ALSDriver.h" // HELP: Why not LightDriver?
 #include "drivers/WemosDriver.h"
 #include "drivers/RTCDriver.h"
 #include "drivers/CO2Driver.h"
@@ -87,11 +87,15 @@ void send_to_xbee(const char* msg, uint16_t msg_length) {
     uint64_t checksum = 0;
     auto send_byte = [&](uint8_t byte) { checksum += byte; Usart1.transmitChar(byte); };
 
+    // MS: Is this API mode? page 59
+    // MS: This code only supports star networks!!
+    // MS: Also not a lot functionality created here!
     Usart1.transmitChar(0x7E);
     Usart1.transmitChar(length >> 8);
     Usart1.transmitChar(length & 0xFF);
-    send_byte(0x10);
-    send_byte(1);
+    send_byte(0x10); // MS: 10 
+    send_byte(1);    // MS: 01
+    send_byte(0); // MS: Coordinator address 64 bit
     send_byte(0);
     send_byte(0);
     send_byte(0);
@@ -99,13 +103,12 @@ void send_to_xbee(const char* msg, uint16_t msg_length) {
     send_byte(0);
     send_byte(0);
     send_byte(0);
-    send_byte(0);
-    send_byte(0xFF);
+    send_byte(0xFF); // MS: 16 bit FF/FE when 0x0000 is used
     send_byte(0xFE);
-    send_byte(0);
+    send_byte(0); // 
     send_byte(0);
     
-    for (uint16_t i = 0; i < msg_length; ++i) {
+    for (uint16_t i = 0; i < msg_length; ++i) { // MS: NO CHECK ON LENGTH!!
         checksum += *msg;
         Usart1.transmitChar(*msg++);
     }
@@ -118,6 +121,12 @@ void serial_print_boolean(bool value) {
 }
 
 // HELP: Explain?!
+// MS: I think this does not work properly?
+// MS: It is possible in rare circumstances for the destination to receive a data packet, but for the source to not receive
+//     the network acknowledgment. In this case, the source will retransmit the data, which could cause the 
+//     Module operation Modes of operation
+//     destination to receive the same data packet multiple times. The XBee modules do not filter out duplicate
+//     packets. The application should include provisions to address this potential issue
 uint8_t read_from_xbee(char *buffer) {
     //while (true) UDR0 = Usart1.receiveChar();
 

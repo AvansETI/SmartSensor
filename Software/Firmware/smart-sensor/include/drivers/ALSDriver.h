@@ -12,4 +12,4 @@ class ALSDriver {
     optional<float> takeMeasurement();
 };
 
-extern ALSDriver ALS;
+extern ALSDriver ALS; // MS: Why we do this?!
