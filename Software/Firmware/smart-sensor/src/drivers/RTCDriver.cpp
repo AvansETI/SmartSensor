@@ -41,7 +41,7 @@ optional<RTCDriver::timepoint> RTCDriver::getTime() {
 
   TWI2_0.enable();
   TWI2_0.start(TWIMode::MasterTransmitter).wait().get();
-  TWI2_0.select(TWI_RTC_ADDRESS).wait().get();
+  TWI2_0.select(TWI_RTC_ADDRESS).wait().get(); // Blocking!
   TWI2_0.write(0x00).wait().get();
   TWI2_0.repeated_start(TWIMode::MasterReciever).wait().get();
   TWI2_0.select(TWI_RTC_ADDRESS).wait().get();

@@ -31,10 +31,6 @@
 // TODO: The software needs to detect this automatically
 volatile bool is_coordinator = false;
 
-// The unique sensor ID that should be taken from the TPM chip
-// TODO: The software needs to get a unique ID based on the hardware automatically
-optional<int16_t> sensor_id{1};
-
 // HELP: I do not know what this is?!
 volatile char bitbuffer = 0;
 
@@ -219,6 +215,9 @@ int main() {
     PinManager::digital_write(STATUS_LED_1_PIN, HIGH);
     _delay_ms(1000);
 
+    // Eventually, the main method should only call sample sensors and get a list back with sensor data. This is too specific
+    SHTC3Driver shtc3;
+
     // HELP: What is this?
     // TODO: Logic to detect wheter the software required to be a coordinator.
     if (is_coordinator) { // send xbee to wemos (HELP: What do you mean?)
@@ -243,8 +242,7 @@ int main() {
     serial_print_boolean(RTC.startClock());
     _delay_ms(1);
 
-    SerialLogger0.print("THS:");
-    serial_print_boolean(THS.isConnected());
+    SerialLogger0.printf("THS:%d\n", shtc3.setup());
     _delay_ms(1);
 
     SerialLogger0.print("ALS:");
@@ -272,6 +270,12 @@ int main() {
     // HELP: does it belong to the XBee driver?!
     xbee_buffer_reset();
 
+    // The unique sensor ID that should be taken from the TPM chip
+    // TODO: The software needs to get a unique ID based on the hardware automatically (tpm-0000)
+    // When the TPM is not available it can use the SHT sensor unique ID: sht-0000
+    char sensor_id[20];
+    sprintf(sensor_id, "smartsensor-sht-%04X", shtc3.getID());
+
 
     // HELP: I do not understand this?!
     if (is_coordinator) while(true); 
@@ -292,10 +296,6 @@ int main() {
     // MS: No configuration like sampling frequency as discussed implemented. (Less far?!?!)
     // MS: System does not check nor wait for the XBee?!
     // MS: Requirement to take measurements at a specified sampling rate.
-
-    // Eventually, the main method should only call sample sensors and get a list back with sensor data. This is too specific
-    SHTC3Driver shtc3;
-    shtc3.setup();
     while (true) {
         _delay_ms(2000);
 
@@ -307,7 +307,7 @@ int main() {
             xbee_buffer_index = sprintf(xbee_buffer,
 R"!(
 {
-    "id": "SmartSensor-%d",
+    "id": "%s",
     "measurements": [{
         "timestamp": "%s",
         "temperature": %f,
@@ -315,9 +315,11 @@ R"!(
     }]
 }
 )!"
-            , *sensor_id , generate_ISO_8601_string(*RTC.getTime()), (double) shtc3.getTemperature(), (double) shtc3.getHumidity());
+            ,sensor_id , generate_ISO_8601_string(*RTC.getTime()), (double) shtc3.getTemperature(), (double) shtc3.getHumidity());
             send_to_xbee(xbee_buffer, xbee_buffer_index);
             
+            SerialLogger0.print(xbee_buffer);
+
         } else {
             SerialLogger0.print("shtc3: data is not valid.");
         }

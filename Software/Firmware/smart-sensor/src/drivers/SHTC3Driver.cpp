@@ -1,8 +1,15 @@
 #include "drivers/SHTC3Driver.h"
 
-/* If the chip is responding on I2C command, the setup is successfull. */
 int SHTC3Driver::setup() {
-    return ( this->isConnected() ? 0 : 1 );
+    if ( !this->isConnected() ) {
+        return 1; // Cannot select the SHTC3 chip
+    }
+
+    if ( this->getID() == 0 ) {
+        return 2; // The given ID is not correct!
+    }
+
+    return 0;
 }
 
 int SHTC3Driver::loop() {
@@ -10,15 +17,40 @@ int SHTC3Driver::loop() {
     return 0;
 }
 
-int SHTC3Driver::reset() {    
+// Software reset 0x805D 1000’0000’0101’1101 => page 8: https://taoic.oss-cn-hangzhou.aliyuncs.com/sku/pdf/d16078ca630c4b401c5bec25674afc26833e7455.pdf
+int SHTC3Driver::reset() {
+    TWI2_0.enable();
+    TWI2_0.start(TWIMode::MasterTransmitter).wait().get();
+    TWI2_0.select(SHTC3_I2C_ADDRESS).wait().get();
+    TWI2_0.write(0x80).wait().get(); // Soft reset command
+    TWI2_0.write(0x5D).wait().get();
+    TWI2_0.stop();
+    TWI2_0.disable();
+
     return 0;
 }
 
 int SHTC3Driver::sleep() {
+    TWI2_0.enable();
+    TWI2_0.start(TWIMode::MasterTransmitter).wait().get();
+    TWI2_0.select(SHTC3_I2C_ADDRESS).wait().get();
+    TWI2_0.write(0xB0).wait().get(); // Sleep command
+    TWI2_0.write(0x98).wait().get();
+    TWI2_0.stop();
+    TWI2_0.disable();
+
     return 0;
 }
 
 int SHTC3Driver::wakeup() {
+    TWI2_0.enable();
+    TWI2_0.start(TWIMode::MasterTransmitter).wait().get();
+    TWI2_0.select(SHTC3_I2C_ADDRESS).wait().get();
+    TWI2_0.write(0x35).wait().get(); // Wake up command
+    TWI2_0.write(0x17).wait().get();
+    TWI2_0.stop();
+    TWI2_0.disable();
+
     return 0;
 }
 
@@ -56,23 +88,46 @@ bool SHTC3Driver::checkChecksum(const uint16_t data, const uint8_t checksum) {
 bool SHTC3Driver::isConnected() {    
     TWI2_0.enable();
     TWI2_0.start(TWIMode::MasterTransmitter).wait().get();
-    const bool able_to_select = TWI2_0.select(TWI_THS_ADDRESS).wait().get();
+    const bool able_to_select = TWI2_0.select(SHTC3_I2C_ADDRESS).wait().get();
     TWI2_0.stop();
     TWI2_0.disable();
 
     return able_to_select;
 }
 
+uint16_t SHTC3Driver::getProductCode() {
+    return this->getID() & 0b0000'1000'0011'1111;
+}
+
+uint16_t SHTC3Driver::getID() {
+    if ( this->id != 0 ) {
+        return this->id;
+    }
+
+    TWI2_0.enable();
+    TWI2_0.start(TWIMode::MasterTransmitter).wait().get();
+    TWI2_0.select(SHTC3_I2C_ADDRESS).wait().get();
+    TWI2_0.write(0xEF).wait().get();
+    TWI2_0.write(0xC8).wait().get();
+    TWI2_0.repeated_start(TWIMode::MasterReciever).wait().get(); // Is clock stretching?!
+    TWI2_0.select(SHTC3_I2C_ADDRESS).wait().get();
+    uint16_t id = static_cast<uint16_t>(TWI2_0.read_ack().wait().get().value()) << 8;
+    id |= TWI2_0.read_ack().wait().get().value();
+    uint8_t checksum = TWI2_0.read_ack().wait().get().value();
+    TWI2_0.stop();
+    TWI2_0.disable();
+
+    if ( this->checkChecksum(id, checksum) ) {
+        this->id = id;
+    }
+
+    return id;
+}
+
 uint8_t SHTC3Driver::sample() {
     this->setDataInvalid();
 
     TWI2_0.enable();
-    TWI2_0.start(TWIMode::MasterTransmitter).wait().get();
-    TWI2_0.select(TWI_THS_ADDRESS).wait().get();
-    TWI2_0.write(0x35).wait().get();
-    TWI2_0.write(0x17).wait().get();
-
-    _delay_us(240);
 
     // MS: Why filtering the temperature?
     // MS: This can be optimized for embedded!
@@ -83,12 +138,17 @@ uint8_t SHTC3Driver::sample() {
     bool checksum_mismatch = false;
 
     for (int i = 0; i < num_samples; ++i) {
-        TWI2_0.repeated_start(TWIMode::MasterTransmitter).wait().get();
-        TWI2_0.select(TWI_THS_ADDRESS).wait().get();
-        TWI2_0.write(0x5C).wait().get(); // MS: Still waiting and blocking?! This is not what we want!
+        if ( i == 0 ) {
+            TWI2_0.start(TWIMode::MasterTransmitter).wait().get();
+        } else {
+            TWI2_0.repeated_start(TWIMode::MasterTransmitter).wait().get();
+        }
+
+        TWI2_0.select(SHTC3_I2C_ADDRESS).wait().get();
+        TWI2_0.write(0x5C).wait().get(); // MS: Measurement command // MS: Still waiting and blocking?! This is not what we want!
         TWI2_0.write(0x24).wait().get();
-        TWI2_0.repeated_start(TWIMode::MasterReciever).wait().get();
-        TWI2_0.select(TWI_THS_ADDRESS).wait().get();
+        TWI2_0.repeated_start(TWIMode::MasterReciever).wait().get(); // Is clock stretching?!
+        TWI2_0.select(SHTC3_I2C_ADDRESS).wait().get();
         uint16_t raw_humidity = static_cast<uint16_t>(TWI2_0.read_ack().wait().get().value()) << 8;
         raw_humidity |= TWI2_0.read_ack().wait().get().value();
         uint8_t raw_humidity_checksum = TWI2_0.read_ack().wait().get().value();
@@ -102,23 +162,17 @@ uint8_t SHTC3Driver::sample() {
         checksum_mismatch |= !checkChecksum(raw_humidity, raw_humidity_checksum) || !checkChecksum(raw_temperature, raw_temperature_checksum);
     }
 
-    TWI2_0.repeated_start(TWIMode::MasterTransmitter).wait().get();
-    TWI2_0.select(TWI_THS_ADDRESS).wait().get();
-    TWI2_0.write(0xB0).wait().get();
-    TWI2_0.write(0x98).wait().get();
     TWI2_0.stop();
     TWI2_0.disable();
 
-    if (checksum_mismatch) {
-        SerialLogger0.print("THS checksum mismatch\n");
-        return {};
-    }
-
-    // MS: How is this calculated?
+    // See datasheet page 9 for the details of the calculation
     this->humidity    = 100 * float(avg_humidity/num_samples) / 65536.0f;
     this->temperature = 175 * float(avg_temperature/num_samples) / 65536.0f - 45.0f;
 
-    this->setDataValid();
+    if (!checksum_mismatch) {
+        this->setDataValid();
+        return 0;
+    }
 
-    return 0;
+    return 1; // Checksum mismatch
 }

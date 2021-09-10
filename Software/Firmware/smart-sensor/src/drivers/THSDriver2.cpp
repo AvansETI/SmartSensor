@@ -39,6 +39,7 @@ bool THSDriver2::isConnected() {
     return able_to_select;
 }
 
+// MS: Not configuration implemented?!
 optional<THSDriver2::measurement> THSDriver2::takeMeasurement() {
     // @TODO handle errors
 
@@ -58,7 +59,7 @@ optional<THSDriver2::measurement> THSDriver2::takeMeasurement() {
     for (int i = 0; i < num_samples; ++i) {
         TWI2_0.repeated_start(TWIMode::MasterTransmitter).wait().get();
         TWI2_0.select(TWI_THS_ADDRESS).wait().get();
-        TWI2_0.write(0x5C).wait().get();
+        TWI2_0.write(0x5C).wait().get(); // MS: This is still blocking and waiting. Is far from efficient? Not using futurs correctly?!
         TWI2_0.write(0x24).wait().get();
         TWI2_0.repeated_start(TWIMode::MasterReciever).wait().get();
         TWI2_0.select(TWI_THS_ADDRESS).wait().get();
