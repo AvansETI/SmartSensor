@@ -32,6 +32,8 @@ public:
     int setup();
     int loop();
     int reset();
+    int sleep();
+    int wakeup();
 
     static bool checkChecksum(uint16_t data, uint8_t checksum);
     bool isConnected();

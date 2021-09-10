@@ -33,6 +33,12 @@ public:
        method returns 0, otherwise it returns an error number.
     */
     virtual int reset() = 0;
+
+    /* Put the hardware in low power consumption mode. */
+    virtual int sleep() = 0;
+
+    /* Wake the hardware from low power consumption mode. */
+    virtual int wakeup() = 0;
 };
 
 /* Driver

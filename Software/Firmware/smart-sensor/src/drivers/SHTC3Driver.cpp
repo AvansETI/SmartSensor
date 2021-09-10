@@ -14,6 +14,14 @@ int SHTC3Driver::reset() {
     return 0;
 }
 
+int SHTC3Driver::sleep() {
+    return 0;
+}
+
+int SHTC3Driver::wakeup() {
+    return 0;
+}
+
 float SHTC3Driver::getTemperature() {
     return this->temperature;
 }
@@ -56,7 +64,7 @@ bool SHTC3Driver::isConnected() {
 }
 
 uint8_t SHTC3Driver::sample() {
-    //this->setDataInvalid();
+    this->setDataInvalid();
 
     TWI2_0.enable();
     TWI2_0.start(TWIMode::MasterTransmitter).wait().get();
@@ -110,7 +118,7 @@ uint8_t SHTC3Driver::sample() {
     this->humidity    = 100 * float(avg_humidity/num_samples) / 65536.0f;
     this->temperature = 175 * float(avg_temperature/num_samples) / 65536.0f - 45.0f;
 
-    //this->setDataValid();
+    this->setDataValid();
 
     return 0;
 }
