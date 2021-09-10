@@ -376,6 +376,7 @@ int main() {
 R"!(
 {
     "id": "SmartSensor-%d",
+    "timestamp": "%s",
     "measurements": [{
         "timestamp": "%s",
         "temperature": %f,
@@ -383,7 +384,7 @@ R"!(
     }]
 }
 )!"
-            , *sensor_id , generate_ISO_8601_string(*RTC.getTime()), (double)(*res).temperature, (double)(*res).humidity);
+            , *sensor_id , generate_ISO_8601_string(*RTC.getTime()), generate_ISO_8601_string(*RTC.getTime()), (double)(*res).temperature, (double)(*res).humidity);
             send_to_xbee(xbee_buffer, xbee_buffer_index);
         }
         

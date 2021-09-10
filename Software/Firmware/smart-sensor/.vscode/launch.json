@@ -18,7 +18,7 @@
             "internalConsoleOptions": "openOnSessionStart",
             "preLaunchTask": {
                 "type": "PlatformIO",
-                "task": "Pre-Debug (R11_SmartSensor)"
+                "task": "Pre-Debug"
             }
         },
         {
