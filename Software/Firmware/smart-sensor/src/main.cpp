@@ -17,7 +17,6 @@
 
 #include <board-support/drivers/UsartDriver.h>
 #include <board-support/drivers/TWIDriver2.h>
-#include "drivers/THSDriver2.h" // HELP: Why driver 2?
 #include "drivers/ALSDriver.h" // HELP: Why not LightDriver?
 #include "drivers/WemosDriver.h"
 #include "drivers/RTCDriver.h"
@@ -310,8 +309,8 @@ R"!(
     "id": "%s",
     "measurements": [{
         "timestamp": "%s",
-        "temperature": %f,
-        "humidity": %f
+        "temperature": %0.1f,
+        "humidity": %0.1f
     }]
 }
 )!"

@@ -7,7 +7,6 @@
 
 #include <board-support/state/State.h>
 #include <board-support/util/SerialLogger.h>
-#include <drivers/THSDriver.h>
 #include <drivers/LightDriver.h>
 
 /**
@@ -15,7 +14,6 @@
  */
 class PollState : public State {
     private:
-        THSDriver m_ths_driver;
         LightDriver m_light_driver;
     public:
         explicit PollState(StateMachine* s_machine);

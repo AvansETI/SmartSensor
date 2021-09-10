@@ -24,14 +24,6 @@ void PollState::update() {
 	#if defined(DEBUG_LOG)
     	SerialLogger0.debug("Polling sensors");
 	#endif
-    bool is_successful = m_ths_driver.update();
-    if (is_successful) {
-		#if defined(DEBUG_LOG)
-        SerialLogger0.infof("[THS]: Temperature: %f, Humidity: %f\n",
-                            this->m_ths_driver.get_temperature(),
-                            this->m_ths_driver.get_humidity());
-		#endif
-	}
 
     uint16_t als;
     float als_lux;
@@ -62,7 +54,6 @@ void PollState::update() {
         	SerialLogger0.infof("[Light]: White lux: %f\n", white_lux);
 		#endif
 
-	SerialLogger0.printf("{\"id\": %s,\"temperature\": %f,\"humidity\": %f,\"illuminance\": %f }\n", "3028a56a-356b-11eb-adc1-0242ac120002", this->m_ths_driver.get_temperature(), this->m_ths_driver.get_humidity(), this->m_light_driver.get_als(als));
     _delay_ms(500);
 #if USE_XBEE == 1
     this->m_state_machine->set_state(S_XBEE);

@@ -128,51 +128,30 @@ uint8_t SHTC3Driver::sample() {
     this->setDataInvalid();
 
     TWI2_0.enable();
-
-    // MS: Why filtering the temperature?
-    // MS: This can be optimized for embedded!
-    // MS: I think filtering is not necessary!
-    constexpr auto num_samples = 16;
-    uint32_t avg_humidity = 0;
-    uint32_t avg_temperature = 0;
-    bool checksum_mismatch = false;
-
-    for (int i = 0; i < num_samples; ++i) {
-        if ( i == 0 ) {
-            TWI2_0.start(TWIMode::MasterTransmitter).wait().get();
-        } else {
-            TWI2_0.repeated_start(TWIMode::MasterTransmitter).wait().get();
-        }
-
-        TWI2_0.select(SHTC3_I2C_ADDRESS).wait().get();
-        TWI2_0.write(0x5C).wait().get(); // MS: Measurement command // MS: Still waiting and blocking?! This is not what we want!
-        TWI2_0.write(0x24).wait().get();
-        TWI2_0.repeated_start(TWIMode::MasterReciever).wait().get(); // Is clock stretching?!
-        TWI2_0.select(SHTC3_I2C_ADDRESS).wait().get();
-        uint16_t raw_humidity = static_cast<uint16_t>(TWI2_0.read_ack().wait().get().value()) << 8;
-        raw_humidity |= TWI2_0.read_ack().wait().get().value();
-        uint8_t raw_humidity_checksum = TWI2_0.read_ack().wait().get().value();
-        uint16_t raw_temperature = static_cast<uint16_t>(TWI2_0.read_ack().wait().get().value()) << 8;
-        raw_temperature |= TWI2_0.read_ack().wait().get().value();
-        uint8_t raw_temperature_checksum = TWI2_0.read_nack().wait().get().value();
-
-        avg_humidity += raw_humidity;
-        avg_temperature += raw_temperature;
-
-        checksum_mismatch |= !checkChecksum(raw_humidity, raw_humidity_checksum) || !checkChecksum(raw_temperature, raw_temperature_checksum);
-    }
-
+    TWI2_0.start(TWIMode::MasterTransmitter).wait().get();
+    TWI2_0.select(SHTC3_I2C_ADDRESS).wait().get();
+    TWI2_0.write(0x5C).wait().get(); // MS: Measurement command // MS: Still waiting and blocking?! This is not what we want!
+    TWI2_0.write(0x24).wait().get();
+    TWI2_0.repeated_start(TWIMode::MasterReciever).wait().get(); // Is clock stretching?!
+    TWI2_0.select(SHTC3_I2C_ADDRESS).wait().get();
+    uint16_t raw_humidity = static_cast<uint16_t>(TWI2_0.read_ack().wait().get().value()) << 8;
+    raw_humidity |= TWI2_0.read_ack().wait().get().value();
+    uint8_t raw_humidity_checksum = TWI2_0.read_ack().wait().get().value();
+    uint16_t raw_temperature = static_cast<uint16_t>(TWI2_0.read_ack().wait().get().value()) << 8;
+    raw_temperature |= TWI2_0.read_ack().wait().get().value();
+    uint8_t raw_temperature_checksum = TWI2_0.read_nack().wait().get().value();
     TWI2_0.stop();
     TWI2_0.disable();
 
-    // See datasheet page 9 for the details of the calculation
-    this->humidity    = 100 * float(avg_humidity/num_samples) / 65536.0f;
-    this->temperature = 175 * float(avg_temperature/num_samples) / 65536.0f - 45.0f;
-
-    if (!checksum_mismatch) {
-        this->setDataValid();
-        return 0;
+    if ( !this->checkChecksum(raw_humidity, raw_humidity_checksum) || !this->checkChecksum(raw_temperature, raw_temperature_checksum) ) {
+        return 1; // Checksum mismatch!
     }
 
-    return 1; // Checksum mismatch
+    // See datasheet page 9 for the details of the calculation
+    this->humidity    = 100 * float(raw_humidity) / 65536.0f;
+    this->temperature = 175 * float(raw_temperature) / 65536.0f - 45.0f;
+
+    this->setDataValid();
+
+    return 0;
 }
