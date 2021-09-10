@@ -1,10 +1,15 @@
 /**
  * Entry point of the application
- * @date 12 May 2020
- * @author Patrick de Jong, Paul Hobbel, Sergen Peker, Carlos Cadel, Floris Bob van Elzelingen, Maurice Snoeren
+ * @date   : 12 May 2020
+ * @author : Patrick de Jong, Paul Hobbel, Sergen Peker, Carlos Cadel, Floris Bob van Elzelingen, Maurice Snoeren (MS)
+ * @version: 0.9 test version
+ * @updates
+ *  10-09-2021: MS: Updating the code to a mature version
+ * 
  */
 
 #ifndef UNIT_TEST
+#include <stdio.h>
 #include <boardsupport.h>
 #include <board-support/drivers/TWIDriver.h>
 #include <board-support/util/PinManager.h>
@@ -18,7 +23,7 @@
 #include "drivers/RTCDriver.h"
 #include "drivers/CO2Driver.h"
 #include "drivers/TPMDriver.h"
-#include <stdio.h>
+#include "drivers/SHTC3Driver.h"
 
 #define FIRMWARE_VERSION "v0.9"
 
@@ -157,7 +162,7 @@ uint8_t read_from_xbee(char *buffer) {
     } else {
         for (uint16_t i = 1; i < length; ++i) read_byte();
     }
-    uint8_t checksum = debug_byte();
+    //uint8_t checksum = debug_byte(); // unused!
     return frame_type;
 }
 
@@ -225,28 +230,6 @@ int main() {
         //UCSR1B = 0b1001'1000;
     }
 
-    // HELP: What is this?
-    /*PRR0 = 0b1000'0000;
-    PRR1 = 0;
-    PRR2 = 0;*/
-    
-    //PinManager::digital_write(XBEE_SLEEP_PIN, LOW);
-    //PinManager::digital_write(XBEE_SS_PIN, HIGH);
-    /* Is not used any more!
-    _delay_ms(1);
-    PinManager::digital_write(XBEE_ENABLE_PIN, LOW);
-    _delay_ms(1);
-    */
-
-    //PinManager::digital_write(CO2_WAKE_PIN, HIGH); // HELP: ALREADY SET HIGH!
-
-    //PinManager::digital_write(XBEE_SLEEP_PIN, LOW);
-
-    //_delay_ms(1000); // HELP: Already waited to blink the led!
-
-    //SerialLogger0.print("Initialized\n");
-    //_delay_ms(10);
-
     /* Enable the interrupts */
     sei();
     _delay_ms(10);
@@ -280,73 +263,15 @@ int main() {
     CO2.setupSensor();
     _delay_ms(1);
 
-    // HELP: Below debug code?!
-    //TWI2_0.start().wait().get();
-    
-    /*while (true) {
-        //if (UCSR2A & 0b1000'0000) bitbuffer = UDR2;
-
-        //Usart1.transmitChar(bitbuffer);
-        xbee_buffer_reset();
-        //xbee_buffer_append("hey!?!");
-        xbee_buffer_index = sprintf(xbee_buffer, "test := %f", (double)123.456f);
-        send_to_xbee(xbee_buffer, xbee_buffer_index);
-        //Usart1.transmitChar(0xAB);
-        //Usart1.transmitChar('a');
-        _delay_ms(2000);
-    }*/
-
-    /*while (true) {
-
-        const auto time = *RTC.getTime();
-        SerialLogger0.printf("time := %s\n", generate_ISO_8601_string(time));
-
-        const auto temp_hum = *THS.takeMeasurement();
-        SerialLogger0.printf("temperature := %fc, humidity %f%%\n", temp_hum.temperature, temp_hum.humidity);
-
-        const auto lx = *ALS.takeMeasurement();
-        SerialLogger0.printf("light intensity := %flx\n", lx);
-
-        CO2.takeMeasurement();
-
-        _delay_ms(2000);
-        SerialLogger0.print("\n");
-    }*/
-
     // HELP: ?!
     bool flip = false;
 
     // HELP: ?!
-    uint8_t data_to_write = 1;
-
-    /*while (!sensor_id) {
-        SerialLogger1.printf("{ \"")
-    }*/
+    //uint8_t data_to_write = 1; // Unused
 
     // HELP: does it belong to the XBee driver?!
     xbee_buffer_reset();
 
-    //_delay_ms(2000); // MS: A lot of delay!
-    /*PinManager::digital_write(PinPortA0, HIGH);
-    //while (true) Usart0.transmitChar(Usart1.receiveChar());
-    while (true) {
-        while (!usart1_buffer_has_data());
-        Usart0.transmitChar(usart1_buffer_read());
-    }
-
-    while (true) {
-        SerialLogger0.print("waiting for xbee frame...");
-        const uint8_t frame_type = read_from_xbee(xbee_buffer);
-        SerialLogger0.print("recieved\n");
-        SerialLogger0.printf("xbee_frame(%x)\n", frame_type);
-        if (frame_type == 0x90) SerialLogger0.printf("%s\n", xbee_buffer);
-    }
-
-    /*for (int i = 0; i < 100; ++i) {
-        xbee_buffer_index = sprintf(xbee_buffer, "hey %i", i);
-        send_to_xbee(xbee_buffer, xbee_buffer_index);
-        _delay_ms(100);
-    }*/
 
     // HELP: I do not understand this?!
     if (is_coordinator) while(true); 
@@ -366,11 +291,18 @@ int main() {
     // MS: The coordinator does not measure things?!
     // MS: No configuration like sampling frequency as discussed implemented. (Less far?!?!)
     // MS: System does not check nor wait for the XBee?!
+    // MS: Requirement to take measurements at a specified sampling rate.
+
+    // Eventually, the main method should only call sample sensors and get a list back with sensor data. This is too specific
+    SHTC3Driver shtc3;
+    shtc3.setup();
     while (true) {
         _delay_ms(2000);
 
-        // HELP: Only THS?
-        if (auto res = THS.takeMeasurement(); res && sensor_id) {
+        shtc3.loop();
+
+        if ( shtc3.isDataValid() ) {
+            SerialLogger0.print("shtc3: data is valid.");
             xbee_buffer_reset();
             xbee_buffer_index = sprintf(xbee_buffer,
 R"!(
@@ -383,112 +315,16 @@ R"!(
     }]
 }
 )!"
-            , *sensor_id , generate_ISO_8601_string(*RTC.getTime()), (double)(*res).temperature, (double)(*res).humidity);
+            , *sensor_id , generate_ISO_8601_string(*RTC.getTime()), (double) shtc3.getTemperature(), (double) shtc3.getHumidity());
             send_to_xbee(xbee_buffer, xbee_buffer_index);
+            
+        } else {
+            SerialLogger0.print("shtc3: data is not valid.");
         }
-        
 
-        //SerialLogger0.print(xbee_buffer);
-        //SerialLogger0.print("\n");
-
-        //ALS.takeMeasurement();
-        // MS: This should have been implemented by a state machine, so we also have an idea that everything is correctly handled.
         PinManager::digital_write(STATUS_LED_1_PIN, (flip = !flip) ? HIGH : LOW);
-
-        //assert(flip);
-
-        //SerialLogger0.print("past assert\n");
-
-       // Wemos.isConnected() ? SerialLogger0.print("ack from wemos\n") : SerialLogger0.print("nack from wemos\n");
-
-        //Usart1.transmitChar('a');
-        //Usart1.transmitChar('\n');
     }
 
-    /*while (true) {
-        /*for (char c = 'a'; c <= 'z'; ++c) {
-            //Usart1.transmitChar('a');
-            //Usart1.transmitChar('\n');
-            //Usart1.flush();
-            _delay_ms(10);
-        }* /
-        //_delay_ms(10);
-        Usart1.transmitChar('a');
-        Usart0.transmitChar('a');
-        Usart1.flush();
-        Usart0.flush();
-        _delay_ms(100);
-    }*/
-    
-    /*while (true)
-    {
-        SerialLogger0.print("\nLS_ENABLE_PIN := HIGH\n");
-        PinManager::digital_write(LS_ENABLE_PIN, HIGH);
-        PinManager::digital_write(STATUS_LED_1_PIN, HIGH);
-        _delay_ms(100);
-        if (twi0_start()) if (twi0_write_adress(TWI_ALS_ADDRESS, 0)) TWI2_0.stop(), twi0_disable(), SerialLogger0.print("able to select ALS\n"); else SerialLogger0.print("unable to select ALS\n");
-        _delay_ms(4900);
-
-        SerialLogger0.print("\nLS_ENABLE_PIN := LOW\n");
-        PinManager::digital_write(LS_ENABLE_PIN, LOW);
-        PinManager::digital_write(STATUS_LED_1_PIN, LOW);
-        _delay_ms(100);
-        if (twi0_start()) if (twi0_write_adress(TWI_ALS_ADDRESS, 0)) TWI2_0.stop(), twi0_disable(), SerialLogger0.print("able to select ALS\n"); else SerialLogger0.print("unable to select ALS\n");
-        _delay_ms(4900);
-    }*/
-
-    /*
-    for(;;) {
-
-        {
-            SerialLogger0.print("\npre transaction\n");
-
-            //Start TWI, and start a transaction, and check succes
-            if (!TWI2_0.start(TWIMode::MasterTransmitter).wait().get()) goto delay;
-
-            //Transmit adress & mode
-            if (!TWI2_0.select(TWI_RTC_ADDRESS).wait().get()) goto delay;
-
-            //Transmit Register adress
-            if (!TWI2_0.write(0x20).wait().get()) goto stop;
-
-            if (flip) {
-
-                //Transmit data
-                if (!TWI2_0.write(data_to_write).wait().get()) goto stop;
-
-                if (data_to_write == 0xFF) data_to_write = 0;
-                else data_to_write += 1;
-
-            } else {
-
-                //Start TWI, and start a transaction, and check succes
-                if (!TWI2_0.repeated_start(TWIMode::MasterReciever).wait().get()) goto delay;
-
-                //Transmit adress & mode
-                if (!TWI2_0.select(TWI_RTC_ADDRESS).wait().get()) goto delay;
-
-                auto res = TWI2_0.read_nack().wait().get();
-                if (!res) goto stop;
-
-                SerialLogger0.printf("data := %u\n", *res);
-            }
-
-            stop:
-            //Stop transaction 
-            TWI2_0.stop();
-
-            //Stop TWI
-            TWI2_0.disable();
-            SerialLogger0.print("transaction & TWI stopped\n");
-
-            delay:
-
-            SerialLogger0.print("post transaction\n");
-        }
-        _delay_ms(500);
-        flip = !flip;
-    }*/
 }
 
 #endif

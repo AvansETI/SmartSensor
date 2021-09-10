@@ -17,12 +17,6 @@
 class IDriver {
 
 public:
-    /* Default empty constructor, should not contain any code! */
-    IDriver() {}
-
-    /* Default empty destructor, should not contain any code! */
-    virtual ~IDriver() {}
-
     /* The setup method initializes the driver and the hardware that is driven. This method
        shoul be called once at the startup of the board. When the setup is successfull, the
        method returns 0, otherwise it returns an error number.
@@ -46,13 +40,22 @@ public:
  */
 class Driver: public IDriver {
 private:
-    // class attributes
+    /* This flag indicates that the data from the hardware is valid and can be used. */
+    bool dataValid;
+
+protected:
+    /* Helper function to flag the data as invalid, so it should not be used by the main application. */
+    void setDataInvalid();
+
+    /* Helper function to flag the data as valid, so it can be used by the main application. */
+    void setDataValid();
+
+    ~Driver() {}
 
 public:
-    Driver();
-    virtual ~Driver();
+    Driver(): dataValid(false) {};
 
-    virtual int setup() = 0;
-    virtual int loop() = 0;
-    virtual int reset() = 0;
+    /* Returns wheter the data of this driver is valid. */
+    bool isDataValid();
+
 };

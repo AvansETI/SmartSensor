@@ -1,9 +1,14 @@
 #include "drivers/Driver.h"
 
-Driver::Driver() {
-
+void Driver::setDataInvalid() {
+    this->dataValid = false;
 }
 
-Driver::~Driver() {
-
+void Driver::setDataValid() {
+    this->dataValid = true;
 }
+
+bool Driver::isDataValid() {
+    return this->dataValid;
+}
+
