@@ -37,6 +37,11 @@ void callback(char* topic, byte* payload, unsigned int length) {
 
 void setup() {
   pinMode(BUILTIN_LED, OUTPUT);
+  digitalWrite(BUILTIN_LED, HIGH);
+  delay(1000);
+  digitalWrite(BUILTIN_LED, LOW);
+  delay(1000);
+
 
   // put your setup code here, to run once:
   // HELP: How is the setup?
