@@ -1,1 +1,0 @@
-Add this folder and it's contents to C:\Users\USER\.platformio
