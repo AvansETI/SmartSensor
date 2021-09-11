@@ -58,7 +58,7 @@ optional<RTCDriver::timepoint> RTCDriver::getTime() {
   return data.t;
 }
 
-bool RTCDriver::startClock() {
+bool RTCDriver::startClock() { // What is happening here?
   TWI2_0.enable();
   TWI2_0.start(TWIMode::MasterTransmitter).wait().get();
   TWI2_0.select(TWI_RTC_ADDRESS).wait().get();
