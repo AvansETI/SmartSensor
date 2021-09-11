@@ -24,7 +24,6 @@ CMakeListsPrivate.txt
 !.vscode/launch.json
 !.vscode/extensions.json
 *.code-workspace
-!.vscode/c_cpp_properties.json
 
 # Local History for Visual Studio Code
 .history/
