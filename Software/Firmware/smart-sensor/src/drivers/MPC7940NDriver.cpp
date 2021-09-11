@@ -66,7 +66,7 @@ RTCTime MCP7940NDriver::getTime() {
     TWI2_0.repeated_start(TWIMode::MasterReciever).wait().get();
     TWI2_0.select(TWI_RTC_ADDRESS).wait().get();
     for (uint8_t i = 0; i < 7; ++i)
-        raw[i] = convertFromBcd(*(i != 6 ? TWI2_0.read_ack() : TWI2_0.read_nack()).wait().get() & masks[i]);
+        raw[i] = RTCTime::convertFromBcd(*(i != 6 ? TWI2_0.read_ack() : TWI2_0.read_nack()).wait().get() & masks[i]);
     TWI2_0.stop();
     TWI2_0.disable();
 
@@ -82,18 +82,4 @@ void MCP7940NDriver::setTime(const RTCTime &t) {
 void MCP7940NDriver::setTime(const char* iso8601) {
     RTCTime time(iso8601);
     this->setTime(time);
-}
-
-uint8_t MCP7940NDriver::convertToBcd(uint8_t byteDecimal) {
-  return (byteDecimal / 10) << 4 | (byteDecimal % 10);
-}
-
-uint8_t MCP7940NDriver::convertFromBcd(uint8_t byteBCD) {
-  uint8_t byteMSB = 0;
-  uint8_t byteLSB = 0;
-
-  byteMSB = (byteBCD & 0b1111'0000) >> 4;
-  byteLSB = (byteBCD & 0b0000'1111);
-
-  return ((byteMSB * 10) + byteLSB);
 }

@@ -60,3 +60,17 @@ uint8_t RTCTime::getMinutes() {
 uint8_t RTCTime::getSeconds() {
     return this->seconds;
 }
+
+uint8_t RTCTime::convertToBcd(uint8_t byteDecimal) {
+  return (byteDecimal / 10) << 4 | (byteDecimal % 10);
+}
+
+uint8_t RTCTime::convertFromBcd(uint8_t byteBCD) {
+  uint8_t byteMSB = 0;
+  uint8_t byteLSB = 0;
+
+  byteMSB = (byteBCD & 0b1111'0000) >> 4;
+  byteLSB = (byteBCD & 0b0000'1111);
+
+  return ((byteMSB * 10) + byteLSB);
+}

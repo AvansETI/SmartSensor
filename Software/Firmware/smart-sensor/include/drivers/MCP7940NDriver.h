@@ -68,8 +68,6 @@ byte, ‘1101111X’.*/
     // Add setByte, getByte to use the SRAM of the chip, storing things to remember?
 
 private:
-  static uint8_t convertToBcd(uint8_t byteDecimal);
-  static uint8_t convertFromBcd(uint8_t byteBCD);
     
 };
 

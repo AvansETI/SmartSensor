@@ -5,7 +5,7 @@
  * @date       : 11-09-2021
  * @author     : Maurice Snoeren (MS)
  * @version    : 0.1
- * @todo       : -
+ * @todo       : Implement a millis like function based on for example TC2 and interrupts?
  * @updates
  * 
  */
@@ -44,7 +44,9 @@ public:
     uint8_t getMinutes();
     uint8_t getSeconds();
 
-private:
     /* Set the current time values to the given iso8601 string. */
     uint8_t setFromIso8601String(const char* iso8601);
+
+    static uint8_t convertToBcd(uint8_t byteDecimal);
+    static uint8_t convertFromBcd(uint8_t byteBCD);
 };
