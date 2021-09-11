@@ -31,10 +31,6 @@
     }
   ],
   "dependencies": [
-    {
-      "name": "FreeRTOS",
-      "version": "https://gitlab.com/sendlab-sensors/libraries/freertos.git"
-    }
   ],
   "version": "0.1.0",
   "platforms": "atmelavr"
