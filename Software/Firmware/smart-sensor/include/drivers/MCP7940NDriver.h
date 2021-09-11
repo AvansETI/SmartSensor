@@ -14,7 +14,9 @@
  * 
  */
 #include <stdint.h>
+
 #include <drivers/Driver.h>
+#include <util/RTC.h>
 
 #include <board-support/drivers/TWIDriver2.h>
 
@@ -25,56 +27,38 @@
 /* Address of the MCP7940N chip on the I2C bus */
 constexpr uint8_t MCP7940_I2C_ADDRESS = 0xDE;
 
-// MS: Must be moved to a more generic file!
-struct RTCTimestamp {
-  uint8_t seconds;
-  uint8_t minutes;
-  uint8_t hours;
-  uint8_t weekday;
-  uint8_t date;
-  uint8_t month;
-  uint8_t year;
-};
-
-/* for the setup
-bit 4 PWRFAIL: Power Failure Status bit(1,2)
-1 = Primary power was lost and the power-fail time-stamp registers have been loaded (must be
-cleared in software). Clearing this bit resets the power-fail time-stamp registers to ‘0’.
-0 = Primary power has not been lost
-bit 3 VBATEN: External Battery Backup Supply (VBAT) Enable bit
-1 = VBAT input is enabled
-0 = VBAT input is disabled
-*/
-
-class MCP7940Driver: public Driver {
+class MCP7940NDriver: public Driver {
 public:
-
     int setup();
     int loop();
     int reset();
     int sleep();
     int wakeup();
     
-    /* Check wheter the chip is connected and responding to I2C requests. */
-    bool isConnected();
-
     /* Add POWER-DOWN/POWER-UP TIME-STAMP */
-    RTCTimestamp getPowerDownTimestamp();
+    RTCTime getPowerDownTimestamp();
 
     /* Returns the current time from the chip. */
-    RTCTimestamp getTime();
+    RTCTime getTime();
 
     /* Set the time based on a RTCTimestamp instance of the chip. */
-    void setTime(const RTCTimestamp &t);
+    void setTime(const RTCTime &t);
 
     /* Set the time based on an ISO8601 string of the chip. */
     void setTime(const char* iso8601);
+
+    /* Check whether the chip reacts on a I2C message. */
+    bool isConnected();
+
+    // TODO: Design and implement how the alarm should work?!
 
     // Add enableAlarm function to set the alarm and interrupt
     // Add disableAlarm function to unset the alarm and interrupt
     // Set callback eventAlarm function using an interface class RTCAlarmEvent(), it is called when the alarm flag is enable
     //   => Set the option to use interrupts of callback function.
     
+    // TODO: Design and implement how the SRAM could be used?!
+
     /*The MCP7940N has 64 bytes of SRAM for general purpose usage. It is retained when the primary power
 supply is removed if a backup supply is present and
 enabled.
@@ -83,15 +67,9 @@ registers, they are accessed using the same control
 byte, ‘1101111X’.*/
     // Add setByte, getByte to use the SRAM of the chip, storing things to remember?
 
-
-
-    // bool startClock(); // OLD?
-    // bool stopClock();  // OLD?
-
-    /* Helper function to convert the RTCTimestamp to an ISO8601 string. */
-    static const char* convertToISO8601(const RTCTimestamp &t);
-
-    /* Helper function to convert an ISO8601 string to a RTCTimestamp. */
-    static const RTCTimestamp convertFromISO8601(const char* iso8601);
+private:
+  static uint8_t convertToBcd(uint8_t byteDecimal);
+  static uint8_t convertFromBcd(uint8_t byteBCD);
+    
 };
 
