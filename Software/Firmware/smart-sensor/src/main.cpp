@@ -10,6 +10,11 @@
 
 #ifndef UNIT_TEST
 #include <stdio.h>
+
+#define SMARTSENSOR_BOARD_1_2
+#define FIRMWARE_VERSION "v0.9"
+#include "boards/Board.h"
+
 #include <boardsupport.h>
 #include <board-support/drivers/TWIDriver.h>
 #include <board-support/util/PinManager.h>
@@ -23,8 +28,6 @@
 #include "drivers/CO2Driver.h"
 #include "drivers/TPMDriver.h"
 #include "drivers/SHTC3Driver.h"
-
-#define FIRMWARE_VERSION "v0.9"
 
 // Hard coded coordinator variable to select the required functionality
 // TODO: The software needs to detect this automatically
@@ -162,6 +165,8 @@ uint8_t read_from_xbee(char *buffer) {
 }
 
 int main() {
+    SmartSensorBoard board = SmartSensorBoard::getBoard();
+
     /* Print the versions to the serial */
 	SerialLogger0.print("SmartSensor ");
     SerialLogger0.print(BOARD_VERSION);
