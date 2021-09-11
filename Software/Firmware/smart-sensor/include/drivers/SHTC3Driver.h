@@ -5,7 +5,7 @@
  *               chip is able to measure the temperature and humidity. 
  *               https://www.sensirion.com/en/environmental-sensors/humidity-sensors/digital-humidity-sensor-shtc3-our-new-standard-for-consumer-electronics/
  * @date       : 10-09-2021
- * @author     : Maurice Snoeren (MS)
+ * @author     : Floris Bob van Elzelingen, Maurice Snoeren (MS)
  * @version    : 0.1
  * @todo       : The loop contains blocking function calls!
  * @updates
@@ -19,7 +19,7 @@
 #include <board-support/drivers/TWIDriver2.h>
 
 /* Address of the SHTC3 chip on the I2C bus */
-constexpr int SHTC3_I2C_ADDRESS = 0xE0;
+constexpr uint8_t SHTC3_I2C_ADDRESS = 0xE0;
 
 /* The concreate SHTC3Driver that handles the hardware SHTC3 chip. */
 class SHTC3Driver: public Driver {
