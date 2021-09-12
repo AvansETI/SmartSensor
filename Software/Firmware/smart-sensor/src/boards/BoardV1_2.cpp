@@ -6,6 +6,7 @@
 void SmartSensorBoardV1_2::setup() {
     this->addDriver(&this->ledDriver);
     this->addDriver(&this->shtc3Driver);
+    this->addDriver(&this->mcp7940nDriver);
 
     SmartSensorBoard::setup(); // Call the derived class to perform the rest of the setup.
 
