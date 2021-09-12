@@ -21,8 +21,9 @@
 #include <board-support/drivers/TWIDriver2.h>
 
 /* Define how the MFP pin is connected to the Atmega. */
-#define MCP7940_MFP_PIN PB2;
-#define MCP7940_MFP_PORT PORTB;
+#define MCP7940_MFP_PIN PB2
+#define MCP7940_MFP_DDR DDRB
+#define MCP7940_MFP_PORT PORTB
 
 /* Address of the MCP7940N chip on the I2C bus */
 constexpr uint8_t MCP7940_I2C_ADDRESS = 0xDE;

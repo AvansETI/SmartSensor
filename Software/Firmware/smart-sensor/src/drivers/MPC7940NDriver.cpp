@@ -11,6 +11,8 @@ bit 3 VBATEN: External Battery Backup Supply (VBAT) Enable bit
 0 = VBAT input is disabled
 */
 int MCP7940NDriver::setup() {
+    MCP7940_MFP_DDR = MCP7940_MFP_DDR & ~(1 << MCP7940_MFP_PIN); // Set the MFP pin as input.
+
     if ( !this->isConnected() ) {
         return 1; // Cannot select the chip
     }
