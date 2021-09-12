@@ -14,6 +14,7 @@
  * 
  */
 #include <stdint.h>
+#include <avr/pgmspace.h>
 
 #include <drivers/Driver.h>
 #include <util/RTC.h>
@@ -26,12 +27,12 @@
 #define MCP7940_MFP_PORT PORTB
 
 /* Address of the MCP7940N chip on the I2C bus */
-constexpr uint8_t MCP7940_I2C_ADDRESS = 0xDE;
+constexpr uint8_t MCP7940_I2C_ADDRESS PROGMEM = 0xDE;
 
 class MCP7940NDriver: public Driver {
 public:
     int setup();
-    int loop();
+    int loop(uint32_t millis);
     int reset();
     int sleep();
     int wakeup();

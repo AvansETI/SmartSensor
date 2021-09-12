@@ -10,6 +10,7 @@
  * 
  */
 #include <stdint.h>
+#include <avr/pgmspace.h>
 
 #include <drivers/Driver.h>
 
@@ -21,11 +22,21 @@
 #define LED_2_DDR  DDRD
 #define LED_2_PORT PORTD
 
+struct LedState {
+    uint16_t period;
+    uint16_t length;
+    uint32_t timestampedStarted;
+};
+
 /* The class LedDriver handles the two leds that are on the board. */
 class LedDriver: public Driver {
+private:
+    LedState ledState1 PROGMEM;
+    LedState ledState2 PROGMEM;
+
 public:
     int setup();
-    int loop();
+    int loop(uint32_t millis);
     int reset();
     int sleep();
     int wakeup();
@@ -34,5 +45,11 @@ public:
     void led1Off();
     void led2On();
     void led2Off();
+    void led1Flash(uint16_t period, uint16_t length);
+    void led2Flash(uint16_t period, uint16_t length);
+
+private:
+    void resetLed1Flash();
+    void resetLed2Flash();
 };
 

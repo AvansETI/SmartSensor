@@ -13,15 +13,15 @@
 
 #include "boards/Board.h"
 
-constexpr const char* FIRMWARE_VERSION PROGMEM = "v0.9";
+constexpr const char FIRMWARE_VERSION[] PROGMEM = "v0.9";
 
 int main() {
-    SmartSensorBoard board = SmartSensorBoard::getBoard();
-    board.setup();
+    SmartSensorBoard* board = SmartSensorBoard::getBoard();
+    board->setup();
 
-    //board.debug(FIRMWARE_VERSION); // using the board
+    board->debugf("Firmware: %s", FIRMWARE_VERSION);
 
     while (true) {
-        board.loop();
+        board->loop();
     }
 }

@@ -1,5 +1,8 @@
 #include "drivers/SHTC3Driver.h"
 
+#include <stdio.h>
+#include <string.h>
+
 int SHTC3Driver::setup() {
     if ( !this->isConnected() ) {
         return 1; // Cannot select the SHTC3 chip
@@ -12,7 +15,7 @@ int SHTC3Driver::setup() {
     return 0;
 }
 
-int SHTC3Driver::loop() {
+int SHTC3Driver::loop(uint32_t millis) {
     this->sample();
     return 0;
 }
@@ -150,6 +153,11 @@ uint8_t SHTC3Driver::sample() {
     // See datasheet page 9 for the details of the calculation
     this->humidity    = 100 * float(raw_humidity) / 65536.0f;
     this->temperature = 175 * float(raw_temperature) / 65536.0f - 45.0f;
+
+    if ( this->getMeasurementCallback() != NULL ) {
+        this->getMeasurementCallback()->addMeasurement("humidity:%0.1f", this->humidity);
+        this->getMeasurementCallback()->addMeasurement("temperature:%0.1f", this->temperature);
+    }
 
     this->setDataValid();
 

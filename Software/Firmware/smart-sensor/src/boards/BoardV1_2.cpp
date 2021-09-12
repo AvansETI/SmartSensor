@@ -4,11 +4,11 @@
 #include <util/delay.h>
 
 void SmartSensorBoardV1_2::setup() {
-    this->addDriver(&this->ledDriver);
-    this->addDriver(&this->shtc3Driver);
-    this->addDriver(&this->mcp7940nDriver);
+    BOARDV1_2_ADAPTER_IN_USE_DDR = BOARDV1_2_ADAPTER_IN_USE_DDR & ~(1 << BOARDV1_2_ADAPTER_IN_USE_PIN); // Set pin for adapter in use as input.
 
-    SmartSensorBoard::setup(); // Call the derived class to perform the rest of the setup.
+    this->addDriver(&this->ledDriver, "LedDriver");
+    this->addDriver(&this->shtc3Driver, "SHTC3Driver");
+    this->addDriver(&this->mcp7940nDriver, "MCP7940NDriver");
 
     /* Show the user that we have started up, by one-second led on and then flash led. */
     this->ledDriver.led1On();
@@ -18,4 +18,24 @@ void SmartSensorBoardV1_2::setup() {
     this->ledDriver.led1On();
     _delay_ms(100);
     this->ledDriver.led1Off();
+}
+
+bool SmartSensorBoardV1_2::adapterInUse() {
+    return ( ( BOARDV1_2_ADAPTER_IN_USE_PORT & (1 << BOARDV1_2_ADAPTER_IN_USE_PIN) ) != 0 );
+}
+
+uint32_t SmartSensorBoardV1_2::millis() {
+    return 0;
+}
+
+void SmartSensorBoardV1_2::debug( const char* message) {
+
+}
+
+void SmartSensorBoardV1_2::debugf( const char* message, ...) {
+
+}
+
+void SmartSensorBoardV1_2::addMeasurement(const char* measurment, ...) {
+    
 }

@@ -12,3 +12,8 @@ bool Driver::isDataValid() {
     return this->dataValid;
 }
 
+SmartSensorMeasurement* Driver::getMeasurementCallback() {
+    return this->cbMeasurement;
+}
+
+

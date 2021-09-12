@@ -22,7 +22,7 @@ int MCP7940NDriver::setup() {
     return 0;
 }
 
-int MCP7940NDriver::loop() {
+int MCP7940NDriver::loop(uint32_t millis) {
     // TODO
     return 0;
 }

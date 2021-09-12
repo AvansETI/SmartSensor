@@ -16,25 +16,29 @@
 #include <drivers/Driver.h>
 
 #include <math.h>
+#include <avr/pgmspace.h>
 
 #include <boardsupport.h>
 #include <board-support/drivers/TWIDriver2.h>
 
 /* Address of the SHTC3 chip on the I2C bus */
-constexpr uint8_t SHTC3_I2C_ADDRESS = 0xE0;
+constexpr uint8_t SHTC3_I2C_ADDRESS PROGMEM = 0xE0;
 
 /* The concreate SHTC3Driver that handles the hardware SHTC3 chip. */
 class SHTC3Driver: public Driver {
 private:
-    float temperature;
-    float humidity;
-    uint16_t id;
+    float temperature PROGMEM;
+    float humidity PROGMEM;
+    uint16_t id PROGMEM;
 
 public:
     SHTC3Driver(): temperature(0.0), humidity(0.0), id(0) {};
 
+    /* This driver contains measurements, so implement this constructor. */
+    SHTC3Driver(SmartSensorMeasurement* cbMeasurement): Driver(cbMeasurement), temperature(0.0), humidity(0.0), id(0) {};
+
     int setup();
-    int loop();
+    int loop(uint32_t millis);
     int reset();
     int sleep();
     int wakeup();
