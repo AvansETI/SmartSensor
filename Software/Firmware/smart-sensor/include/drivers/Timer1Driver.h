@@ -28,4 +28,3 @@ public:
 private:
     uint16_t getCounterValue();
 };
-
