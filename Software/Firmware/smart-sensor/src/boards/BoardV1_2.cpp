@@ -1,6 +1,7 @@
 #include <boards/BoardV1_2.h>
 
 #include <avr/io.h>
+#include <avr/interrupt.h>
 #include <avr/pgmspace.h>
 #include <util/delay.h>
 
@@ -9,9 +10,9 @@ void SmartSensorBoardV1_2::setup() {
 
     this->timer1.setup();
 
-    this->addDriver(&this->ledDriver, "LedDriver");
-    this->addDriver(&this->shtc3Driver, "SHTC3Driver");
-    this->addDriver(&this->mcp7940nDriver, "MCP7940NDriver");
+    this->addDriver(&this->ledDriver, PSTR("LedDriver"));
+    this->addDriver(&this->shtc3Driver, PSTR("SHTC3Driver"));
+    this->addDriver(&this->mcp7940nDriver, PSTR("MCP7940NDriver"));
 
     /* Show the user that we have started up, by one-second led on and then flash led. */
     this->ledDriver.led1On();
@@ -21,6 +22,16 @@ void SmartSensorBoardV1_2::setup() {
     this->ledDriver.led1On();
     _delay_ms(100);
     this->ledDriver.led1Off();
+
+    this->ledDriver.led1Flash(1000, 100);
+
+    if ( this->adapterInUse() ) {
+        this->debug(PSTR("Adapter is in use."));
+    } else {
+        this->debug(PSTR("Adapter is not in use"));
+    }
+
+    sei(); // Enable the interrupts!
 }
 
 bool SmartSensorBoardV1_2::adapterInUse() {
@@ -42,6 +53,6 @@ void SmartSensorBoardV1_2::addMeasurement(const char* measurement, ...) {
     vsprintf (buffer, measurement, args);
     va_end (args);
 
-    this->debugf("MEASUREMENT: %s", buffer);
+    this->debugf(PSTR("MEASUREMENT: %s"), buffer);
     this->buffer.addMeasurement(buffer);
 }

@@ -48,12 +48,12 @@ bool MCP7940NDriver::isConnected() {
 
 RTCTime MCP7940NDriver::getPowerDownTimestamp() {
     // TODO
-    return RTCTime("20110101T10:10:10");
+    return RTCTime(PSTR("20110101T10:10:10"));
  }
 
 // TODO: To be tested
 RTCTime MCP7940NDriver::getTime() {
-    return RTCTime("20110101T10:10:10");
+    return RTCTime(PSTR("20110101T10:10:10"));
 }
 
 void MCP7940NDriver::setTime(const RTCTime &t) {

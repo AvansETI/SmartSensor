@@ -16,14 +16,14 @@
 
 #include "boards/Board.h"
 
-static const char FIRMWARE_VERSION[] PROGMEM = "v0.9";
+static const char FIRMWARE_VERSION[] PROGMEM = "v1.0";
 
 int main() {
     SmartSensorBoard* board = SmartSensorBoard::getBoard();
 
     board->setup();
 
-    board->debugf("Firmware: %s", FIRMWARE_VERSION);
+    board->debugf(PSTR("Firmware: %s"), FIRMWARE_VERSION);
 
     while (true) {
         board->loop();

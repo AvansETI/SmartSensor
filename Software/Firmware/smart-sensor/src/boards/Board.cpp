@@ -27,18 +27,21 @@ void SmartSensorBoard::addDriver(IDriver *driver, const char* driverName) {
             this->totalDrivers++;
         
         } else {
-            this->debugf("The driver '%s' could not be loaded: %d", driverName, result);
+            this->debugf(PSTR("The driver '%s' could not be loaded: %d"), driverName, result);
         }
     
     } else {
-        this->debugf("Maximum drivers reached, cannot add '%s' to the system.", driverName);
+        this->debugf(PSTR("Maximum drivers reached, cannot add '%s' to the system."), driverName);
     }
 }
 
 void SmartSensorBoard::loop() {
+    uint32_t start = this->millis();
     for ( uint8_t i=0; i < this->totalDrivers; ++i ) { // Loop through all the drivers
         this->drivers[i]->loop(this->millis());
     }
+
+    this->debugf(PSTR("Loop time %d ms"), (this->millis() - start)); // Also a measurement?
 }
 
 // http://www.cplusplus.com/reference/cstdio/vsprintf/

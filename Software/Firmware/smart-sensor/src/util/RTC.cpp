@@ -1,4 +1,5 @@
 #include <util/RTC.h>
+#include <avr/pgmspace.h>
 
 RTCTime::RTCTime(const char* iso8601) {
     this->setFromIso8601String(iso8601);
