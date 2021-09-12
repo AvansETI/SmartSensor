@@ -34,11 +34,11 @@ public:
     /* This driver contains measurements, so implement this constructor. */
     SHTC3Driver(SmartSensorMeasurement* cbMeasurement): Driver(cbMeasurement), temperature(0.0), humidity(0.0), id(0) {};
 
-    int setup();
-    int loop(uint32_t millis);
-    int reset();
-    int sleep();
-    int wakeup();
+    uint8_t setup();
+    uint8_t loop(uint32_t millis);
+    uint8_t reset();
+    uint8_t sleep();
+    uint8_t wakeup();
 
     static bool checkChecksum(uint16_t data, uint8_t checksum);
     bool isConnected();

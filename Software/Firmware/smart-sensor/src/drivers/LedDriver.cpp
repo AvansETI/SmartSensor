@@ -2,7 +2,7 @@
 #include "avr/io.h"
 #include <util/delay.h>
 
-int LedDriver::setup() {
+uint8_t LedDriver::setup() {
     LED_1_DDR = LED_1_DDR | (1 << LED_1_PIN); // Set the led pins as output!
     LED_2_DDR = LED_2_DDR | (1 << LED_2_PIN);
 
@@ -12,7 +12,7 @@ int LedDriver::setup() {
     return 0;
 }
 
-int LedDriver::loop(uint32_t millis) {
+uint8_t LedDriver::loop(uint32_t millis) {
     /* Flashing of led 1 when period is non zero without blocking the main loop. */
     if ( this->ledState1.period != 0 ) {
         if ( this->ledState1.timestampedStarted == 0 || // Not started yet! 
@@ -52,20 +52,20 @@ void LedDriver::resetLed2Flash() {
     this->ledState2 = {0, 0, 0};
 }
 
-int LedDriver::reset() {
+uint8_t LedDriver::reset() {
     this->setup();
 
     return 0;
 }
 
-int LedDriver::sleep() {
+uint8_t LedDriver::sleep() {
     this->led1Off(); // Switch of the leds to reduce the power consumption
     this->led2Off();
 
     return 0;
 }
 
-int LedDriver::wakeup() {
+uint8_t LedDriver::wakeup() {
     return 0;
 }
 

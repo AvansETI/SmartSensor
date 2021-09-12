@@ -10,7 +10,7 @@ bit 3 VBATEN: External Battery Backup Supply (VBAT) Enable bit
 1 = VBAT input is enabled
 0 = VBAT input is disabled
 */
-int MCP7940NDriver::setup() {
+uint8_t MCP7940NDriver::setup() {
     MCP7940_MFP_DDR = MCP7940_MFP_DDR & ~(1 << MCP7940_MFP_PIN); // Set the MFP pin as input.
 
     if ( !this->isConnected() ) {
@@ -22,22 +22,22 @@ int MCP7940NDriver::setup() {
     return 0;
 }
 
-int MCP7940NDriver::loop(uint32_t millis) {
+uint8_t MCP7940NDriver::loop(uint32_t millis) {
     // TODO
     return 0;
 }
 
-int MCP7940NDriver::reset() {
+uint8_t MCP7940NDriver::reset() {
     // TODO
     return 0;
 }
 
-int MCP7940NDriver::sleep() {
+uint8_t MCP7940NDriver::sleep() {
     // TODO
     return 0;
 }
 
-int MCP7940NDriver::wakeup() {
+uint8_t MCP7940NDriver::wakeup() {
     // TODO
     return 0;
 }
@@ -46,7 +46,7 @@ bool MCP7940NDriver::isConnected() {
 
 }
 
- RTCTime MCP7940NDriver::getPowerDownTimestamp() {
+RTCTime MCP7940NDriver::getPowerDownTimestamp() {
     // TODO
     return RTCTime("20110101T10:10:10");
  }

@@ -29,11 +29,11 @@ constexpr uint8_t MCP7940_I2C_ADDRESS PROGMEM = 0xDE;
 
 class MCP7940NDriver: public Driver {
 public:
-    int setup();
-    int loop(uint32_t millis);
-    int reset();
-    int sleep();
-    int wakeup();
+    uint8_t setup();
+    uint8_t loop(uint32_t millis);
+    uint8_t reset();
+    uint8_t sleep();
+    uint8_t wakeup();
     
     /* Add POWER-DOWN/POWER-UP TIME-STAMP */
     RTCTime getPowerDownTimestamp();

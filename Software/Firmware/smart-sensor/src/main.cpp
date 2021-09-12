@@ -16,7 +16,7 @@
 
 #include "boards/Board.h"
 
-constexpr const char FIRMWARE_VERSION[] PROGMEM = "v0.9";
+static const char FIRMWARE_VERSION[] PROGMEM = "v0.9";
 
 int main() {
     SmartSensorBoard* board = SmartSensorBoard::getBoard();

@@ -17,8 +17,6 @@
 
 #include <drivers/Driver.h>
 
-#define SMARTSENSOR_BOARD_1_2 // Define which board needs to be compiled!
-
 #define SMARTSENSOR_MAX_DRIVERS 20
 
 /* The class SmartSensorBoard is the base class that is extended by the actual board class.
@@ -27,10 +25,10 @@
 class SmartSensorBoard: public SmartSensorMeasurement {
 protected:
     /* Total drivers that have been added to the board. */
-    uint8_t totalDrivers PROGMEM;
+    uint8_t totalDrivers;
 
     /* Drivers that have been added to the board. 20 drivers maximum */
-    IDriver* drivers[SMARTSENSOR_MAX_DRIVERS] PROGMEM; // Maybe later having a split in resources? Or a resources class that can.
+    IDriver* drivers[SMARTSENSOR_MAX_DRIVERS]; // Maybe later having a split in resources? Or a resources class that can.
 
 public:
     SmartSensorBoard(): totalDrivers(0) {}
@@ -59,6 +57,5 @@ public:
     virtual void debugf( const char* message, ...);
 
     virtual void addMeasurement(const char* measurment, ...) = 0;
-
 };
 

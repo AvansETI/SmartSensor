@@ -36,7 +36,7 @@ void SmartSensorBoard::addDriver(IDriver *driver, const char* driverName) {
 }
 
 void SmartSensorBoard::loop() {
-    for ( uint8_t i=0; i < this->totalDrivers; i++ ) { // Loop through all the drivers
+    for ( uint8_t i=0; i < this->totalDrivers; ++i ) { // Loop through all the drivers
         this->drivers[i]->loop(this->millis());
     }
 }

@@ -11,7 +11,7 @@
  */
 
 #define MEASUREMENT_TOTAL_CHARS 30
-#define MEASUREMENT_TOTAL 20
+#define MEASUREMENT_TOTAL 10
 
 #include <stdint.h>
 
@@ -40,5 +40,4 @@ public:
     uint8_t getSize() { return this->totalElements; }
 
     char* popMeasurement();
-
 };

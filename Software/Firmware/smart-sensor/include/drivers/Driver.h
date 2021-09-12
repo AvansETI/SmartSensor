@@ -26,24 +26,24 @@ public:
        shoul be called once at the startup of the board. When the setup is successfull, the
        method returns 0, otherwise it returns an error number.
     */
-    virtual int setup() = 0;    // "= 0" part makes this method pure virtual, and also makes this class abstract.
+    virtual uint8_t setup() = 0;    // "= 0" part makes this method pure virtual, and also makes this class abstract.
 
     /* The loop method handles the main functionality. This loop method shall not contain any blocking function
        calls. If you require delays, please use timing variables like millis(). So it is possible to
        maximize the CPU utilization! If successfull the method returns 0, otherwise it returns an error number.
     */
-    virtual int loop(uint32_t millis) = 0;
+    virtual uint8_t loop(uint32_t millis) = 0;
 
     /* The reset method resets the driver and the underlying hardware. If successfull the
        method returns 0, otherwise it returns an error number.
     */
-    virtual int reset() = 0;
+    virtual uint8_t reset() = 0;
 
     /* Put the hardware in low power consumption mode. */
-    virtual int sleep() = 0;
+    virtual uint8_t sleep() = 0;
 
     /* Wake the hardware from low power consumption mode. */
-    virtual int wakeup() = 0;
+    virtual uint8_t wakeup() = 0;
 };
 
 /* Driver

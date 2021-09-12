@@ -3,7 +3,7 @@
 #include <stdio.h>
 #include <string.h>
 
-int SHTC3Driver::setup() {
+uint8_t SHTC3Driver::setup() {
     if ( !this->isConnected() ) {
         return 1; // Cannot select the SHTC3 chip
     }
@@ -15,23 +15,23 @@ int SHTC3Driver::setup() {
     return 0;
 }
 
-int SHTC3Driver::loop(uint32_t millis) {
+uint8_t SHTC3Driver::loop(uint32_t millis) {
     this->sample();
     return 0;
 }
 
 // Software reset 0x805D 1000’0000’0101’1101 => page 8: https://taoic.oss-cn-hangzhou.aliyuncs.com/sku/pdf/d16078ca630c4b401c5bec25674afc26833e7455.pdf
-int SHTC3Driver::reset() {
+uint8_t SHTC3Driver::reset() {
     
     return 0;
 }
 
-int SHTC3Driver::sleep() {
+uint8_t SHTC3Driver::sleep() {
     
     return 0;
 }
 
-int SHTC3Driver::wakeup() {
+uint8_t SHTC3Driver::wakeup() {
     
     return 0;
 }

@@ -35,11 +35,11 @@ private:
     LedState ledState2 PROGMEM;
 
 public:
-    int setup();
-    int loop(uint32_t millis);
-    int reset();
-    int sleep();
-    int wakeup();
+    uint8_t setup();
+    uint8_t loop(uint32_t millis);
+    uint8_t reset();
+    uint8_t sleep();
+    uint8_t wakeup();
 
     void led1On();
     void led1Off();
