@@ -1,5 +1,6 @@
 #include <boards/BoardV1_2.h>
 
+#include <avr/boot.h>
 #include <avr/io.h>
 #include <avr/interrupt.h>
 #include <avr/pgmspace.h>
@@ -31,6 +32,8 @@ void SmartSensorBoardV1_2::setup() {
         this->debug(PSTR("Adapter is not in use"));
     }
 
+    this->debugf(PSTR("SERIAL: %s"), this->getID() );
+
     sei(); // Enable the interrupts!
 }
 
@@ -56,3 +59,24 @@ void SmartSensorBoardV1_2::addMeasurement(const char* measurement, ...) {
     this->debugf(PSTR("MEASUREMENT: %s"), buffer);
     this->buffer.addMeasurement(buffer);
 }
+
+char* SmartSensorBoardV1_2::getID() {
+
+
+    //sprintf(id, PSTR("SHTC3-%04X"), this->shtc3Driver.getID()); // ID from the SHTC3 chip
+    
+    // Get the Atmege unique serial number
+    for ( uint8_t i=0; i < 10; ++i ) {
+        uint16_t value = boot_signature_byte_get(0x0E + i); // 0x0E => SER0 
+        value          = (boot_signature_byte_get(0x0E + i + 1) << 4);
+        
+        char valueStr[2];
+        sprintf(valueStr, PSTR("%02X"), value);
+
+        id[(10-i)*2-1] = valueStr[1];
+        id[(10-i)*2-2] = valueStr[0];
+    }
+
+    return id;
+}
+

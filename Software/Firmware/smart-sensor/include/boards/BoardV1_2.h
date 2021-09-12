@@ -50,5 +50,8 @@ public:
     void debug( const char* message);
 
     void addMeasurement(const char* measurement, ...);
+    
+    char* getID();
+
 };
 

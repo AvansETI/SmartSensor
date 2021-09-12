@@ -24,6 +24,8 @@
    required by any main application functionality. */
 class SmartSensorBoard: public SmartSensorMeasurement {
 protected:
+    char id[20] PROGMEM;
+
     /* Total drivers that have been added to the board. */
     uint8_t totalDrivers;
 
@@ -57,5 +59,9 @@ public:
     virtual void debugf( const char* message, ...);
 
     virtual void addMeasurement(const char* measurment, ...) = 0;
+
+    virtual char* getID() { return this->id; };
+
+    void setID(char* id);
 };
 

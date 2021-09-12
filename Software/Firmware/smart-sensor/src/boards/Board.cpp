@@ -54,3 +54,7 @@ void SmartSensorBoard::debugf( const char* message, ...) {
 
     this->debug(buffer);
 }
+
+void SmartSensorBoard::setID(char* id) {
+    strcmp_P(this->id, id);
+}
