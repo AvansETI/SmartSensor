@@ -46,7 +46,7 @@ uint32_t SmartSensorBoardV1_2::millis() {
 }
 
 void SmartSensorBoardV1_2::debug( const char* message) {
-
+    this->serial0->print(message);
 }
 
 void SmartSensorBoardV1_2::addMeasurement(const char* measurement, ...) {
