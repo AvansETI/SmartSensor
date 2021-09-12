@@ -1,5 +1,6 @@
 #include "drivers/LedDriver.h"
 #include "avr/io.h"
+#include <util/delay.h>
 
 int LedDriver::setup() {
     LED_1_DDR = LED_1_DDR | (1 << LED_1_PIN); // Set the led pins as output!
@@ -12,6 +13,12 @@ int LedDriver::loop() {
     // WISH: Nothing to do here, or we could implement flashing of the leds here!
     // WISH: For example, flash(every x seconds, y length) and oneTimeFlash(y length)
     // WISH: this is only possible when a millis is available to know some timestamp.
+
+    this->led1On(); // Just for testing!
+    _delay_ms(1000);
+    this->led1Off();
+    _delay_ms(1000);
+
     return 0;
 }
 

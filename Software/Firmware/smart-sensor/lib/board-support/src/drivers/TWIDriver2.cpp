@@ -26,7 +26,6 @@ ISR(TWI0_vect) {
 #if TWI1_ENABLED
 TWIDriver2<0xD9, 0xD8, 0xDA, 0xDB, 0xDC> TWI2_1;
 
-// Always specify this in the main and link this to the class!!
 ISR(TWI1_vect) {
     using namespace details;
 

@@ -8,6 +8,8 @@
  * @author     : Floris Bob van Elzelingen, Maurice Snoeren (MS)
  * @version    : 0.1
  * @todo       : The loop contains blocking function calls!
+ *               Idea is to create a class for I2C that contains some mutex to get the resource for yourself. 
+ *               each driver that requires the I2C need to wait until it gets the unique access and use it until is releases it.
  * @updates
  * 
  */

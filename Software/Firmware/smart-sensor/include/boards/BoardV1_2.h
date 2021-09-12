@@ -12,13 +12,18 @@
 #include <stdint.h>
 
 #include <boards/Board.h>
+#include <drivers/LedDriver.h>
+#include <drivers/SHTC3Driver.h>
 
 class SmartSensorBoardV1_2: public SmartSensorBoard {
 private:
-    uint8_t id;
-
+    LedDriver ledDriver;
+    SHTC3Driver shtc3Driver;
+        
 public:
-    SmartSensorBoardV1_2(): id(0) {}
+    SmartSensorBoardV1_2() {}
+
+    void setup();
 
 };
 
