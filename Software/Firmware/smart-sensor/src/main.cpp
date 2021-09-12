@@ -8,7 +8,10 @@
  *  10-09-2021: MS: Updating the code to a mature version
  * 
  */
+#define FOSC 20000000 // Clock Speed
+
 #include <stdio.h>
+#include <util/delay.h>
 #include <avr/pgmspace.h>
 
 #include "boards/Board.h"
@@ -17,11 +20,13 @@ constexpr const char FIRMWARE_VERSION[] PROGMEM = "v0.9";
 
 int main() {
     SmartSensorBoard* board = SmartSensorBoard::getBoard();
+
     board->setup();
 
     board->debugf("Firmware: %s", FIRMWARE_VERSION);
 
     while (true) {
         board->loop();
+        _delay_ms(1); // When millis is correctly implemented remove this one!
     }
 }

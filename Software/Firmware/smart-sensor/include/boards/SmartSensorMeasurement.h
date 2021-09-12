@@ -12,5 +12,5 @@
 
 class SmartSensorMeasurement {
 public:
-    virtual void addMeasurement(const char* measurment, ...) = 0;
+    virtual void addMeasurement(const char* measurement, ...) = 0;
 };

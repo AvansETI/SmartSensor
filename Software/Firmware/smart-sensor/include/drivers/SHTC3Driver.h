@@ -18,9 +18,6 @@
 #include <math.h>
 #include <avr/pgmspace.h>
 
-#include <boardsupport.h>
-#include <board-support/drivers/TWIDriver2.h>
-
 /* Address of the SHTC3 chip on the I2C bus */
 constexpr uint8_t SHTC3_I2C_ADDRESS PROGMEM = 0xE0;
 

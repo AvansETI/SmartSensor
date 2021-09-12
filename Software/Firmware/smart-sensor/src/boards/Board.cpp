@@ -40,3 +40,14 @@ void SmartSensorBoard::loop() {
         this->drivers[i]->loop(this->millis());
     }
 }
+
+// http://www.cplusplus.com/reference/cstdio/vsprintf/
+void SmartSensorBoard::debugf( const char* message, ...) {
+    char buffer[50];
+    va_list args;
+    va_start(args, message);
+    vsprintf (buffer, message, args);
+    va_end (args);
+
+    this->debug(buffer);
+}

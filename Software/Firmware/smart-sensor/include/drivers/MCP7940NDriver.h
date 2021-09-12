@@ -19,8 +19,6 @@
 #include <drivers/Driver.h>
 #include <util/RTC.h>
 
-#include <board-support/drivers/TWIDriver2.h>
-
 /* Define how the MFP pin is connected to the Atmega. */
 #define MCP7940_MFP_PIN PB2
 #define MCP7940_MFP_DDR DDRB

@@ -12,6 +12,7 @@
  * 
  */
 #include <stdint.h>
+#include <stdio.h>
 #include <avr/pgmspace.h>
 
 #include <drivers/Driver.h>
@@ -55,7 +56,7 @@ public:
     virtual bool adapterInUse() = 0;
 
     virtual void debug( const char* message) = 0;
-    virtual void debugf( const char* message, ...) = 0;
+    virtual void debugf( const char* message, ...);
 
     virtual void addMeasurement(const char* measurment, ...) = 0;
 

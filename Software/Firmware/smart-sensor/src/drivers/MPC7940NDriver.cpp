@@ -43,12 +43,7 @@ int MCP7940NDriver::wakeup() {
 }
 
 bool MCP7940NDriver::isConnected() {
-  TWI2_0.enable();
-  TWI2_0.start(TWIMode::MasterTransmitter).wait().get();
-  const bool able_to_select = TWI2_0.select(TWI_RTC_ADDRESS).wait().get();
-  TWI2_0.stop();
-  TWI2_0.disable();
-  return able_to_select;
+
 }
 
  RTCTime MCP7940NDriver::getPowerDownTimestamp() {
@@ -58,23 +53,7 @@ bool MCP7940NDriver::isConnected() {
 
 // TODO: To be tested
 RTCTime MCP7940NDriver::getTime() {
-    constexpr uint8_t masks[7] = {0b0111'1111, 0b0111'1111, 0b0001'1111, 0b0000'0011, 0b0011'1111, 0b0001'1111, 0b1111'1111};
-    uint8_t raw[7];
-
-    TWI2_0.enable();
-    TWI2_0.start(TWIMode::MasterTransmitter).wait().get();
-    TWI2_0.select(TWI_RTC_ADDRESS).wait().get(); // MS: Blocking!
-    TWI2_0.write(0x00).wait().get();
-    TWI2_0.repeated_start(TWIMode::MasterReciever).wait().get();
-    TWI2_0.select(TWI_RTC_ADDRESS).wait().get();
-    for (uint8_t i = 0; i < 7; ++i)
-        raw[i] = RTCTime::convertFromBcd(*(i != 6 ? TWI2_0.read_ack() : TWI2_0.read_nack()).wait().get() & masks[i]);
-    TWI2_0.stop();
-    TWI2_0.disable();
-
-    RTCTime time(raw[0], raw[1], raw[2], raw[3], raw[4], raw[5], raw[6]);
-
-    return time;
+    return RTCTime("20110101T10:10:10");
 }
 
 void MCP7940NDriver::setTime(const RTCTime &t) {

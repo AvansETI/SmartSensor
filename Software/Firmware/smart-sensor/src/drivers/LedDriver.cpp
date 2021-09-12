@@ -13,17 +13,6 @@ int LedDriver::setup() {
 }
 
 int LedDriver::loop(uint32_t millis) {
-    // WISH: Nothing to do here, or we could implement flashing of the leds here!
-    // WISH: For example, flash(every x seconds, y length) and oneTimeFlash(y length)
-    // WISH: this is only possible when a millis is available to know some timestamp.
-
-    /*
-    this->led1On(); // Just for testing!
-    _delay_ms(1000);
-    this->led1Off();
-    _delay_ms(1000);
-    */
-
     /* Flashing of led 1 when period is non zero without blocking the main loop. */
     if ( this->ledState1.period != 0 ) {
         if ( this->ledState1.timestampedStarted == 0 || // Not started yet! 

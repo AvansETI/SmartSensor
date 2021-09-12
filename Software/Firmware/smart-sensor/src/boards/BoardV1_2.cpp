@@ -20,22 +20,31 @@ void SmartSensorBoardV1_2::setup() {
     this->ledDriver.led1Off();
 }
 
+// When millis is correctly implemented remove this!
+void SmartSensorBoardV1_2::loop() {
+    this->_millis++;
+    SmartSensorBoard::loop(); // call the parent
+}
+
 bool SmartSensorBoardV1_2::adapterInUse() {
     return ( ( BOARDV1_2_ADAPTER_IN_USE_PORT & (1 << BOARDV1_2_ADAPTER_IN_USE_PIN) ) != 0 );
 }
 
 uint32_t SmartSensorBoardV1_2::millis() {
-    return 0;
+    return this->_millis;
 }
 
 void SmartSensorBoardV1_2::debug( const char* message) {
 
 }
 
-void SmartSensorBoardV1_2::debugf( const char* message, ...) {
+void SmartSensorBoardV1_2::addMeasurement(const char* measurement, ...) {
+    char buffer[MEASUREMENT_TOTAL_CHARS];
+    va_list args;
+    va_start(args, measurement);
+    vsprintf (buffer, measurement, args);
+    va_end (args);
 
-}
-
-void SmartSensorBoardV1_2::addMeasurement(const char* measurment, ...) {
-    
+    this->debugf("MEASUREMENT: %s", buffer); // Save this measurement in some array
+    this->buffer.addMeasurement(buffer);
 }
