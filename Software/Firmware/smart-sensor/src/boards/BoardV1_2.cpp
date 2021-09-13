@@ -5,15 +5,27 @@
 #include <avr/interrupt.h>
 #include <avr/pgmspace.h>
 #include <util/delay.h>
+#include <string.h>
 
 void SmartSensorBoardV1_2::setup() {
     BOARDV1_2_ADAPTER_IN_USE_DDR = BOARDV1_2_ADAPTER_IN_USE_DDR & ~(1 << BOARDV1_2_ADAPTER_IN_USE_PIN); // Set pin for adapter in use as input.
 
     this->timer1.setup();
+    this->serial0->setup();
 
     this->addDriver(&this->ledDriver, PSTR("LedDriver"));
     this->addDriver(&this->shtc3Driver, PSTR("SHTC3Driver"));
     this->addDriver(&this->mcp7940nDriver, PSTR("MCP7940NDriver"));
+
+    SmartSensorBoard::setup(); // Base class setup() when everything is loaded.
+
+    if ( this->adapterInUse() ) {
+        this->debug_P(PSTR("Adapter is in use.\n"));
+    } else {
+        this->debug_P(PSTR("Adapter is not in use.\n"));
+    }
+
+    this->debugf_P(PSTR("ID: %s\n"), this->getID() );
 
     /* Show the user that we have started up, by one-second led on and then flash led. */
     this->ledDriver.led1On();
@@ -24,15 +36,7 @@ void SmartSensorBoardV1_2::setup() {
     _delay_ms(100);
     this->ledDriver.led1Off();
 
-    this->ledDriver.led1Flash(1000, 100);
-
-    if ( this->adapterInUse() ) {
-        this->debug(PSTR("Adapter is in use."));
-    } else {
-        this->debug(PSTR("Adapter is not in use"));
-    }
-
-    this->debugf(PSTR("SERIAL: %s"), this->getID() );
+    this->ledDriver.led1Flash(1000, 1);
 
     sei(); // Enable the interrupts!
 }
@@ -49,6 +53,10 @@ void SmartSensorBoardV1_2::debug( const char* message) {
     this->serial0->print(message);
 }
 
+void SmartSensorBoardV1_2::debug_P( const char* message) {
+    this->serial0->print_P(message);
+}
+
 void SmartSensorBoardV1_2::addMeasurement(const char* measurement, ...) {
     char buffer[MEASUREMENT_TOTAL_CHARS];
     va_list args;
@@ -56,27 +64,25 @@ void SmartSensorBoardV1_2::addMeasurement(const char* measurement, ...) {
     vsprintf (buffer, measurement, args);
     va_end (args);
 
-    this->debugf(PSTR("MEASUREMENT: %s"), buffer);
+    this->debugf_P(PSTR("MEASUREMENT: %s"), buffer);
     this->buffer.addMeasurement(buffer);
 }
 
 char* SmartSensorBoardV1_2::getID() {
-
-
-    //sprintf(id, PSTR("SHTC3-%04X"), this->shtc3Driver.getID()); // ID from the SHTC3 chip
-    
     // Get the Atmege unique serial number
-    for ( uint8_t i=0; i < 10; ++i ) {
-        uint16_t value = boot_signature_byte_get(0x0E + i); // 0x0E => SER0 
-        value          = (boot_signature_byte_get(0x0E + i + 1) << 4);
+    for ( uint8_t i=0; i < 20; i=i+2 ) {
+        uint8_t b = boot_signature_byte_get(0x0E + i); // 0x0E => SER0
         
-        char valueStr[2];
-        sprintf(valueStr, PSTR("%02X"), value);
+        uint8_t h1 = (b & 0b0000'1111);
+        uint8_t h2 = (b >> 4);
 
-        id[(10-i)*2-1] = valueStr[1];
-        id[(10-i)*2-2] = valueStr[0];
+        // Convert to HEX
+        this->id[20-i-1]   = (char) (h1 < 10 ? h1+'0' : h1-10+'A');
+        this->id[20-i-2] = (char) (h2 < 10 ? h2+'0' : h2-10+'A');
     }
 
-    return id;
+    this->id[20] = '\0';
+
+    return this->id;
 }
 

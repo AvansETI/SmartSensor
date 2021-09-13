@@ -23,10 +23,11 @@ int main() {
 
     board->setup();
 
-    board->debugf(PSTR("Firmware: %s"), FIRMWARE_VERSION);
-
+    board->debug_P(PSTR("Firmware: "));
+    board->debug_P(FIRMWARE_VERSION);
+   board->debug_P(PSTR("\n"));
+ 
     while (true) {
         board->loop();
-        _delay_ms(1); // When millis is correctly implemented remove this one!
     }
 }

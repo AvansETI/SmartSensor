@@ -87,6 +87,7 @@ uint8_t SHTC3Driver::sample() {
     this->setDataInvalid();
 
     // Get the sample values here!
+    // this->getMeasurementCallback()->addMeasurement("temperature: 25.5");
 
     this->setDataValid();
 

@@ -33,6 +33,7 @@ public:
     // loop => send in the loop the characters away, it is possible to work with a MessageBuffer.
     //uint8_t isBusy() { return this->busy; }
     uint8_t print(const char* message); // Still blocking, this can be solved by buffer or an MessageBuffer and using busy that others can wait.
+    uint8_t print_P(const char* message); // Still blocking, this can be solved by buffer or an MessageBuffer and using busy that others can wait.
 
 private:
     void transmitChar(char data);

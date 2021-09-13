@@ -24,13 +24,18 @@
    required by any main application functionality. */
 class SmartSensorBoard: public SmartSensorMeasurement {
 protected:
-    char id[20] PROGMEM;
+    char id[21];
 
     /* Total drivers that have been added to the board. */
     uint8_t totalDrivers;
 
     /* Drivers that have been added to the board. 20 drivers maximum */
     IDriver* drivers[SMARTSENSOR_MAX_DRIVERS]; // Maybe later having a split in resources? Or a resources class that can.
+
+    /* Loop timing. */
+    uint32_t loopTiming;
+    uint16_t loopTime;
+
 
 public:
     SmartSensorBoard(): totalDrivers(0) {}
@@ -39,7 +44,7 @@ public:
     static SmartSensorBoard* getBoard();
 
     /* Setup the board's hardware. */
-    virtual void setup() = 0;
+    virtual void setup();
 
     /* Providing the main functionality of the board in a main loop. */
     virtual void loop();
@@ -58,10 +63,11 @@ public:
     virtual void debug( const char* message) = 0;
     virtual void debugf( const char* message, ...);
 
+    virtual void debug_P( const char* message) = 0;
+    virtual void debugf_P( const char* message, ...);
+
     virtual void addMeasurement(const char* measurment, ...) = 0;
 
     virtual char* getID() { return this->id; };
-
-    void setID(char* id);
 };
 
