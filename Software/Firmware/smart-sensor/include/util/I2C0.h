@@ -18,27 +18,39 @@
 
 /* Interface */
 class I2C0InterruptEvent {
-    virtual void interrupt() = 0; // This function is called when the interrupt has been activated! Not interrupt space!
+public:
+    virtual void i2c0Interrupt() = 0; // This function is called when the interrupt has been activated! Not interrupt space!
 };
 
+/* A callback to the class that is busy with the TWI interface. */
+static I2C0InterruptEvent* cbInterruptEvent;
+
 /* The class I2CDriver handles the i2c 0 interface on the board. */
-class I2C0Driver: public Driver {
+class I2C0 {
 private:
-    uint8_t state;// TESTING
+    uint8_t state;
+    bool busy;
+
+    // TESTING
     uint16_t humidity;
     uint16_t temperature;
     uint32_t startI2C;
 
+protected:
+    I2C0(): state(0), busy(false) { cbInterruptEvent = NULL; } // Singleton
+
 public:
-    I2C0Driver(): state(0) {}
+    static I2C0* getInstance() {
+        static I2C0 _i2c;
+        return &_i2c;
+    }
+
+    bool claim(I2C0InterruptEvent* event);
+    bool release(I2C0InterruptEvent* event);
 
     uint8_t setup();
-    uint8_t loop(uint32_t millis);
-    uint8_t reset();
-    uint8_t sleep();
-    uint8_t wakeup();
+    
 
-private:
     /* Wait until the I2C0 is ready again. */
     bool wait(uint8_t status);
 
@@ -59,4 +71,6 @@ private:
     uint8_t getData();
 
     void stop();
+
+    bool isConnected(uint8_t address);
 };

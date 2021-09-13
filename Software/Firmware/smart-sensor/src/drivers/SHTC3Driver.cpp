@@ -2,6 +2,9 @@
 
 #include <stdio.h>
 #include <string.h>
+#include <util/twi.h>
+#include <util/I2C0.h>
+#include <util/Serial0.h> // kan weg voor debug!
 
 uint8_t SHTC3Driver::setup() {
     if ( !this->isConnected() ) {
@@ -12,11 +15,30 @@ uint8_t SHTC3Driver::setup() {
         return 2; // The given ID is not correct!
     }
 
+    this->samplingInterval = 60*1; // seconds
+    this->loopTiming       = 0;
+
     return 0;
 }
 
+bool SHTC3Driver::isConnected() {
+    I2C0* i2c = I2C0::getInstance();
+    return i2c->isConnected(SHTC3_I2C_ADDRESS);
+}
+
 uint8_t SHTC3Driver::loop(uint32_t millis) {
-    this->sample();
+    if ( this->loopTiming == 0 ) { // Start the timing process
+        this->loopTiming = millis/1000;        
+    }
+
+    I2C0* i2c = I2C0::getInstance();
+    uint32_t loopTime = ((millis/1000) - this->loopTiming);
+    if ( loopTime > this->samplingInterval &&
+         this->state == 0 && i2c->claim(this) ) {
+        this->sampleLoop(); // Start the sampling process which is interrupt driven!
+        this->loopTiming = millis/1000; // Restart the timing
+    }
+
     return 0;
 }
 
@@ -34,14 +56,6 @@ uint8_t SHTC3Driver::sleep() {
 uint8_t SHTC3Driver::wakeup() {
     
     return 0;
-}
-
-float SHTC3Driver::getTemperature() {
-    return this->temperature;
-}
-
-float SHTC3Driver::getHumidity() {
-    return this->humidity;
 }
 
 // Where is the source of this calculation?
@@ -67,10 +81,6 @@ bool SHTC3Driver::checkChecksum(const uint16_t data, const uint8_t checksum) {
     return crc == checksum;
 }
 
-bool SHTC3Driver::isConnected() {    
-    return false;
-}
-
 uint16_t SHTC3Driver::getProductCode() {
     return this->getID() & 0b0000'1000'0011'1111;
 }
@@ -80,16 +90,119 @@ uint16_t SHTC3Driver::getID() {
         return this->id;
     }
 
+    // TODO: handle result of the wait functions.
+    I2C0* i2c = I2C0::getInstance();
+    i2c->start(); i2c->wait(TW_START);
+    i2c->select(SHTC3_I2C_ADDRESS, TW_WRITE); i2c->wait(TW_MT_SLA_ACK);
+    i2c->write(0xEF); i2c->wait(TW_MT_DATA_ACK);
+    i2c->write(0xC8); i2c->wait(TW_MT_DATA_ACK);
+    i2c->repeatedStart(); i2c->wait(TW_REP_START);
+    i2c->select(SHTC3_I2C_ADDRESS, TW_READ); i2c->wait(TW_MR_SLA_ACK);
+    i2c->readAck(); i2c->wait(TW_MR_DATA_ACK);
+    this->id = i2c->getData() << 8;
+    i2c->readAck(); i2c->wait(TW_MR_DATA_ACK);
+    this->id |= i2c->getData();
+    i2c->readAck(); i2c->wait(TW_MR_DATA_ACK);
+    uint8_t checksum = i2c->getData();
+    i2c->stop();
+
+    if ( !this->checkChecksum(this->id, checksum) ) {
+        this->id = 0;
+    }
+
+    return this->id;
+}
+
+// Sample loop is interrupt driven.
+uint8_t SHTC3Driver::sampleLoop() {
+    I2C0* i2c = I2C0::getInstance();
+
+    switch (this->state) {
+        case 0:
+            this->state++;
+            this->setDataInvalid();
+            i2c->start();
+            break;
+        case 1:
+            this->state++;
+            i2c->status(TW_START);
+            i2c->select(0xE0, TW_WRITE);
+            break;
+        case 2:
+            this->state++;
+            i2c->status(TW_MT_SLA_ACK);
+            i2c->write(0x5C);
+            break;
+        case 3:
+            this->state++;
+            i2c->status(TW_MT_DATA_ACK);
+            i2c->write(0x24);
+            break;
+        case 4:
+            this->state++;
+            i2c->status(TW_MT_DATA_ACK);
+            i2c->repeatedStart();
+            break;
+        case 5:
+            this->state++;
+            i2c->status(TW_REP_START);
+            i2c->select(0xE0, TW_READ);
+            break;
+        case 6:
+            this->state++;
+            i2c->status(TW_MR_SLA_ACK);
+            i2c->readAck();
+            break;
+        case 7:
+            this->state++;
+            i2c->status(TW_MR_DATA_ACK);
+            this->humidity = i2c->getData() << 8;
+            i2c->readAck();
+            break;
+        case 8:
+            this->state++;
+            i2c->status(TW_MR_DATA_ACK);
+            this->humidity |= i2c->getData();
+            i2c->readAck();
+            break;
+        case 9:
+            this->state++;
+            i2c->status(TW_MR_DATA_ACK);
+            i2c->getData();
+            i2c->readAck();
+            break;
+        case 10:
+            this->state++;
+            i2c->status(TW_MR_DATA_ACK);
+            this->temperature = i2c->getData() << 8;
+            i2c->readAck();
+            break;
+        case 11:
+            this->state++;
+            i2c->status(TW_MR_DATA_ACK);
+            this->temperature |= i2c->getData();
+            i2c->readNack();
+            break;
+        case 12:
+            this->state++;
+            i2c->status(TW_MR_DATA_ACK);
+            i2c->getData();
+            i2c->stop();
+            i2c->release(this);
+            
+            Serial0* s = Serial0::getInstance();
+            s->print("METING!!\n");
+            //float _humidity = 100 * float(this->humidity) / 65536.0f;
+            //float _tempature = 175 * float(this->temperature) / 65536.0f - 45.0f;
+            //sprintf(message, "H: %0.1f, T: %0.1f\n", (double)_humidity, (double)_tempature);
+            //this->getMeasurementCallback()->addMeasurement("Yes, meting!!");
+            //this->setDataValid();
+            this->state = 0; // Start over
+    }
+
     return 0;
 }
 
-uint8_t SHTC3Driver::sample() {
-    this->setDataInvalid();
-
-    // Get the sample values here!
-    // this->getMeasurementCallback()->addMeasurement("temperature: 25.5");
-
-    this->setDataValid();
-
-    return 0;
+void SHTC3Driver::i2c0Interrupt() {
+    this->sampleLoop();
 }

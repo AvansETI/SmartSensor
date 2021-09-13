@@ -52,7 +52,7 @@ void SmartSensorBoard::loop() {
     }
 
     this->loopTime = ( this->millis() - this->loopTiming );
-    this->debugf_P(PSTR("Loop time %d ms\n"), this->loopTime);
+    //this->debugf_P(PSTR("Loop time %d ms\n"), this->loopTime);
     this->loopTiming = this->millis();
 }
 

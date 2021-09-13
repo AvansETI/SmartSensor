@@ -10,13 +10,18 @@
 void SmartSensorBoardV1_2::setup() {
     BOARDV1_2_ADAPTER_IN_USE_DDR = BOARDV1_2_ADAPTER_IN_USE_DDR & ~(1 << BOARDV1_2_ADAPTER_IN_USE_PIN); // Set pin for adapter in use as input.
 
-    this->timer1.setup();
+    this->timer1 = Timer1::getInstance();
+    this->timer1->setup();
+    
+    this->serial0 = Serial0::getInstance();
     this->serial0->setup();
+
+    this->i2c0 = I2C0::getInstance();
+    this->i2c0->setup();
 
     this->addDriver(&this->ledDriver, PSTR("LedDriver"));
     this->addDriver(&this->shtc3Driver, PSTR("SHTC3Driver"));
     this->addDriver(&this->mcp7940nDriver, PSTR("MCP7940NDriver"));
-    this->addDriver(&this->i2c0Driver, PSTR("I2C0Driver"));
 
     SmartSensorBoard::setup(); // Base class setup() when everything is loaded.
 
@@ -37,7 +42,7 @@ void SmartSensorBoardV1_2::setup() {
     _delay_ms(100);
     this->ledDriver.led1Off();
 
-    this->ledDriver.led1Flash(30'000, 100);
+    this->ledDriver.led1Flash(5'000, 100);
 
     sei(); // Enable the interrupts!
 }
@@ -47,7 +52,7 @@ bool SmartSensorBoardV1_2::adapterInUse() {
 }
 
 uint32_t SmartSensorBoardV1_2::millis() {
-    return this->timer1.millis();
+    return this->timer1->millis();
 }
 
 void SmartSensorBoardV1_2::debug( const char* message) {
@@ -59,14 +64,15 @@ void SmartSensorBoardV1_2::debug_P( const char* message) {
 }
 
 void SmartSensorBoardV1_2::addMeasurement(const char* measurement, ...) {
-    char buffer[MESSAGE_TOTAL_CHARS];
-    va_list args;
-    va_start(args, measurement);
-    vsprintf (buffer, measurement, args);
-    va_end (args);
+    //char buffer[MESSAGE_TOTAL_CHARS];
+    //va_list args;
+    //va_start(args, measurement);
+    //vsprintf (buffer, measurement, args);
+    //va_end (args);
 
-    this->debugf_P(PSTR("MEASUREMENT: %s"), buffer);
-    this->buffer.addMeasurement(buffer);
+    //this->debugf_P(PSTR("MEASUREMENT: %s"), buffer);
+    //this->buffer.addMeasurement(buffer);
+    this->debug("Hier zijn we!\n"); // testen!
 }
 
 char* SmartSensorBoardV1_2::getID() {

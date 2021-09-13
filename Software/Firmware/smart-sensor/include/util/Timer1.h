@@ -19,8 +19,14 @@ static uint32_t _millis;
 class Timer1 {
 private:
 
+protected:
+    Timer1() { _millis = 0; }; // Singleton
+
 public:
-    Timer1() { _millis = 0; }; // Create singleton?
+    static Timer1* getInstance() {
+        static Timer1 _timer1;
+        return &_timer1;
+    }
 
     uint8_t setup();
     uint32_t millis();

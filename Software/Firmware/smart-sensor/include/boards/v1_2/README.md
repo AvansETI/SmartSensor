@@ -1,0 +1,1 @@
+Put here all the hardware specific utils like I2C.h for example.

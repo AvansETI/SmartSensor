@@ -27,22 +27,22 @@
 #include <drivers/LedDriver.h>
 #include <drivers/SHTC3Driver.h>
 #include <drivers/MCP7940NDriver.h>
-#include <drivers/I2C0Driver.h>
+#include <util/I2C0.h>
 
 class SmartSensorBoardV1_2: public SmartSensorBoard {
 private:
     MeasurementBuffer buffer;
-    Timer1 timer1;
+    Timer1* timer1;
     Serial0* serial0;
+    I2C0* i2c0;
 
     LedDriver ledDriver;
     SHTC3Driver shtc3Driver;
     MCP7940NDriver mcp7940nDriver;
-    I2C0Driver i2c0Driver;
         
 public:
-    SmartSensorBoardV1_2() { this->serial0 = Serial0::getInstance(); }
-    SmartSensorBoardV1_2(SmartSensorMeasurement* cbMeasurement): shtc3Driver(cbMeasurement) { this->serial0 = Serial0::getInstance(); }
+    SmartSensorBoardV1_2() { }
+    SmartSensorBoardV1_2(SmartSensorMeasurement* cbMeasurement): shtc3Driver(cbMeasurement) { }
 
     void setup();
 
