@@ -49,7 +49,6 @@ void SmartSensorBoard::setup() {
 void SmartSensorBoard::loop() {
     for ( uint8_t i=0; i < this->totalDrivers; ++i ) { // Loop through all the drivers
         this->drivers[i]->loop(this->millis());
-        this->drivers[i]->loop(this->millis());
     }
 
     this->loopTime = ( this->millis() - this->loopTiming );

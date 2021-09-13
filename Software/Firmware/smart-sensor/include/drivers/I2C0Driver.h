@@ -14,13 +14,24 @@
 
 #include <drivers/Driver.h>
 
-#define I2C_SCL_CLOCK 100'000L
+#define I2C_SCL_CLOCK 400'000L
 
-/* The class LedDriver handles the two leds that are on the board. */
+/* Interface */
+class I2C0InterruptEvent {
+    virtual void interrupt() = 0; // This function is called when the interrupt has been activated! Not interrupt space!
+};
+
+/* The class I2CDriver handles the i2c 0 interface on the board. */
 class I2C0Driver: public Driver {
 private:
+    uint8_t state;// TESTING
+    uint16_t humidity;
+    uint16_t temperature;
+    uint32_t startI2C;
 
 public:
+    I2C0Driver(): state(0) {}
+
     uint8_t setup();
     uint8_t loop(uint32_t millis);
     uint8_t reset();
