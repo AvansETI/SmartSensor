@@ -43,7 +43,7 @@ uint8_t MCP7940NDriver::wakeup() {
 }
 
 bool MCP7940NDriver::isConnected() {
-
+    return false;
 }
 
 RTCTime MCP7940NDriver::getPowerDownTimestamp() {

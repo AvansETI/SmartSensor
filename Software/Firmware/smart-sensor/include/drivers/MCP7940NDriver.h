@@ -28,7 +28,15 @@
 constexpr uint8_t MCP7940_I2C_ADDRESS PROGMEM = 0xDE;
 
 class MCP7940NDriver: public Driver {
+protected:
+    MCP7940NDriver() {}
+
 public:
+    static MCP7940NDriver* getInstance() {
+        static MCP7940NDriver _mcp7940NDriver;
+        return &_mcp7940NDriver;
+    }
+
     uint8_t setup();
     uint8_t loop(uint32_t millis);
     uint8_t reset();

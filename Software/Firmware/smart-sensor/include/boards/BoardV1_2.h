@@ -31,18 +31,16 @@
 
 class SmartSensorBoardV1_2: public SmartSensorBoard {
 private:
-    MeasurementBuffer buffer;
     Timer1* timer1;
     Serial0* serial0;
     I2C0* i2c0;
 
-    LedDriver ledDriver;
-    SHTC3Driver shtc3Driver;
-    MCP7940NDriver mcp7940nDriver;
+    LedDriver* ledDriver;
+    SHTC3Driver* shtc3Driver;
+    MCP7940NDriver* mcp7940nDriver;
         
 public:
     SmartSensorBoardV1_2() { }
-    SmartSensorBoardV1_2(SmartSensorMeasurement* cbMeasurement): shtc3Driver(cbMeasurement) { }
 
     void setup();
 
@@ -53,7 +51,7 @@ public:
     void debug( const char* message);
     void debug_P( const char* message);
 
-    void addMeasurement(const char* measurement, ...);
+    void addMeasurement(const char* measurement);
     
     char* getID();
 

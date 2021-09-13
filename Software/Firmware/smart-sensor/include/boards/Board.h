@@ -32,6 +32,8 @@ protected:
     /* Drivers that have been added to the board. 20 drivers maximum */
     IDriver* drivers[SMARTSENSOR_MAX_DRIVERS]; // Maybe later having a split in resources? Or a resources class that can.
 
+    MeasurementBuffer buffer;
+
     /* Loop timing. */
     uint32_t loopTiming;
     uint16_t loopTime;
@@ -66,7 +68,7 @@ public:
     virtual void debug_P( const char* message) = 0;
     virtual void debugf_P( const char* message, ...);
 
-    virtual void addMeasurement(const char* measurment, ...) = 0;
+    virtual void addMeasurement(const char* measurment) = 0;
 
     virtual char* getID() { return this->id; };
 };

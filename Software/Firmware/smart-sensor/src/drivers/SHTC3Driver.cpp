@@ -15,7 +15,7 @@ uint8_t SHTC3Driver::setup() {
         return 2; // The given ID is not correct!
     }
 
-    this->samplingInterval = 60*1; // seconds
+    this->samplingInterval = 2*1; // seconds
     this->loopTiming       = 0;
 
     return 0;
@@ -191,12 +191,19 @@ uint8_t SHTC3Driver::sampleLoop() {
             i2c->release(this);
             
             Serial0* s = Serial0::getInstance();
-            s->print("METING!!\n");
-            //float _humidity = 100 * float(this->humidity) / 65536.0f;
-            //float _tempature = 175 * float(this->temperature) / 65536.0f - 45.0f;
-            //sprintf(message, "H: %0.1f, T: %0.1f\n", (double)_humidity, (double)_tempature);
-            //this->getMeasurementCallback()->addMeasurement("Yes, meting!!");
-            //this->setDataValid();
+            char m[30];
+            float _humidity = 100 * float(this->humidity) / 65536.0f;
+            float _tempature = 175 * float(this->temperature) / 65536.0f - 45.0f;
+
+            sprintf_P(m, PSTR("humidity: %.1f"), (double)_humidity);
+            s->print(m);
+            this->getMeasurementCallback()->addMeasurement(m);
+            
+            sprintf_P(m, PSTR("temperature: %.1f"), (double)_tempature);
+            s->print(m);
+            this->getMeasurementCallback()->addMeasurement(m);
+            
+            this->setDataValid();
             this->state = 0; // Start over
     }
 

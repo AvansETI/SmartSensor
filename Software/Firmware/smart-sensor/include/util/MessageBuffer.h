@@ -20,7 +20,7 @@
 /* Interface */
 class SmartSensorMeasurement {
 public:
-    virtual void addMeasurement(const char* measurement, ...) = 0;
+    virtual void addMeasurement(const char* measurement) = 0;
 };
 
 struct Measurement {
@@ -39,11 +39,11 @@ public:
     /* Constructor that sets all the individual time elements based on the given iso8601 string. */
     MeasurementBuffer(): startPointer(0), insertPointer(0), bufferOverflow(false), totalElements(0) {}
 
-    uint8_t addMeasurement(char* measurement);
+    uint8_t addMeasurement(const char* measurement);
 
     bool getBufferOverflow() { return this->bufferOverflow; }
     void resetBufferOverflow() { this->bufferOverflow = false; }
     uint8_t getSize() { return this->totalElements; }
 
-    char* popMeasurement();
+    bool popMeasurement(char* measurement);
 };

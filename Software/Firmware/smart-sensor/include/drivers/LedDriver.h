@@ -31,8 +31,17 @@ struct LedState {
 /* The class LedDriver handles the two leds that are on the board. */
 class LedDriver: public Driver {
 private:
-    LedState ledState1 PROGMEM;
-    LedState ledState2 PROGMEM;
+    LedState ledState1;
+    LedState ledState2;
+
+protected:
+    LedDriver() {} // Singleton
+
+public:
+    static LedDriver* getInstance() {
+        static LedDriver _ledDriver;
+        return &_ledDriver;
+    }
 
 public:
     uint8_t setup();

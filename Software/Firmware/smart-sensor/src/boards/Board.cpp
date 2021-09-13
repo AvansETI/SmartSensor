@@ -51,8 +51,15 @@ void SmartSensorBoard::loop() {
         this->drivers[i]->loop(this->millis());
     }
 
+    // Check the measurement buffer and sent the messages to the broker. (BELOW some test code)
+    //this->debugf("Buffer size: %d (overflow:%d)\n", this->buffer.getSize(), this->buffer.getBufferOverflow());
+    char m[MESSAGE_TOTAL_CHARS];
+    if ( this->buffer.popMeasurement(m) ) {
+        this->debugf("Popped: %s\n", m);
+    }
+
     this->loopTime = ( this->millis() - this->loopTiming );
-    //this->debugf_P(PSTR("Loop time %d ms\n"), this->loopTime);
+    this->debugf_P(PSTR("Loop time %d ms\n"), this->loopTime); // Show the actual loop timing in the serial
     this->loopTiming = this->millis();
 }
 

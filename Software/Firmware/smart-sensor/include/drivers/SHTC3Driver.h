@@ -35,13 +35,15 @@ private:
     uint32_t loopTiming;
 
 protected:
+    SHTC3Driver(SmartSensorMeasurement* cbMeasurement): Driver(cbMeasurement), id(0), state(0) {};
+
     bool isConnected();
 
 public:
-    SHTC3Driver(): id(0), state(0) { }; // Should not use the default constructor!
-
-    /* This driver contains measurements, so implement this constructor. */
-    SHTC3Driver(SmartSensorMeasurement* cbMeasurement): Driver(cbMeasurement), id(0), state(0) {};
+    static SHTC3Driver* getInstance(SmartSensorMeasurement* cbMeasurement) {
+        static SHTC3Driver _shtc3Driver(cbMeasurement);
+        return &_shtc3Driver;
+    }
 
     uint8_t setup();
     uint8_t loop(uint32_t millis);

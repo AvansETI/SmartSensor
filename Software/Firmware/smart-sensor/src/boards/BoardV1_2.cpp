@@ -19,9 +19,13 @@ void SmartSensorBoardV1_2::setup() {
     this->i2c0 = I2C0::getInstance();
     this->i2c0->setup();
 
-    this->addDriver(&this->ledDriver, PSTR("LedDriver"));
-    this->addDriver(&this->shtc3Driver, PSTR("SHTC3Driver"));
-    this->addDriver(&this->mcp7940nDriver, PSTR("MCP7940NDriver"));
+    this->shtc3Driver    = SHTC3Driver::getInstance(this);
+    this->ledDriver      = LedDriver::getInstance();
+    this->mcp7940nDriver = MCP7940NDriver::getInstance();
+
+    this->addDriver(this->ledDriver, PSTR("LedDriver"));
+    this->addDriver(this->shtc3Driver, PSTR("SHTC3Driver"));
+    this->addDriver(this->mcp7940nDriver, PSTR("MCP7940NDriver"));
 
     SmartSensorBoard::setup(); // Base class setup() when everything is loaded.
 
@@ -34,15 +38,15 @@ void SmartSensorBoardV1_2::setup() {
     this->debugf_P(PSTR("ID: %s\n"), this->getID() );
 
     /* Show the user that we have started up, by one-second led on and then flash led. */
-    this->ledDriver.led1On();
+    this->ledDriver->led1On();
     _delay_ms(1000);
-    this->ledDriver.led1Off();
+    this->ledDriver->led1Off();
     _delay_ms(1000);
-    this->ledDriver.led1On();
+    this->ledDriver->led1On();
     _delay_ms(100);
-    this->ledDriver.led1Off();
+    this->ledDriver->led1Off();
 
-    this->ledDriver.led1Flash(5'000, 100);
+    this->ledDriver->led1Flash(5'000, 100);
 
     sei(); // Enable the interrupts!
 }
@@ -63,16 +67,8 @@ void SmartSensorBoardV1_2::debug_P( const char* message) {
     this->serial0->print_P(message);
 }
 
-void SmartSensorBoardV1_2::addMeasurement(const char* measurement, ...) {
-    //char buffer[MESSAGE_TOTAL_CHARS];
-    //va_list args;
-    //va_start(args, measurement);
-    //vsprintf (buffer, measurement, args);
-    //va_end (args);
-
-    //this->debugf_P(PSTR("MEASUREMENT: %s"), buffer);
-    //this->buffer.addMeasurement(buffer);
-    this->debug("Hier zijn we!\n"); // testen!
+void SmartSensorBoardV1_2::addMeasurement(const char* measurement) {
+    this->buffer.addMeasurement(measurement);
 }
 
 char* SmartSensorBoardV1_2::getID() {
