@@ -14,7 +14,7 @@
 #include <stddef.h>
 #include <avr/pgmspace.h>
 
-#include <util/MeasurementBuffer.h>
+#include <util/MessageBuffer.h>
 
 /* IDriver
  * The interface that implements the main methods required for a driver.

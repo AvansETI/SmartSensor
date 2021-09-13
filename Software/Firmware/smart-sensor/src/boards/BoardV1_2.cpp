@@ -16,6 +16,7 @@ void SmartSensorBoardV1_2::setup() {
     this->addDriver(&this->ledDriver, PSTR("LedDriver"));
     this->addDriver(&this->shtc3Driver, PSTR("SHTC3Driver"));
     this->addDriver(&this->mcp7940nDriver, PSTR("MCP7940NDriver"));
+    this->addDriver(&this->i2c0Driver, PSTR("I2C0Driver"));
 
     SmartSensorBoard::setup(); // Base class setup() when everything is loaded.
 
@@ -36,7 +37,7 @@ void SmartSensorBoardV1_2::setup() {
     _delay_ms(100);
     this->ledDriver.led1Off();
 
-    this->ledDriver.led1Flash(10, 1);
+    this->ledDriver.led1Flash(30'000, 100);
 
     sei(); // Enable the interrupts!
 }
@@ -58,7 +59,7 @@ void SmartSensorBoardV1_2::debug_P( const char* message) {
 }
 
 void SmartSensorBoardV1_2::addMeasurement(const char* measurement, ...) {
-    char buffer[MEASUREMENT_TOTAL_CHARS];
+    char buffer[MESSAGE_TOTAL_CHARS];
     va_list args;
     va_start(args, measurement);
     vsprintf (buffer, measurement, args);

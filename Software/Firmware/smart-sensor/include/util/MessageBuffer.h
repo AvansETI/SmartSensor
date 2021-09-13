@@ -10,8 +10,8 @@
  * 
  */
 
-#define MEASUREMENT_TOTAL_CHARS 30
-#define MEASUREMENT_TOTAL 10
+#define MESSAGE_TOTAL_CHARS 30
+#define MESSAGE_TOTAL 10
 
 #include <stdint.h>
 
@@ -24,12 +24,12 @@ public:
 };
 
 struct Measurement {
-    char measurement[MEASUREMENT_TOTAL_CHARS];
+    char measurement[MESSAGE_TOTAL_CHARS];
 };
 
 class MeasurementBuffer {
 private:
-    Measurement measurements[MEASUREMENT_TOTAL];  
+    Measurement measurements[MESSAGE_TOTAL];  
     uint8_t startPointer;
     uint8_t insertPointer;
     bool bufferOverflow;

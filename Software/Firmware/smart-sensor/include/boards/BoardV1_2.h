@@ -20,13 +20,14 @@
 #include <avr/pgmspace.h>
 
 #include <boards/Board.h>
-#include <util/MeasurementBuffer.h>
+#include <util/MessageBuffer.h>
 #include <util/Timer1.h>
+#include <util/Serial0.h>
 
 #include <drivers/LedDriver.h>
 #include <drivers/SHTC3Driver.h>
 #include <drivers/MCP7940NDriver.h>
-#include <util/Serial0.h>
+#include <drivers/I2C0Driver.h>
 
 class SmartSensorBoardV1_2: public SmartSensorBoard {
 private:
@@ -37,6 +38,7 @@ private:
     LedDriver ledDriver;
     SHTC3Driver shtc3Driver;
     MCP7940NDriver mcp7940nDriver;
+    I2C0Driver i2c0Driver;
         
 public:
     SmartSensorBoardV1_2() { this->serial0 = Serial0::getInstance(); }
