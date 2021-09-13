@@ -21,11 +21,11 @@ void SmartSensorBoardV1_2::setup() {
 
     this->shtc3Driver    = SHTC3Driver::getInstance(this);
     this->ledDriver      = LedDriver::getInstance();
-    this->mcp7940nDriver = MCP7940NDriver::getInstance();
+    this->mcp7940nDriver = MCP7940NDriver::getInstance(this);
 
+    this->addDriver(this->mcp7940nDriver, PSTR("MCP7940NDriver"));
     this->addDriver(this->ledDriver, PSTR("LedDriver"));
     this->addDriver(this->shtc3Driver, PSTR("SHTC3Driver"));
-    this->addDriver(this->mcp7940nDriver, PSTR("MCP7940NDriver"));
 
     SmartSensorBoard::setup(); // Base class setup() when everything is loaded.
 

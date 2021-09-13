@@ -15,6 +15,8 @@
 #include <stdio.h>
 #include <avr/pgmspace.h>
 
+#include <util/RTC.h>
+
 #include <drivers/Driver.h>
 
 #define SMARTSENSOR_MAX_DRIVERS 20
@@ -22,7 +24,7 @@
 /* The class SmartSensorBoard is the base class that is extended by the actual board class.
    Within the main.c application, this base class is used, so no board specific aspects are
    required by any main application functionality. */
-class SmartSensorBoard: public SmartSensorMeasurement {
+class SmartSensorBoard: public SmartSensorMeasurement, public RTCReadTimestampEvent {
 protected:
     char id[21];
 
@@ -38,6 +40,7 @@ protected:
     uint32_t loopTiming;
     uint16_t loopTime;
 
+    void rtcReadTimestampEvent(RTCTime& time);
 
 public:
     SmartSensorBoard(): totalDrivers(0) {}

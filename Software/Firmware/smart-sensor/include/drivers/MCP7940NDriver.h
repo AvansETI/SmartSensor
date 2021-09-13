@@ -16,8 +16,10 @@
 #include <stdint.h>
 #include <avr/pgmspace.h>
 
-#include <drivers/Driver.h>
+#include <util/I2C0.h>
 #include <util/RTC.h>
+
+#include <drivers/Driver.h>
 
 /* Define how the MFP pin is connected to the Atmega. */
 #define MCP7940_MFP_PIN PB2
@@ -27,13 +29,21 @@
 /* Address of the MCP7940N chip on the I2C bus */
 constexpr uint8_t MCP7940_I2C_ADDRESS PROGMEM = 0xDE;
 
-class MCP7940NDriver: public Driver {
+class MCP7940NDriver: public Driver, public I2C0InterruptEvent {
+private:
+    RTCReadTimestampEvent* rtcEvent;
+
+    uint8_t state;
+
+    uint32_t samplingInterval;
+    uint32_t loopTiming;
+
 protected:
-    MCP7940NDriver() {}
+    MCP7940NDriver(RTCReadTimestampEvent* rtcReadTimestampEvent): rtcEvent(rtcReadTimestampEvent) {}
 
 public:
-    static MCP7940NDriver* getInstance() {
-        static MCP7940NDriver _mcp7940NDriver;
+    static MCP7940NDriver* getInstance(RTCReadTimestampEvent* rtcReadTimestampEvent) {
+        static MCP7940NDriver _mcp7940NDriver(rtcReadTimestampEvent);
         return &_mcp7940NDriver;
     }
 
@@ -42,6 +52,9 @@ public:
     uint8_t reset();
     uint8_t sleep();
     uint8_t wakeup();
+
+    void sampleLoop();
+    void i2c0Interrupt();
     
     /* Add POWER-DOWN/POWER-UP TIME-STAMP */
     RTCTime getPowerDownTimestamp();

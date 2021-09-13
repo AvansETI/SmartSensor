@@ -50,3 +50,9 @@ public:
     static uint8_t convertToBcd(uint8_t byteDecimal);
     static uint8_t convertFromBcd(uint8_t byteBCD);
 };
+
+/* Interface callback when a time is ready. */
+class RTCReadTimestampEvent {
+public:
+  virtual void rtcReadTimestampEvent(RTCTime& time) = 0;
+};

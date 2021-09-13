@@ -15,7 +15,7 @@ uint8_t SHTC3Driver::setup() {
         return 2; // The given ID is not correct!
     }
 
-    this->samplingInterval = 2*1; // seconds
+    this->samplingInterval = 60*1; // seconds
     this->loopTiming       = 0;
 
     return 0;

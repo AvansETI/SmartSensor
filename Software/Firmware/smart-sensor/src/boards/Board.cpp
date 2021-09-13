@@ -51,20 +51,26 @@ void SmartSensorBoard::loop() {
         this->drivers[i]->loop(this->millis());
     }
 
+    this->loopTime = ( this->millis() - this->loopTiming );
+    this->debugf_P(PSTR("Loop time %d ms\n"), this->loopTime); // Show the actual loop timing in the serial
+    this->loopTiming = this->millis();
+}
+
+void SmartSensorBoard::rtcReadTimestampEvent(RTCTime& time) {
+    if ( this->buffer.getSize() > 0 ) { // TODO: handle the buffer! => IDEA to handle this buffer when a new timestemp arrived (callback RTC)
+        // When an overflow has been detected, what to do?
+    }
     // Check the measurement buffer and sent the messages to the broker. (BELOW some test code)
     //this->debugf("Buffer size: %d (overflow:%d)\n", this->buffer.getSize(), this->buffer.getBufferOverflow());
     char m[MESSAGE_TOTAL_CHARS];
     if ( this->buffer.popMeasurement(m) ) {
         this->debugf("Popped: %s\n", m);
     }
-
-    this->loopTime = ( this->millis() - this->loopTiming );
-    this->debugf_P(PSTR("Loop time %d ms\n"), this->loopTime); // Show the actual loop timing in the serial
-    this->loopTiming = this->millis();
 }
 
+
 // http://www.cplusplus.com/reference/cstdio/vsprintf/
-void SmartSensorBoard::debugf( const char* message, ...) {
+void SmartSensorBoard::debugf( const char* message, ...) { // TODO: Maybe move these functions to Serial0 (think of it)?
     char buffer[50];
     va_list args;
     va_start(args, message);
