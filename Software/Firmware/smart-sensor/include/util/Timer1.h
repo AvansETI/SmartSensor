@@ -1,6 +1,6 @@
 #pragma once
 /**
- * @file       : Timer1Driver.h
+ * @file       : Timer1.h
  * @description: This driver handles the timer 1 to create the millis functionality.
  * @date       : 11-09-2021
  * @author     : Maurice Snoeren (MS)
@@ -16,11 +16,11 @@
 
 static uint32_t _millis;
 
-class Timer1Driver {
+class Timer1 {
 private:
 
 public:
-    Timer1Driver() { _millis = 0; }; // Create singleton?
+    Timer1() { _millis = 0; }; // Create singleton?
 
     uint8_t setup();
     uint32_t millis();

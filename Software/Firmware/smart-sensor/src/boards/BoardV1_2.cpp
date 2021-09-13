@@ -36,7 +36,7 @@ void SmartSensorBoardV1_2::setup() {
     _delay_ms(100);
     this->ledDriver.led1Off();
 
-    this->ledDriver.led1Flash(1000, 1);
+    this->ledDriver.led1Flash(10, 1);
 
     sei(); // Enable the interrupts!
 }

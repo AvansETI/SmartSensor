@@ -20,9 +20,8 @@
 #include <avr/pgmspace.h>
 
 #include <boards/Board.h>
-#include <boards/SmartSensorMeasurement.h>
 #include <util/MeasurementBuffer.h>
-#include <drivers/Timer1Driver.h> // Needs to be moved and renamed?
+#include <util/Timer1.h>
 
 #include <drivers/LedDriver.h>
 #include <drivers/SHTC3Driver.h>
@@ -32,7 +31,7 @@
 class SmartSensorBoardV1_2: public SmartSensorBoard {
 private:
     MeasurementBuffer buffer;
-    Timer1Driver timer1;
+    Timer1 timer1;
     Serial0* serial0;
 
     LedDriver ledDriver;

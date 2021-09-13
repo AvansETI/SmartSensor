@@ -17,6 +17,12 @@
 
 #include <avr/pgmspace.h>
 
+/* Interface */
+class SmartSensorMeasurement {
+public:
+    virtual void addMeasurement(const char* measurement, ...) = 0;
+};
+
 struct Measurement {
     char measurement[MEASUREMENT_TOTAL_CHARS];
 };

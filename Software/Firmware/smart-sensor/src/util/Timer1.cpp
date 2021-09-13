@@ -1,4 +1,4 @@
-#include "drivers/Timer1Driver.h"
+#include "util/Timer1.h"
 #include <avr/io.h>
 #include <avr/interrupt.h>
 #include <util/delay.h>
@@ -9,7 +9,7 @@ ISR(TIMER1_COMPA_vect) { //      => 4 cycles
     TCNT1 = (uint16_t) 0x0000; //=> 4 cycles reset the timer
 }
 
-uint8_t Timer1Driver::setup() {
+uint8_t Timer1::setup() {
     // No prescaler F_CPU/1
     OCR1A  = (uint16_t) (F_CPU/1000)-10; // Number that represents 1ms, maybe minus extra cycles 10=4+4+2
     TCCR1A = 0b00'00'00'00;              // OC1A/OC1B disabled, CTC-mode
@@ -21,11 +21,11 @@ uint8_t Timer1Driver::setup() {
     return 0;
 }
 
-uint32_t Timer1Driver::millis() {
+uint32_t Timer1::millis() {
     return _millis;
 }
 
-uint16_t Timer1Driver::getCounterValue() {
+uint16_t Timer1::getCounterValue() {
     uint16_t counterValue;
 
     cli(); 
