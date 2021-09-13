@@ -15,7 +15,7 @@ uint8_t I2C0Driver::setup() {
 }
 
 uint8_t I2C0Driver::loop(uint32_t millis) {
-    
+    // Experiment to test whether the I2C0 works!
     this->start();
     this->wait(TW_START);
     this->select(0xE0, TW_WRITE);
