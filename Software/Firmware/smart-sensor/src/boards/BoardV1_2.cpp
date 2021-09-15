@@ -10,7 +10,7 @@
 void SmartSensorBoardV1_2::setup() {
     BOARDV1_2_ADAPTER_IN_USE_DDR = BOARDV1_2_ADAPTER_IN_USE_DDR & ~(1 << BOARDV1_2_ADAPTER_IN_USE_PIN); // Set pin for adapter in use as input.
 
-    this->timer1 = Timer1::getInstance();
+    this->timer1 = Timer1::getInstance(); // TODO: Calibrate the timer loop using the RTC!
     this->timer1->setup();
     
     this->serial0 = Serial0::getInstance();
@@ -35,7 +35,15 @@ void SmartSensorBoardV1_2::setup() {
         this->debug_P(PSTR("Adapter is not in use.\n"));
     }
 
-    this->debugf_P(PSTR("ID: %s\n"), this->getID() );
+    //RTCTime r = RTCTime(21, 9, 16, 4, 0, 24, 0);
+    //this->mcp7940nDriver->setTime(r);
+    //_delay_ms(1000);
+
+    char iso8601[25];
+    RTCTime time = this->mcp7940nDriver->getRTCTime();
+    time.getIso8601String(iso8601);
+    this->debugf_P(PSTR("ID: %s\n"), this->getID());
+    this->debugf_P(PSTR("Timestamp: %s\n"), iso8601 );
 
     /* Show the user that we have started up, by one-second led on and then flash led. */
     this->ledDriver->led1On();

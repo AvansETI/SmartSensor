@@ -38,8 +38,10 @@ private:
     uint32_t samplingInterval;
     uint32_t loopTiming;
 
+    RTCTime rtcTime;
+
 protected:
-    MCP7940NDriver(RTCReadTimestampEvent* rtcReadTimestampEvent): rtcEvent(rtcReadTimestampEvent) {}
+    MCP7940NDriver(RTCReadTimestampEvent* rtcReadTimestampEvent): rtcEvent(rtcReadTimestampEvent) { }
 
 public:
     static MCP7940NDriver* getInstance(RTCReadTimestampEvent* rtcReadTimestampEvent) {
@@ -71,6 +73,8 @@ public:
     /* Check whether the chip reacts on a I2C message. */
     bool isConnected();
 
+    RTCTime getRTCTime() { return this->rtcTime; }
+
     // TODO: Design and implement how the alarm should work?!
 
     // Add enableAlarm function to set the alarm and interrupt
@@ -89,6 +93,6 @@ byte, ‘1101111X’.*/
     // Add setByte, getByte to use the SRAM of the chip, storing things to remember?
 
 private:
-    
+
 };
 

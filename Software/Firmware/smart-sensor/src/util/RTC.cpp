@@ -1,32 +1,36 @@
 #include <util/RTC.h>
+
+#include <stdio.h>
+
 #include <avr/pgmspace.h>
+
+RTCTime::RTCTime(uint8_t data[7]) {
+    this->year    = RTCTime::bcd2int( data[6] ); // Year
+    this->month   = RTCTime::bcd2int( data[5] & 0b0001'1111 );  // Month
+    this->day     = RTCTime::bcd2int( data[4] & 0b0011'1111 );  // Date
+    this->weekday = RTCTime::bcd2int( data[3] & 0b0000'0111 );  // Weekday
+    this->hours   = RTCTime::bcd2int( data[2] & 0b0001'1111 );  // Hour
+    this->minutes = RTCTime::bcd2int( data[1] & 0b0111'1111 ); // Minute
+    this->seconds = RTCTime::bcd2int( data[0] & 0b0111'1111 );  // Seconds
+}
 
 RTCTime::RTCTime(const char* iso8601) {
     this->setFromIso8601String(iso8601);
 }
 
+uint8_t RTCTime::int2bcd(uint8_t value) {
+    return ((value / 10) << 4) + (value % 10);
+}
+
+uint8_t RTCTime::bcd2int(uint8_t bcd) {
+    return ((bcd & 0xF0) >> 4)*10 + (bcd & 0x0F);
+}
+
 /* Convert the RTCTime to an ISO8601 string. */
-const char* RTCTime::getIso8601String() {
-  static char buffer[20] = "20YY-MM-DDThh:mm:ss";
-  buffer[2] = '0' + (this->year/10);
-  buffer[3] = '0' + (this->year%10);
-  
-  buffer[5] = '0' + (this->month/10);
-  buffer[6] = '0' + (this->month%10);
-
-  buffer[8] = '0' + (this->day/10);
-  buffer[9] = '0' + (this->day%10);
-
-  buffer[11] = '0' + (this->hours/10);
-  buffer[12] = '0' + (this->hours%10);
-
-  buffer[14] = '0' + (this->minutes/10);
-  buffer[15] = '0' + (this->minutes%10);
-
-  buffer[17] = '0' + (this->seconds/10);
-  buffer[18] = '0' + (this->seconds%10);
-
-  return buffer;
+void RTCTime::getIso8601String(char iso8601[20]) {
+    sprintf(iso8601, "20%02d-%02d-%02dT%02d:%02d:%02d",
+                this->year, this->month, this->day,
+                this->hours, this->minutes, this->seconds);
 }
 
 uint8_t RTCTime::setFromIso8601String(const char* iso8601) {
@@ -34,44 +38,30 @@ uint8_t RTCTime::setFromIso8601String(const char* iso8601) {
     return 0;
 }
 
-uint8_t RTCTime::getYear() {
+uint8_t RTCTime::getYear() const {
     return this->year;
 }
 
-uint8_t RTCTime::getMonth() {
+uint8_t RTCTime::getMonth() const {
     return this->month;
 }
 
-uint8_t RTCTime::getDay() {
+uint8_t RTCTime::getDay() const {
     return this->day;
 }
 
-uint8_t RTCTime::getWeekDay() {
+uint8_t RTCTime::getWeekDay() const {
     return this->weekday;
 }
 
-uint8_t RTCTime::getHours() {
+uint8_t RTCTime::getHours() const {
     return this->hours;
 }
 
-uint8_t RTCTime::getMinutes() {
+uint8_t RTCTime::getMinutes() const {
     return this->minutes;
 }
 
-uint8_t RTCTime::getSeconds() {
+uint8_t RTCTime::getSeconds() const {
     return this->seconds;
-}
-
-uint8_t RTCTime::convertToBcd(uint8_t byteDecimal) {
-  return (byteDecimal / 10) << 4 | (byteDecimal % 10);
-}
-
-uint8_t RTCTime::convertFromBcd(uint8_t byteBCD) {
-  uint8_t byteMSB = 0;
-  uint8_t byteLSB = 0;
-
-  byteMSB = (byteBCD & 0b1111'0000) >> 4;
-  byteLSB = (byteBCD & 0b0000'1111);
-
-  return ((byteMSB * 10) + byteLSB);
 }
