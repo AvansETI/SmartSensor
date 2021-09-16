@@ -199,7 +199,7 @@ uint8_t SHTC3Driver::sampleLoop() {
             s->print(m);
             this->getMeasurementCallback()->addMeasurement(m);
             
-            sprintf_P(m, PSTR("temperature: %.1f"), (double)_tempature);
+            sprintf_P(m, PSTR(" temperature: %.1f \n"), (double)_tempature);
             s->print(m);
             this->getMeasurementCallback()->addMeasurement(m);
             
