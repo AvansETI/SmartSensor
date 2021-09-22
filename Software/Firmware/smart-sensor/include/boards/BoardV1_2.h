@@ -27,6 +27,7 @@
 #include <drivers/LedDriver.h>
 #include <drivers/SHTC3Driver.h>
 #include <drivers/MCP7940NDriver.h>
+#include <drivers/VEML7700.h>
 #include <util/I2C0.h>
 
 class SmartSensorBoardV1_2: public SmartSensorBoard {
@@ -38,6 +39,7 @@ private:
     LedDriver* ledDriver;
     SHTC3Driver* shtc3Driver;
     MCP7940NDriver* mcp7940nDriver;
+    VEML7700Driver* veml7700Driver;
         
 public:
     SmartSensorBoardV1_2() { }
