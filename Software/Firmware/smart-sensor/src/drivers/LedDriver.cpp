@@ -14,32 +14,32 @@ uint8_t LedDriver::setup() {
 
 uint8_t LedDriver::loop(uint32_t millis) {
     /* Flashing of led 1 when period is non zero without blocking the main loop. */
-    // if ( this->ledState1.period != 0 ) {
-    //     if ( this->ledState1.timestampedStarted == 0 || // Not started yet! 
-    //          millis > (this->ledState1.timestampedStarted + this->ledState1.period)) { // Reset the counting after period!
-    //         this->ledState1.timestampedStarted = millis;
-    //         LED_1_PORT = LED_1_PORT & ~(1 << LED_1_PIN); // Switch led 1 on!
+    if ( this->ledState1.period != 0 ) {
+        if ( this->ledState1.timestampedStarted == 0 || // Not started yet! 
+             millis > (this->ledState1.timestampedStarted + this->ledState1.period)) { // Reset the counting after period!
+            this->ledState1.timestampedStarted = millis;
+            LED_1_PORT = LED_1_PORT & ~(1 << LED_1_PIN); // Switch led 1 on!
 
-    //     } else { // Flashing of the led!
-    //         if ( millis > (this->ledState1.timestampedStarted + this->ledState1.length) ) {
-    //             LED_1_PORT = LED_1_PORT | (1 << LED_1_PIN); // Switch led 1 off!
-    //         } 
-    //     }
-    // }
+        } else { // Flashing of the led!
+            if ( millis > (this->ledState1.timestampedStarted + this->ledState1.length) ) {
+                LED_1_PORT = LED_1_PORT | (1 << LED_1_PIN); // Switch led 1 off!
+            } 
+        }
+    }
 
-    // /* Flashing of led 2 when period is non zero without blocking the main loop. */
-    // if ( this->ledState2.period != 0 ) {
-    //     if ( this->ledState2.timestampedStarted == 0 || // Not started yet! 
-    //          millis > (this->ledState2.timestampedStarted + this->ledState2.period)) { // Reset the counting after period!
-    //         this->ledState2.timestampedStarted = millis;
-    //         LED_2_PORT = LED_2_PORT & ~(1 << LED_2_PIN); // Switch led 2 on!
+    /* Flashing of led 2 when period is non zero without blocking the main loop. */
+    if ( this->ledState2.period != 0 ) {
+        if ( this->ledState2.timestampedStarted == 0 || // Not started yet! 
+             millis > (this->ledState2.timestampedStarted + this->ledState2.period)) { // Reset the counting after period!
+            this->ledState2.timestampedStarted = millis;
+            LED_2_PORT = LED_2_PORT & ~(1 << LED_2_PIN); // Switch led 2 on!
 
-    //     } else { // Flashing of the led!
-    //         if ( millis > (this->ledState1.timestampedStarted + this->ledState1.length) ) {
-    //             LED_2_PORT = LED_2_PORT | (1 << LED_2_PIN); // Switch led 2 off!
-    //         } 
-    //     }
-    // }
+        } else { // Flashing of the led!
+            if ( millis > (this->ledState1.timestampedStarted + this->ledState1.length) ) {
+                LED_2_PORT = LED_2_PORT | (1 << LED_2_PIN); // Switch led 2 off!
+            } 
+        }
+    }
 
     return 0;
 }
