@@ -46,12 +46,6 @@ public:
     static bool checkChecksum(uint16_t data, uint8_t checksum);
     uint8_t sampleLoop();
 
-    //Returns id
-    uint16_t getId();
-
-    //Returns product code
-    uint16_t getProductCode();
-
     // When using the I2C module, this event is issued when an I2C is ready!
     void i2c0Interrupt();
 

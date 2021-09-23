@@ -16,11 +16,6 @@ uint8_t VEML7700Driver::setup() {
         return 1; //cannot select the VEML7700
     }
 
-    if (this->getId() == 0)
-    {
-        return 2; //incorrect ID given for VEML7700
-    }
-
     //minimum interval of 2.5 seconds as per VEML7700 documentation
     this->samplingInterval = 3*1; // seconds
     this->loopTiming       = 0;
@@ -72,40 +67,6 @@ uint8_t VEML7700Driver::wakeup() {
 bool VEML7700Driver::checkChecksum(const uint16_t data, const uint8_t checksum) {
 
     return true;
-}
-
-//temp until product code is figured out
-//TODO: WIP
-uint16_t VEML7700Driver::getProductCode() {
-    return this->getId() & 0;
-}
-
-//TODO: WIP
-uint16_t VEML7700Driver::getId() {
-    if ( this->id != 0 ) {
-        return this->id;
-    }
-
-    I2C0* i2c = I2C0::getInstance();
-    i2c->start(); i2c->wait(TW_START);
-    i2c->select(VEML7700_I2C_ADDRESS, TW_WRITE); i2c->wait(TW_MT_SLA_ACK);
-    i2c->write(0x00); i2c->wait(TW_MT_DATA_ACK);
-    i2c->write(0x01); i2c->wait(TW_MT_DATA_ACK);
-    i2c->repeatedStart(); i2c->wait(TW_REP_START);
-    i2c->select(VEML7700_I2C_ADDRESS, TW_READ); i2c->wait(TW_MR_SLA_ACK);
-    i2c->readAck(); i2c->wait(TW_MR_DATA_ACK);
-    this->id = i2c->getData() << 8;
-    i2c->readAck(); i2c->wait(TW_MR_DATA_ACK);
-    this->id |= i2c->getData();
-    i2c->readAck(); i2c->wait(TW_MR_DATA_ACK);
-    uint8_t checksum = i2c->getData();
-    i2c->stop();
-
-    if ( !this->checkChecksum(this->id, checksum) ) {
-        this->id = 0;
-    }
-
-    return this->id;
 }
 
 //loop for collecting data, currently recieves data
@@ -161,7 +122,7 @@ uint8_t VEML7700Driver::sampleLoop() {
             char m[30];
             float _luminosity = float(this->lightValue) * 0.0576f;
             
-            sprintf_P(m, PSTR("Luminosity: %.1f Lux\n"), (double)_luminosity);
+            sprintf_P(m, PSTR("Luminosity:%.1f\n"), (double)_luminosity);
             s->print(m);
             this->getMeasurementCallback()->addMeasurement(m);
             

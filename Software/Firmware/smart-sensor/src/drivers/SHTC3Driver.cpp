@@ -195,11 +195,11 @@ uint8_t SHTC3Driver::sampleLoop() {
             float _humidity = 100 * float(this->humidity) / 65536.0f;
             float _tempature = 175 * float(this->temperature) / 65536.0f - 45.0f;
 
-            sprintf_P(m, PSTR("humidity: %.1f"), (double)_humidity);
+            sprintf_P(m, PSTR("humidity:%.1f"), (double)_humidity);
             s->print(m);
             this->getMeasurementCallback()->addMeasurement(m);
             
-            sprintf_P(m, PSTR(" temperature: %.1f \n"), (double)_tempature);
+            sprintf_P(m, PSTR("temperature:%.1f \n"), (double)_tempature);
             s->print(m);
             this->getMeasurementCallback()->addMeasurement(m);
             
