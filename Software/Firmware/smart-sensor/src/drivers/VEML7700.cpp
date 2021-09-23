@@ -143,12 +143,6 @@ uint8_t VEML7700Driver::sampleLoop() {
         case 7:
             this->state++;
             i2c->status(TW_MR_DATA_ACK);
-            // this->lightValue |= i2c->getData();
-            i2c->readAck();
-            break;
-        case 8:
-            this->state++;
-            i2c->status(TW_MR_DATA_ACK);
             i2c->getData();
             i2c->stop();
             i2c->release(this);
