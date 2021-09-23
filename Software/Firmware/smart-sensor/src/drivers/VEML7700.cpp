@@ -50,29 +50,35 @@ uint8_t VEML7700Driver::loop(uint32_t millis) {
     return 0;
 }
 
+//TODO: WIP
 uint8_t VEML7700Driver::reset() {
     return 0;
 }
 
+//TODO: WIP
 uint8_t VEML7700Driver::sleep() {
     return 0;
 }
 
+//TODO: WIP
 uint8_t VEML7700Driver::wakeup() {
     return 0;
 }
 
 //temp until checksum is figured out
+//TODO: WIP
 bool VEML7700Driver::checkChecksum(const uint16_t data, const uint8_t checksum) {
 
     return true;
 }
 
 //temp until product code is figured out
+//TODO: WIP
 uint16_t VEML7700Driver::getProductCode() {
     return this->getId() & 0;
 }
 
+//TODO: WIP
 uint16_t VEML7700Driver::getId() {
     if ( this->id != 0 ) {
         return this->id;
