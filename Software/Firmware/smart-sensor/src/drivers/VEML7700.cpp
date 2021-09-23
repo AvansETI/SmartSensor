@@ -6,6 +6,9 @@
 #include <util/I2C0.h>
 #include <util/Serial0.h>
 
+//TODO: Reset, Sleep, and wakeup functions
+//TODO: Figure out checksum, productcode and id
+
 uint8_t VEML7700Driver::setup() {
     if (!this->isConnected())
     {
@@ -98,7 +101,6 @@ uint16_t VEML7700Driver::getId() {
 }
 
 //loop for collecting data, currently recieves data
-//TODO: Correct data gathering, currently does not recieve correct data
 uint8_t VEML7700Driver::sampleLoop() {
 
     I2C0* i2c = I2C0::getInstance();
