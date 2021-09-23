@@ -8,6 +8,7 @@
 
 //TODO: Reset, Sleep, and wakeup functions
 //TODO: Figure out checksum, productcode and id
+//TODO: Figure out how accurate the VEML7700 sensor is, currently readings sometimes vary greatly from what is expected
 
 uint8_t VEML7700Driver::setup() {
     if (!this->isConnected())
@@ -20,6 +21,7 @@ uint8_t VEML7700Driver::setup() {
         return 2; //incorrect ID given for VEML7700
     }
 
+    //minimum interval of 2.5 seconds as per VEML7700 documentation
     this->samplingInterval = 3*1; // seconds
     this->loopTiming       = 0;
 
