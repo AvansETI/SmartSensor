@@ -17,7 +17,7 @@ uint8_t VEML7700Driver::setup() {
         return 2; //incorrect ID given for VEML7700
     }
 
-    this->samplingInterval = 1*1; // seconds
+    this->samplingInterval = 3*1; // seconds
     this->loopTiming       = 0;
 
     return 0;
@@ -97,7 +97,8 @@ uint16_t VEML7700Driver::getId() {
     return this->id;
 }
 
-//temp until loop is done
+//loop for collecting data, currently recieves data
+//TODO: Correct data gathering, currently does not recieve correct data
 uint8_t VEML7700Driver::sampleLoop() {
 
     I2C0* i2c = I2C0::getInstance();
@@ -136,13 +137,13 @@ uint8_t VEML7700Driver::sampleLoop() {
         case 6:
             this->state++;
             i2c->status(TW_MR_DATA_ACK);
-            this->lightValue = i2c->getData() << 8;
+            this->lightValue = i2c->getData();
             i2c->readAck();
             break;
         case 7:
             this->state++;
             i2c->status(TW_MR_DATA_ACK);
-            this->lightValue |= i2c->getData();
+            // this->lightValue |= i2c->getData();
             i2c->readAck();
             break;
         case 8:
