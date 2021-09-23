@@ -137,7 +137,7 @@ uint8_t VEML7700Driver::sampleLoop() {
         case 6:
             this->state++;
             i2c->status(TW_MR_DATA_ACK);
-            this->lightValue = i2c->getData();
+            this->lightValue = i2c->getData() << 8;
             i2c->readAck();
             break;
         case 7:
@@ -149,7 +149,7 @@ uint8_t VEML7700Driver::sampleLoop() {
             
             Serial0* s = Serial0::getInstance();
             char m[30];
-            float _luminosity = float(this->lightValue);
+            float _luminosity = float(this->lightValue) * 0.0576f;
             
             sprintf_P(m, PSTR("Luminosity: %.1f Lux\n"), (double)_luminosity);
             s->print(m);
