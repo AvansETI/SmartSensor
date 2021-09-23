@@ -17,7 +17,7 @@ uint8_t VEML7700Driver::setup() {
         return 2; //incorrect ID given for VEML7700
     }
 
-    this->samplingInterval = 60*1; // seconds
+    this->samplingInterval = 2*1; // seconds
     this->loopTiming       = 0;
 
     return 0;
@@ -78,8 +78,8 @@ uint16_t VEML7700Driver::getId() {
     I2C0* i2c = I2C0::getInstance();
     i2c->start(); i2c->wait(TW_START);
     i2c->select(VEML7700_I2C_ADDRESS, TW_WRITE); i2c->wait(TW_MT_SLA_ACK);
-    i2c->write(0xEF); i2c->wait(TW_MT_DATA_ACK);
-    i2c->write(0xC8); i2c->wait(TW_MT_DATA_ACK);
+    i2c->write(0x00); i2c->wait(TW_MT_DATA_ACK);
+    i2c->write(0x01); i2c->wait(TW_MT_DATA_ACK);
     i2c->repeatedStart(); i2c->wait(TW_REP_START);
     i2c->select(VEML7700_I2C_ADDRESS, TW_READ); i2c->wait(TW_MR_SLA_ACK);
     i2c->readAck(); i2c->wait(TW_MR_DATA_ACK);
@@ -116,7 +116,7 @@ uint8_t VEML7700Driver::sampleLoop() {
         case 2:
             this->state++;
             i2c->status(TW_MT_SLA_ACK);
-            i2c->write(0x04);
+            i2c->write(0x00);
             break;
         case 3:
             this->state++;
@@ -148,7 +148,7 @@ uint8_t VEML7700Driver::sampleLoop() {
             
             Serial0* s = Serial0::getInstance();
             char m[30];
-            float _luminosity = float(this->lightValue);
+            float _luminosity = 100 * float(this->lightValue);
             
             sprintf_P(m, PSTR("Luminosity: %.1f\n"), (double)_luminosity);
             s->print(m);
