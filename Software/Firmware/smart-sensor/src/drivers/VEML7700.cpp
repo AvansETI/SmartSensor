@@ -16,6 +16,48 @@ uint8_t VEML7700Driver::setup() {
         return 1; //cannot select the VEML7700
     }
 
+    I2C0* i2c = I2C0::getInstance();
+    //start I2C
+    i2c->start(); i2c->wait(TW_START);
+    //Select VEML7700 Address
+    i2c->select(VEML7700_I2C_ADDRESS, TW_WRITE); i2c->wait(TW_MT_SLA_ACK);
+    //write to config
+    i2c->write(VEML7700_CONFIG); i2c->wait(TW_MT_DATA_ACK);
+    //write shutdown true
+    i2c->write(0x00); i2c->wait(TW_MT_DATA_ACK);
+    //Select VEML7700 Address
+    i2c->select(VEML7700_I2C_ADDRESS, TW_WRITE); i2c->wait(TW_MT_SLA_ACK);
+    //write to config
+    i2c->write(VEML7700_CONFIG); i2c->wait(TW_MT_DATA_ACK);
+    //write persistence
+    i2c->write(VEML7700_PERS_1 << 4); i2c->wait(TW_MT_DATA_ACK);
+    //select VEML7700 Address
+    i2c->select(VEML7700_I2C_ADDRESS, TW_WRITE); i2c->wait(TW_MT_SLA_ACK);
+    //write to config
+    i2c->write(VEML7700_CONFIG); i2c->wait(TW_MT_DATA_ACK);
+    //write gain
+    i2c->write(VEML7700_GAIN_1 << 11); i2c->wait(TW_MT_DATA_ACK);
+    //select VEML7700 Address
+    i2c->select(VEML7700_I2C_ADDRESS, TW_WRITE); i2c->wait(TW_MT_SLA_ACK);
+    //write to config
+    i2c->write(VEML7700_CONFIG); i2c->wait(TW_MT_DATA_ACK);
+    //write interrupt
+    i2c->write(VEML7700_IT_100MS << 6); i2c->wait(TW_MT_DATA_ACK);
+    //Select VEML7700 Address
+    i2c->select(VEML7700_I2C_ADDRESS, TW_WRITE); i2c->wait(TW_MT_SLA_ACK);
+    //write to config
+    i2c->write(VEML7700_POWER_SAVE); i2c->wait(TW_MT_DATA_ACK);
+    //write power_save disable
+    i2c->write(0x00); i2c->wait(TW_MT_DATA_ACK);
+    //Select VEML7700 Address
+    i2c->select(VEML7700_I2C_ADDRESS, TW_WRITE); i2c->wait(TW_MT_SLA_ACK);
+    //write to config
+    i2c->write(VEML7700_CONFIG); i2c->wait(TW_MT_DATA_ACK);
+    //write Shutdown false
+    i2c->write(0x01); i2c->wait(TW_MT_DATA_ACK);
+    i2c->stop();
+    
+
     //minimum interval of 2.5 seconds as per VEML7700 documentation
     this->samplingInterval = 3*1; // seconds
     this->loopTiming       = 0;
@@ -60,13 +102,6 @@ uint8_t VEML7700Driver::sleep() {
 //TODO: WIP
 uint8_t VEML7700Driver::wakeup() {
     return 0;
-}
-
-//temp until checksum is figured out
-//TODO: WIP
-bool VEML7700Driver::checkChecksum(const uint16_t data, const uint8_t checksum) {
-
-    return true;
 }
 
 //loop for collecting data, currently recieves data
