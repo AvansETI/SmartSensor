@@ -71,6 +71,24 @@ bool VEML7700Driver::isConnected() {
     return i2c->isConnected(VEML7700_I2C_ADDRESS);
 }
 
+uint8_t VEML7700Driver::CHANGEGAIN(uint8_t gain) {
+    Serial0* s = Serial0::getInstance();
+            char m[30];
+            sprintf_P(m, PSTR("loop reached with value: %.1f\n"), (double)this->testloop);
+            s->print(m);
+    I2C0* i2c = I2C0::getInstance();
+    i2c->start(); i2c->wait(TW_START);
+    //select config
+    i2c->select(VEML7700_I2C_ADDRESS, TW_WRITE); i2c->wait(TW_MT_SLA_ACK);
+    //write to config
+    i2c->write(VEML7700_CONFIG); i2c->wait(TW_MT_DATA_ACK);
+    //write gain
+    i2c->write(gain << 11); i2c->wait(TW_MT_DATA_ACK);
+    i2c->stop();
+
+    return 0;
+}
+
 uint8_t VEML7700Driver::loop(uint32_t millis) {
     if (this->loopTiming == 0) //start timer
     {
@@ -151,6 +169,25 @@ uint8_t VEML7700Driver::sampleLoop() {
             i2c->status(TW_MR_DATA_ACK);
             i2c->getData();
             i2c->stop();
+            if (this->testloop == 0)
+            {
+                this->CHANGEGAIN(VEML7700_GAIN_1);
+            }
+            if (this->testloop == 3)
+            {
+                this->CHANGEGAIN(VEML7700_GAIN_1_8);
+            }
+            if (this->testloop == 6)
+            {
+                this->CHANGEGAIN(VEML7700_GAIN_2);
+            }
+            if (this->testloop == 9)
+            {
+                this->testloop = 0;
+            } else {
+                this->testloop++;
+            }
+            
             i2c->release(this);
             
             Serial0* s = Serial0::getInstance();

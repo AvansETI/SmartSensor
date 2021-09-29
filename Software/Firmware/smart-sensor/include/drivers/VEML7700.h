@@ -60,8 +60,11 @@ private:
 
     uint32_t samplingInterval;
     uint32_t loopTiming;
+
+    uint8_t testloop;
+    uint8_t CHANGEGAIN(uint8_t gain);
 protected:
-    VEML7700Driver(SmartSensorMeasurement* luMeasurement): Driver(luMeasurement), state(0) {};
+    VEML7700Driver(SmartSensorMeasurement* luMeasurement): Driver(luMeasurement), state(0), testloop(0) {};
 
     bool isConnected();    
 public:
