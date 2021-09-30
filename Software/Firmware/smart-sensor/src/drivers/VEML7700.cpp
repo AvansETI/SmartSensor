@@ -73,7 +73,7 @@ bool VEML7700Driver::isConnected() {
 
 uint8_t VEML7700Driver::CHANGEGAIN(uint8_t gain) {
 
-    uint8_t currentgain = 0x01;
+    uint16_t currentgain = 0x01;
     I2C0* i2c = I2C0::getInstance();
     i2c->start(); i2c->wait(TW_START);
     //select config
@@ -86,7 +86,7 @@ uint8_t VEML7700Driver::CHANGEGAIN(uint8_t gain) {
     //check gain in device
     i2c->select(VEML7700_I2C_ADDRESS, TW_READ); i2c->wait(TW_MR_SLA_ACK);
     i2c->readAck(); i2c->wait(TW_MR_DATA_ACK);
-    currentgain = i2c->getData() << 11;
+    currentgain = i2c->getData() >> 11;
     i2c->readAck(); i2c->wait(TW_MR_DATA_ACK);
     i2c->stop();
 
