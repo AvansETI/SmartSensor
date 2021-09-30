@@ -81,12 +81,13 @@ uint8_t VEML7700Driver::CHANGEGAIN(uint8_t gain) {
     //write to config
     i2c->write(VEML7700_CONFIG); i2c->wait(TW_MT_DATA_ACK);
     //write gain
-    i2c->write(gain << 11); i2c->wait(TW_MT_DATA_ACK);
+    //after the << after gain, a value between 0 - 7 will return properly, unfortunately these are not the values needed
+    i2c->write(gain << 0); i2c->wait(TW_MT_DATA_ACK);
     i2c->repeatedStart(); i2c->wait(TW_REP_START);
     //check gain in device
     i2c->select(VEML7700_I2C_ADDRESS, TW_READ); i2c->wait(TW_MR_SLA_ACK);
     i2c->readAck(); i2c->wait(TW_MR_DATA_ACK);
-    currentgain = i2c->getData() >> 11;
+    currentgain = i2c->getData() >> 0;
     i2c->readAck(); i2c->wait(TW_MR_DATA_ACK);
     i2c->stop();
 
