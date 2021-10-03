@@ -1,9 +1,8 @@
 #include "drivers/MCP7940NDriver.h"
 
 #include <util/twi.h>
-#include <util/I2C0.h>
+#include <tasks/Atmega324PBI2C0.h>
 
-#include <util/Serial0.h> // kan weg!
 #include <stdio.h>
 
 /* for the setup
@@ -18,7 +17,7 @@ bit 3 VBATEN: External Battery Backup Supply (VBAT) Enable bit
 uint8_t MCP7940NDriver::setup() {
     MCP7940_MFP_DDR = MCP7940_MFP_DDR & ~(1 << MCP7940_MFP_PIN); // Set the MFP pin as input.
 
-    I2C0* i2c = I2C0::getInstance();
+    Atmega324PBI2C0* i2c = Atmega324PBI2C0::getInstance();
 
     if ( !i2c->isConnected(MCP7940_I2C_ADDRESS) ) {
         return 1; // Cannot select the chip
@@ -31,6 +30,7 @@ uint8_t MCP7940NDriver::setup() {
     this->samplingInterval = 1000; // msecond
     this->loopTiming       = 0;
     this->state            = 0;
+    this->function         = MCP7940NFunction::IDLE;
 
 /*
     // start clock
@@ -59,6 +59,8 @@ uint8_t MCP7940NDriver::loop(uint32_t millis) {
     if ( this->loopTiming == 0 ) { // Start the timing process
         this->loopTiming = millis;        
     }
+
+
 /*
     I2C0* i2c = I2C0::getInstance();
     uint32_t loopTime = (millis - this->loopTiming);
@@ -72,7 +74,7 @@ uint8_t MCP7940NDriver::loop(uint32_t millis) {
 }
 
 void MCP7940NDriver::sampleLoop() {
-    I2C0* i2c = I2C0::getInstance();
+    //Atmega324PBI2C0* i2c = Atmega324PBI2C0::getInstance();
     //i2c->release(this);
     //RTCTime t("20110101T10:11:11");
     //this->rtcEvent->rtcReadTimestampEvent(this);
@@ -104,7 +106,7 @@ RTCTime MCP7940NDriver::getPowerDownTimestamp() {
  }
 
 RTCTime MCP7940NDriver::getTime() {
-    I2C0* i2c = I2C0::getInstance();
+    Atmega324PBI2C0* i2c = Atmega324PBI2C0::getInstance();
 
     i2c->start(); i2c->wait(TW_START);
     i2c->select(MCP7940_I2C_ADDRESS, TW_WRITE); i2c->wait(TW_MT_SLA_ACK);
@@ -126,14 +128,81 @@ RTCTime MCP7940NDriver::getTime() {
 
     i2c->stop();
 
-/*
-    Serial0* s = Serial0::getInstance();
-    char test[50];
-    sprintf(test, "%02d%02d\n", data[1], data[0]);
-    s->print(test);
-*/
-
     return RTCTime(data);
+}
+
+void MCP7940NDriver::getTimeLoop() {
+    Atmega324PBI2C0* i2c = Atmega324PBI2C0::getInstance();
+
+    switch (this->state) {
+        case 0:
+            this->state++;
+            this->setDataInvalid();
+            i2c->start();
+            break;
+        case 1:
+            i2c->status(TW_START);
+            this->state++;
+            i2c->select(MCP7940_I2C_ADDRESS, TW_WRITE);
+            break;
+        case 2:
+            i2c->status(TW_MT_SLA_ACK);
+            this->state++;
+            i2c->write(0x00); 
+            break;
+        case 3:
+            i2c->status(TW_MT_DATA_ACK);
+            this->state++;
+            i2c->repeatedStart();
+            break;
+        case 4:
+            i2c->status(TW_REP_START);
+            this->state++;
+            i2c->select(MCP7940_I2C_ADDRESS, TW_READ);
+            break;
+        case 5:
+            i2c->status(TW_MR_SLA_ACK);
+            this->state++;
+            i2c->readAck();
+            break;
+        case 6: case 7: case 8: case 9: case 10: case 11: case 12:
+            i2c->status(TW_MR_DATA_ACK);
+            this->state++;
+            this->timeData[this->state-6] = i2c->getData();
+            i2c->readAck();
+            break;
+        case 13:
+            i2c->status(TW_MR_DATA_ACK);
+            this->state++;
+            this->timeData[this->state-6] = i2c->getData();
+            i2c->repeatedStart();    
+            break;
+        case 14:
+            i2c->wait(TW_REP_START);
+            this->state++;
+            i2c->select(MCP7940_I2C_ADDRESS, TW_WRITE);
+            break;
+        case 15:
+            i2c->status(TW_MT_SLA_ACK);
+            this->state++;
+            i2c->write(0x00);
+            break;
+        case 16:
+            i2c->status(TW_MT_DATA_ACK);
+            this->state++;
+            i2c->write(0x80 | this->timeData[0]);
+            break;
+        case 17:
+            i2c->status(TW_MT_DATA_ACK);
+            i2c->stop();
+
+            this->rtcTime = RTCTime(this->timeData);
+
+            this->setDataValid();
+            this->rtcEvent->rtcReadTimestampEvent(this->rtcTime);
+            this->state = 0; // Start over
+            break;
+    }
 }
 
 /*
@@ -149,17 +218,109 @@ re-enabled
 */
 
 void MCP7940NDriver::setTime(const RTCTime &t) {
+    this->rtcTime = t;
+
+    //if ( )
+
+    Atmega324PBI2C0* i2c = Atmega324PBI2C0::getInstance();
+    if ( this->state == 0 && i2c->claim(this) ) { // When the state == 0, a next function can be started.
+
+    }
+}
+
+void MCP7940NDriver::setTime(const char* iso8601) {
+    RTCTime time(iso8601);
+    this->setTime(time);
+}
+
+void MCP7940NDriver::setTimeLoop() {
     uint8_t data[7] ={
-        RTCTime::int2bcd(t.getSeconds()),
-        RTCTime::int2bcd(t.getMinutes()),
-        RTCTime::int2bcd(t.getHours()),
-        RTCTime::int2bcd(t.getWeekDay()),
-        RTCTime::int2bcd(t.getDay()),
-        RTCTime::int2bcd(t.getMonth()),
-        RTCTime::int2bcd(t.getYear())
+        RTCTime::int2bcd(this->rtcTime.getSeconds()),
+        RTCTime::int2bcd(this->rtcTime.getMinutes()),
+        RTCTime::int2bcd(this->rtcTime.getHours()),
+        RTCTime::int2bcd(this->rtcTime.getWeekDay()),
+        RTCTime::int2bcd(this->rtcTime.getDay()),
+        RTCTime::int2bcd(this->rtcTime.getMonth()),
+        RTCTime::int2bcd(this->rtcTime.getYear())
     };
 
-    I2C0* i2c = I2C0::getInstance();
+    Atmega324PBI2C0* i2c = Atmega324PBI2C0::getInstance();
+
+    switch (this->state) {
+        case 0:
+            this->state++;
+            i2c->start();
+            break;
+        case 1:
+            i2c->status(TW_START);
+            this->state++;
+            i2c->select(MCP7940_I2C_ADDRESS, TW_WRITE);
+            break;
+        case 2:
+            i2c->status(TW_MT_SLA_ACK);
+            this->state++;
+            i2c->write(0x07); 
+            break;
+        case 3:
+            i2c->status(TW_MT_DATA_ACK);
+            this->state++;
+            i2c->write(0x00); 
+            break;
+        case 4:
+            i2c->repeatedStart();
+
+
+            i2c->status(TW_MT_DATA_ACK);
+            this->state++;
+            i2c->repeatedStart();
+            break;
+        case 40:
+            i2c->status(TW_REP_START);
+            this->state++;
+            i2c->select(MCP7940_I2C_ADDRESS, TW_WRITE);
+            break;
+        case 5:
+            i2c->status(TW_MT_SLA_ACK);
+            this->state++;
+            i2c->readAck();
+            break;
+        case 6: case 7: case 8: case 9: case 10: case 11: case 12:
+            i2c->status(TW_MT_DATA_ACK);
+            this->state++;
+            this->timeData[this->state-6] = i2c->getData();
+            i2c->readAck();
+            break;
+        case 13:
+            i2c->status(TW_MR_DATA_ACK);
+            this->state++;
+            this->timeData[this->state-6] = i2c->getData();
+            i2c->repeatedStart();    
+            break;
+        case 14:
+            i2c->wait(TW_REP_START);
+            this->state++;
+            i2c->select(MCP7940_I2C_ADDRESS, TW_WRITE);
+            break;
+        case 15:
+            i2c->status(TW_MT_SLA_ACK);
+            this->state++;
+            i2c->write(0x00);
+            break;
+        case 16:
+            i2c->status(TW_MT_DATA_ACK);
+            this->state++;
+            i2c->write(0x80 | this->timeData[0]);
+            break;
+        case 17:
+            i2c->status(TW_MT_DATA_ACK);
+            i2c->stop();
+
+            this->rtcTime = RTCTime(this->timeData);
+
+            this->rtcEvent->rtcReadTimestampEvent(this->rtcTime);
+            this->state = 0; // Start over
+            break;
+    }
 
     i2c->start(); i2c->wait(TW_START);
     i2c->select(MCP7940_I2C_ADDRESS, TW_WRITE); i2c->wait(TW_MT_SLA_ACK);
@@ -192,11 +353,13 @@ void MCP7940NDriver::setTime(const RTCTime &t) {
     i2c->stop();
 }
 
-void MCP7940NDriver::setTime(const char* iso8601) {
-    RTCTime time(iso8601);
-    this->setTime(time);
-}
-
 void MCP7940NDriver::i2c0Interrupt() {
-    //this->sampleLoop();
+    /*
+    switch( this->function ) {
+    case MCP7940NFunction::GETTIME:
+        this->getTimeLoop();
+        break;
+    case MCP7940NFunction::SETTIME:
+        this->setTimeLoop();
+    }*/
 }

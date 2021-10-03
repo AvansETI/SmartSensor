@@ -9,7 +9,7 @@
    it is possible that the software detects the version itself. */
 #if defined(SMARTSENSOR_BOARD_1_2)
     #pragma message "SmartSensor v1.2 has been selected to be compiled."
-    #include "boards/BoardV1_2.h"
+    #include "boards/v1_2/Board.h"
     SmartSensorBoardV1_2 board;
 #else
     #pragma message "SMARTSENSOR_BOARD_X_X has not been defined, using the newest SmartBoard version v1.2."
@@ -21,15 +21,15 @@ SmartSensorBoard* SmartSensorBoard::getBoard() {
     return &board;
 }
 
-void SmartSensorBoard::addDriver(IDriver *driver, const char* driverName) {
-    this->debug_P(PSTR("Adding driver: "));
-    this->debug_P(driverName);
+void SmartSensorBoard::addTask(ITask *task, const char* taskName) {
+    this->debug_P(PSTR("Adding task: "));
+    this->debug_P(taskName);
 
-    if ( this->totalDrivers < SMARTSENSOR_MAX_DRIVERS) {
-        uint8_t result = driver->setup();
+    if ( this->totalDrivers < SMARTSENSOR_MAX_TASKS) {
+        uint8_t result = task->setup();
 
         if ( result == 0 ) {
-            this->drivers[this->totalDrivers] = driver;
+            this->drivers[this->totalDrivers] = task;
             this->totalDrivers++;
             this->debug_P(PSTR(": Succesfully!\n"));
         
@@ -38,7 +38,7 @@ void SmartSensorBoard::addDriver(IDriver *driver, const char* driverName) {
         }
     
     } else {
-        this->debugf_P(PSTR(": Maximum drivers reached, not added to the system.\n"), driverName);
+        this->debugf_P(PSTR(": Maximum drivers reached, not added to the system.\n"), taskName);
     }
 }
 

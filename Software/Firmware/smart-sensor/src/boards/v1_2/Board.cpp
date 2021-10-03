@@ -1,4 +1,4 @@
-#include <boards/BoardV1_2.h>
+#include <boards/v1_2/Board.h>
 
 #include <avr/boot.h>
 #include <avr/io.h>
@@ -7,25 +7,28 @@
 #include <util/delay.h>
 #include <string.h>
 
+
+
 void SmartSensorBoardV1_2::setup() {
     BOARDV1_2_ADAPTER_IN_USE_DDR = BOARDV1_2_ADAPTER_IN_USE_DDR & ~(1 << BOARDV1_2_ADAPTER_IN_USE_PIN); // Set pin for adapter in use as input.
 
-    this->timer1 = Timer1::getInstance(); // TODO: Calibrate the timer loop using the RTC!
-    this->timer1->setup();
+    this->timing = Timing::getInstance(); // TODO: We could calibrate the timer loop using the RTC!
+    this->timing->setup();
     
-    this->serial0 = Serial0::getInstance();
+    this->serial0 = Atmega324PBSerial0::getInstance();
     this->serial0->setup();
 
-    this->i2c0 = I2C0::getInstance();
+    this->i2c0 = Atmega324PBI2C0::getInstance();
     this->i2c0->setup();
 
     this->shtc3Driver    = SHTC3Driver::getInstance(this);
     this->ledDriver      = LedDriver::getInstance();
     this->mcp7940nDriver = MCP7940NDriver::getInstance(this);
-
-    this->addDriver(this->mcp7940nDriver, PSTR("MCP7940NDriver"));
-    this->addDriver(this->ledDriver, PSTR("LedDriver"));
-    this->addDriver(this->shtc3Driver, PSTR("SHTC3Driver"));
+    
+    this->addTask(this->serial0,        PSTR("Serial0Task"));
+    this->addTask(this->mcp7940nDriver, PSTR("MCP7940NDriver"));
+    this->addTask(this->ledDriver,      PSTR("LedDriver"));
+    this->addTask(this->shtc3Driver,    PSTR("SHTC3Driver"));
 
     SmartSensorBoard::setup(); // Base class setup() when everything is loaded.
 
@@ -34,10 +37,6 @@ void SmartSensorBoardV1_2::setup() {
     } else {
         this->debug_P(PSTR("Adapter is not in use.\n"));
     }
-
-    //RTCTime r = RTCTime(21, 9, 16, 4, 0, 24, 0);
-    //this->mcp7940nDriver->setTime(r);
-    //_delay_ms(1000);
 
     char iso8601[25];
     RTCTime time = this->mcp7940nDriver->getRTCTime();
@@ -56,6 +55,8 @@ void SmartSensorBoardV1_2::setup() {
 
     this->ledDriver->led1Flash(5'000, 100);
 
+    //this->i2c0->executeCommands(); // test
+
     sei(); // Enable the interrupts!
 }
 
@@ -64,7 +65,7 @@ bool SmartSensorBoardV1_2::adapterInUse() {
 }
 
 uint32_t SmartSensorBoardV1_2::millis() {
-    return this->timer1->millis();
+    return this->timing->millis();
 }
 
 void SmartSensorBoardV1_2::debug( const char* message) {

@@ -15,11 +15,12 @@
 #include <stdio.h>
 #include <avr/pgmspace.h>
 
+#include <tasks/Task.h>
+
+#include <util/MessageBuffer.h>
 #include <util/RTC.h>
 
-#include <drivers/Driver.h>
-
-#define SMARTSENSOR_MAX_DRIVERS 20
+#define SMARTSENSOR_MAX_TASKS 20
 
 /* The class SmartSensorBoard is the base class that is extended by the actual board class.
    Within the main.c application, this base class is used, so no board specific aspects are
@@ -32,7 +33,7 @@ protected:
     uint8_t totalDrivers;
 
     /* Drivers that have been added to the board. 20 drivers maximum */
-    IDriver* drivers[SMARTSENSOR_MAX_DRIVERS]; // Maybe later having a split in resources? Or a resources class that can.
+    ITask* drivers[SMARTSENSOR_MAX_TASKS]; // Maybe later having a split in resources? Or a resources class that can.
 
     MeasurementBuffer buffer;
 
@@ -42,9 +43,8 @@ protected:
 
     void rtcReadTimestampEvent(RTCTime& time);
 
-public:
     SmartSensorBoard(): totalDrivers(0) {}
-
+public:
     /* Returns the actual board that belongs to the current hardware. */
     static SmartSensorBoard* getBoard();
 
@@ -60,7 +60,7 @@ public:
     virtual uint32_t millis() = 0;
 
     /* Add the given driver to the list. When added it will be immediatly used. */
-    void addDriver(IDriver *driver, const char* driverName);
+    void addTask(ITask *task, const char* driverName);
 
     /* When true an adapter has been inserted. */
     virtual bool adapterInUse() = 0;

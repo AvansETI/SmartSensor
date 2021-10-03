@@ -1,7 +1,6 @@
-#include "util/Timer1.h"
-#include <avr/io.h>
+#include <boards/v1_2/Timing.h>
+
 #include <avr/interrupt.h>
-#include <util/delay.h>
 
 // Interrupt timed each 1ms, interrupt take 4 cycles!
 ISR(TIMER1_COMPA_vect) { //      => 4 cycles
@@ -9,7 +8,7 @@ ISR(TIMER1_COMPA_vect) { //      => 4 cycles
     TCNT1 = (uint16_t) 0x0000; //=> 4 cycles reset the timer
 }
 
-uint8_t Timer1::setup() {
+uint8_t Timing::setup() {
     // No prescaler F_CPU/1
     OCR1A  = (uint16_t) (F_CPU/1000)-10; // Number that represents 1ms, maybe minus extra cycles 10=4+4+2
     TCCR1A = 0b00'00'00'00;              // OC1A/OC1B disabled, CTC-mode
@@ -21,16 +20,6 @@ uint8_t Timer1::setup() {
     return 0;
 }
 
-uint32_t Timer1::millis() {
+uint32_t Timing::millis() {
     return _millis;
-}
-
-uint16_t Timer1::getCounterValue() {
-    uint16_t counterValue;
-
-    cli(); 
-    counterValue = TCNT1;
-    sei();
-
-    return counterValue;
 }

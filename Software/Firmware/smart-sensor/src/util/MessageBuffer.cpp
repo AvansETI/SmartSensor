@@ -2,8 +2,6 @@
 
 #include <string.h>
 
-#include <util/Serial0.h>
-
 uint8_t MeasurementBuffer::addMeasurement(const char* measurement) {
     if ( this->totalElements != 0 && this->insertPointer == this->startPointer ) { // buffer overflow, the oldest measurement becomes overwritten!
         this->bufferOverflow = true;

@@ -16,9 +16,9 @@
 #include <stdint.h>
 #include <avr/pgmspace.h>
 
-#include <util/I2C0.h>
 #include <util/RTC.h>
 
+#include <tasks/Atmega324PBI2C0.h>
 #include <drivers/Driver.h>
 
 /* Define how the MFP pin is connected to the Atmega. */
@@ -29,16 +29,27 @@
 /* Address of the MCP7940N chip on the I2C bus */
 constexpr uint8_t MCP7940_I2C_ADDRESS PROGMEM = 0xDE;
 
+enum MCP7940NFunction {
+    IDLE,
+    GETTIME,
+    SETTIME
+};
+
 class MCP7940NDriver: public Driver, public I2C0InterruptEvent {
 private:
+    /* The callback when a time has been retrieved from the chip. */
     RTCReadTimestampEvent* rtcEvent;
 
+    /* The function is to determine which function is called. The state machine of that particular function is used. */
+    MCP7940NFunction function;
     uint8_t state;
 
     uint32_t samplingInterval;
     uint32_t loopTiming;
 
+    // Time that has been retrieved last time from the chip. */
     RTCTime rtcTime;
+    uint8_t timeData[7];
 
 protected:
     MCP7940NDriver(RTCReadTimestampEvent* rtcReadTimestampEvent): rtcEvent(rtcReadTimestampEvent) { }
@@ -61,8 +72,9 @@ public:
     /* Add POWER-DOWN/POWER-UP TIME-STAMP */
     RTCTime getPowerDownTimestamp();
 
-    /* Returns the current time from the chip. */
+    /* Returns the current time from the chip. When available it calls the callback. */
     RTCTime getTime();
+
 
     /* Set the time based on a RTCTimestamp instance of the chip. */
     void setTime(const RTCTime &t);
@@ -93,6 +105,10 @@ byte, ‘1101111X’.*/
     // Add setByte, getByte to use the SRAM of the chip, storing things to remember?
 
 private:
+    /* Set the time loop */
+    void setTimeLoop();
+    
+    void getTimeLoop();
 
 };
 

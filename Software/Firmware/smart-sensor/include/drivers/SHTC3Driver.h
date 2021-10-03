@@ -18,7 +18,7 @@
 #include <math.h>
 #include <avr/pgmspace.h>
 
-#include <util/I2C0.h>
+#include <tasks/Atmega324PBI2C0.h>
 
 /* Address of the SHTC3 chip on the I2C bus */
 constexpr uint8_t SHTC3_I2C_ADDRESS PROGMEM = 0xE0;

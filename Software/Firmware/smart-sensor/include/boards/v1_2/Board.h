@@ -20,20 +20,22 @@
 #include <avr/pgmspace.h>
 
 #include <boards/Board.h>
+#include <boards/v1_2/Timing.h>
+
 #include <util/MessageBuffer.h>
-#include <util/Timer1.h>
-#include <util/Serial0.h>
 
 #include <drivers/LedDriver.h>
 #include <drivers/SHTC3Driver.h>
 #include <drivers/MCP7940NDriver.h>
-#include <util/I2C0.h>
+
+#include <tasks/Atmega324PBSerial0.h>
+#include <tasks/Atmega324PBI2C0.h>
 
 class SmartSensorBoardV1_2: public SmartSensorBoard {
 private:
-    Timer1* timer1;
-    Serial0* serial0;
-    I2C0* i2c0;
+    Timing* timing;
+    Atmega324PBSerial0* serial0;
+    Atmega324PBI2C0* i2c0;
 
     LedDriver* ledDriver;
     SHTC3Driver* shtc3Driver;
