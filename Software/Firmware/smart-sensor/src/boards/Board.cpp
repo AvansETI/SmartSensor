@@ -2,8 +2,8 @@
 
 #include <stdlib.h>
 
-#include <util/delay.h>
 #include <avr/pgmspace.h>
+#include <util/delay.h>
 
 /* Define in the main.c which board you would like to compile to. In the future
    it is possible that the software detects the version itself. */

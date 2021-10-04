@@ -1,11 +1,11 @@
 #include <tasks/Atmega324PBI2C0.h>
 
+#include <stdio.h>
+
 #include <avr/io.h>
+#include <avr/interrupt.h>
 #include <util/twi.h>
 #include <util/delay.h>
-#include <avr/interrupt.h>
-
-#include <stdio.h>
 
 ISR(TWI0_vect) {
     if ( cbInterruptEvent != NULL ) {

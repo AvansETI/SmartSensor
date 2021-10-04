@@ -1,4 +1,4 @@
-#if not defined(BOOTLOADER)
+#if defined(BOOTLOADER)
 /**
  * Entry point of the application
  * @date   : 12 May 2020
@@ -17,14 +17,14 @@
 
 #include "boards/Board.h"
 
-static const char FIRMWARE_VERSION[] PROGMEM = "v1.0";
+static const char FIRMWARE_VERSION[] PROGMEM = "v0.1";
 
 int main() {
     SmartSensorBoard* board = SmartSensorBoard::getBoard();
 
     board->setup();
 
-    board->debug_P(PSTR("Firmware: "));
+    board->debug_P(PSTR("Bootloader: "));
     board->debug_P(FIRMWARE_VERSION);
     board->debug_P(PSTR("\n"));
  

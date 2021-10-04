@@ -7,8 +7,6 @@
 #include <util/delay.h>
 #include <string.h>
 
-
-
 void SmartSensorBoardV1_2::setup() {
     BOARDV1_2_ADAPTER_IN_USE_DDR = BOARDV1_2_ADAPTER_IN_USE_DDR & ~(1 << BOARDV1_2_ADAPTER_IN_USE_PIN); // Set pin for adapter in use as input.
 
@@ -16,19 +14,19 @@ void SmartSensorBoardV1_2::setup() {
     this->timing->setup();
     
     this->serial0 = Atmega324PBSerial0::getInstance();
-    this->serial0->setup();
+    this->addTask(this->serial0, PSTR("Serial0"));
 
     this->i2c0 = Atmega324PBI2C0::getInstance();
-    this->i2c0->setup();
+    this->addTask(this->i2c0, PSTR("I2C0"));
 
     this->shtc3Driver    = SHTC3Driver::getInstance(this);
-    this->ledDriver      = LedDriver::getInstance();
-    this->mcp7940nDriver = MCP7940NDriver::getInstance(this);
-    
-    this->addTask(this->serial0,        PSTR("Serial0Task"));
-    this->addTask(this->mcp7940nDriver, PSTR("MCP7940NDriver"));
-    this->addTask(this->ledDriver,      PSTR("LedDriver"));
     this->addTask(this->shtc3Driver,    PSTR("SHTC3Driver"));
+
+    this->ledDriver      = LedDriver::getInstance();
+    this->addTask(this->ledDriver,      PSTR("LedDriver"));
+
+    this->mcp7940nDriver = MCP7940NDriver::getInstance(this);
+    this->addTask(this->mcp7940nDriver, PSTR("MCP7940NDriver"));
 
     SmartSensorBoard::setup(); // Base class setup() when everything is loaded.
 

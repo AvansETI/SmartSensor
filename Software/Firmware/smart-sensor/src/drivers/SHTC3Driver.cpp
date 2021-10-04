@@ -3,6 +3,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <util/twi.h>
+
 #include <tasks/Atmega324PBI2C0.h>
 
 uint8_t SHTC3Driver::setup() {
