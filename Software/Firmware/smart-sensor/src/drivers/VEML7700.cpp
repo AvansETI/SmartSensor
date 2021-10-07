@@ -73,28 +73,31 @@ bool VEML7700Driver::isConnected() {
 
 uint8_t VEML7700Driver::CHANGEGAIN(uint8_t gain) {
 
-    uint16_t currentgain = 0x01;
+    uint16_t currentgain = 0x00;
     I2C0* i2c = I2C0::getInstance();
     i2c->start(); i2c->wait(TW_START);
+    i2c->select(VEML7700_I2C_ADDRESS, TW_WRITE); i2c->wait(TW_MT_SLA_ACK);
+    i2c->write(VEML7700_CONFIG); i2c->wait(TW_MT_DATA_ACK);
+    i2c->repeatedStart(); i2c->wait(TW_REP_START);
+    i2c->select(VEML7700_I2C_ADDRESS, TW_READ); i2c->wait(TW_MR_SLA_ACK);
+    i2c->readAck(); i2c->wait(TW_MR_DATA_ACK);
+    currentgain = i2c->getData();
+    i2c->readNack(); i2c->wait(TW_MR_DATA_NACK);
+    currentgain |= i2c->getData() << 8;
+    i2c->repeatedStart(); i2c->wait(TW_REP_START);
     //select config
     i2c->select(VEML7700_I2C_ADDRESS, TW_WRITE); i2c->wait(TW_MT_SLA_ACK);
     //write to config
     i2c->write(VEML7700_CONFIG); i2c->wait(TW_MT_DATA_ACK);
     //write gain
-    //after the << after gain, a value between 0 - 7 will return properly, unfortunately these are not the values needed
-    i2c->write(gain << 0); i2c->wait(TW_MT_DATA_ACK);
-    i2c->repeatedStart(); i2c->wait(TW_REP_START);
-    //check gain in device
-    i2c->select(VEML7700_I2C_ADDRESS, TW_READ); i2c->wait(TW_MR_SLA_ACK);
-    i2c->readAck(); i2c->wait(TW_MR_DATA_ACK);
-    currentgain = i2c->getData() >> 0;
-    i2c->readAck(); i2c->wait(TW_MR_DATA_ACK);
+    i2c->write(0x00); i2c->wait(TW_MT_DATA_ACK);
+    i2c->write((gain & 0x03) << 3); i2c->wait(TW_MT_DATA_ACK);
     i2c->stop();
 
     
     Serial0* s = Serial0::getInstance();
             char m[30];
-            sprintf_P(m, PSTR("loop reached with value: %.1f\n"), (double)currentgain);
+            sprintf_P(m, PSTR("loop reached with value: %x\n"), (double)currentgain);
             s->print(m);
 
     return 0;
@@ -178,6 +181,11 @@ uint8_t VEML7700Driver::sampleLoop() {
         case 7:
             this->state++;
             i2c->status(TW_MR_DATA_ACK);
+            i2c->readNack();
+            break;
+        case 8:
+            this->state++;
+            i2c->status(TW_MR_DATA_NACK);
             i2c->getData();
             i2c->stop();
             if (this->testloop == 0)
