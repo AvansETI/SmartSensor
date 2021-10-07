@@ -84,6 +84,8 @@ uint8_t VEML7700Driver::CHANGEGAIN(uint8_t gain) {
     currentgain = i2c->getData();
     i2c->readNack(); i2c->wait(TW_MR_DATA_NACK);
     currentgain |= i2c->getData() << 8;
+
+    
     i2c->repeatedStart(); i2c->wait(TW_REP_START);
     //select config
     i2c->select(VEML7700_I2C_ADDRESS, TW_WRITE); i2c->wait(TW_MT_SLA_ACK);
@@ -91,14 +93,13 @@ uint8_t VEML7700Driver::CHANGEGAIN(uint8_t gain) {
     i2c->write(VEML7700_CONFIG); i2c->wait(TW_MT_DATA_ACK);
     //write gain
     i2c->write(0x00); i2c->wait(TW_MT_DATA_ACK);
-    // i2c->write((gain & 0x03) << 3); i2c->wait(TW_MT_DATA_ACK);
-    i2c->write(0b0001'1000); i2c->wait(TW_MT_DATA_ACK);
+    i2c->write((gain & 0x03) << 8); i2c->wait(TW_MT_DATA_ACK);
+    // i2c->write(0b0001'1000); i2c->wait(TW_MT_DATA_ACK);
     i2c->stop();
-
     
     Serial0* s = Serial0::getInstance();
-            char m[40];
-            sprintf_P(m, PSTR("loop reached with value: %p\n"), currentgain);
+            char m[50];
+            sprintf_P(m, PSTR("loop reached with value: %p\nprev gain: %p\n"), currentgain, (gain & 0x03) << 3);
             s->print(m);
 
     return 0;
