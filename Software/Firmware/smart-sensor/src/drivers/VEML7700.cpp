@@ -117,8 +117,8 @@ uint8_t VEML7700Driver::writeGain(uint8_t gain) {
     i2c->write(VEML7700_CONFIG); i2c->wait(TW_MT_DATA_ACK);
     //write gain
     i2c->write(0x00); i2c->wait(TW_MT_DATA_ACK);
-    i2c->write((gain & 0x03) << 8); i2c->wait(TW_MT_DATA_ACK);
-    // i2c->write(0b0001'1000); i2c->wait(TW_MT_DATA_ACK);
+    // i2c->write((gain & 0x03) << 8); i2c->wait(TW_MT_DATA_ACK);
+    i2c->write(0b0001'1000); i2c->wait(TW_MT_DATA_ACK);
     i2c->stop();
 
     return 0;
