@@ -91,13 +91,14 @@ uint8_t VEML7700Driver::CHANGEGAIN(uint8_t gain) {
     i2c->write(VEML7700_CONFIG); i2c->wait(TW_MT_DATA_ACK);
     //write gain
     i2c->write(0x00); i2c->wait(TW_MT_DATA_ACK);
-    i2c->write((gain & 0x03) << 3); i2c->wait(TW_MT_DATA_ACK);
+    // i2c->write((gain & 0x03) << 3); i2c->wait(TW_MT_DATA_ACK);
+    i2c->write(0b0001'1000); i2c->wait(TW_MT_DATA_ACK);
     i2c->stop();
 
     
     Serial0* s = Serial0::getInstance();
-            char m[30];
-            sprintf_P(m, PSTR("loop reached with value: %x\n"), (double)currentgain);
+            char m[40];
+            sprintf_P(m, PSTR("loop reached with value: %p\n"), currentgain);
             s->print(m);
 
     return 0;
