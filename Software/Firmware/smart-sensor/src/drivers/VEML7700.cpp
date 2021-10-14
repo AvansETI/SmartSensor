@@ -273,11 +273,13 @@ uint8_t VEML7700Driver::sampleLoop() {
             if (this->testloop == 9)
             {
                 this->writePersistence(VEML7700_PERS_1);
+                this->readConfig();
                 this->writeInterruptEnable(VEML7700_INTERRUPT_ENABLE);
             }
             if (this->testloop == 12)
             {
                 this->writePersistence(VEML7700_PERS_2);
+                this->readConfig();
                 this->writeInterruptEnable(VEML7700_INTERRUPT_DISABLE);
             }
             if (this->testloop == 15)
