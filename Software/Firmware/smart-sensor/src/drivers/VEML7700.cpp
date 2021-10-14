@@ -22,37 +22,9 @@ uint8_t VEML7700Driver::setup() {
     I2C0* i2c = I2C0::getInstance();
     //start I2C
     i2c->start(); i2c->wait(TW_START);
-    // //Select VEML7700 Address
-    // i2c->select(VEML7700_I2C_ADDRESS, TW_WRITE); i2c->wait(TW_MT_SLA_ACK);
-    // //write to config
-    // i2c->write(VEML7700_CONFIG); i2c->wait(TW_MT_DATA_ACK);
-    // //write shutdown true
-    // i2c->write(0x00); i2c->wait(TW_MT_DATA_ACK);
-    // //Select VEML7700 Address
-    // i2c->select(VEML7700_I2C_ADDRESS, TW_WRITE); i2c->wait(TW_MT_SLA_ACK);
-    // //write to config
-    // i2c->write(VEML7700_CONFIG); i2c->wait(TW_MT_DATA_ACK);
-    // //write persistence
-    // i2c->write(VEML7700_PERS_1 << 4); i2c->wait(TW_MT_DATA_ACK);
-    // //select VEML7700 Address
-    // i2c->select(VEML7700_I2C_ADDRESS, TW_WRITE); i2c->wait(TW_MT_SLA_ACK);
-    // //write to config
-    // i2c->write(VEML7700_CONFIG); i2c->wait(TW_MT_DATA_ACK);
-    // //write interrupt
-    // i2c->write(VEML7700_IT_100MS << 6); i2c->wait(TW_MT_DATA_ACK);
-    // //Select VEML7700 Address
-    // i2c->select(VEML7700_I2C_ADDRESS, TW_WRITE); i2c->wait(TW_MT_SLA_ACK);
-    // //write to config
-    // i2c->write(VEML7700_POWER_SAVE); i2c->wait(TW_MT_DATA_ACK);
-    // //write power_save disable
-    // i2c->write(0x00); i2c->wait(TW_MT_DATA_ACK);
-    // //Select VEML7700 Address
-    // i2c->select(VEML7700_I2C_ADDRESS, TW_WRITE); i2c->wait(TW_MT_SLA_ACK);
-    // //write to config
-    // i2c->write(VEML7700_CONFIG); i2c->wait(TW_MT_DATA_ACK);
-    // //write Shutdown false
-    // i2c->write(0x01); i2c->wait(TW_MT_DATA_ACK);
+    this->writeShutdown(VEML7700_POWER_OFF);
     this->writeGain(VEML7700_GAIN_1);
+    this->writeShutdown(VEML7700_POWER_ON);
     i2c->stop();
     
 
