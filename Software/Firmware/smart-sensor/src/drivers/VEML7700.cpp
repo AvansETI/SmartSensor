@@ -162,7 +162,7 @@ uint8_t VEML7700Driver::writeGain(uint8_t gain) {
     i2c->write(VEML7700_CONFIG); i2c->wait(TW_MT_DATA_ACK);
     //write gain
     i2c->write(this->configValue << 8); i2c->wait(TW_MT_DATA_ACK);
-    uint8_t tempValue = this->configValue >> 8;
+    uint8_t tempValue = this->configValue;
     i2c->write((tempValue &= ~((gain & 0x03) << 3)) |= ((gain & 0x03) << 3)); i2c->wait(TW_MT_DATA_ACK);
     i2c->stop();
 
@@ -273,14 +273,10 @@ uint8_t VEML7700Driver::sampleLoop() {
             if (this->testloop == 9)
             {
                 this->writePersistence(VEML7700_PERS_1);
-                this->readConfig();
-                this->writeInterruptEnable(VEML7700_INTERRUPT_ENABLE);
             }
             if (this->testloop == 12)
             {
                 this->writePersistence(VEML7700_PERS_2);
-                this->readConfig();
-                this->writeInterruptEnable(VEML7700_INTERRUPT_DISABLE);
             }
             if (this->testloop == 15)
             {
