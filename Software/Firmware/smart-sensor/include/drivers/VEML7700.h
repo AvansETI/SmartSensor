@@ -51,6 +51,9 @@
 #define VEML7700_POWER_ON 0x00 // shutdown is false
 #define VEML7700_POWER_OFF 0x01 // shutdown is true
 
+#define VEML7700_INTERRUPT_DISABLE 0x00 //interrupt enable is false
+#define VEML7700_INTERRUPT_ENABLE 0x01 //interrupt enable is true
+
 // Address of the VEML7700 sensor
 constexpr uint8_t VEML7700_I2C_ADDRESS PROGMEM = 0x20;
 
@@ -71,6 +74,11 @@ private:
     uint16_t readConfig();
     uint8_t readGain();
     uint8_t writeGain(uint8_t gain);
+    uint8_t readInterruptEnable();
+    uint8_t writeInterruptEnable(uint8_t interruptenable);
+    uint8_t readPersistence();
+    uint8_t writePersistence(uint8_t persistence);
+    uint8_t readShutdown();
     uint8_t writeShutdown(uint8_t power);
 protected:
     VEML7700Driver(SmartSensorMeasurement* luMeasurement): Driver(luMeasurement), state(0), testloop(0) {};
