@@ -62,7 +62,7 @@ private:
     uint32_t loopTiming;
 
     uint8_t testloop;
-    uint8_t CHANGEGAIN(uint8_t gain);
+    uint16_t readGain();
     uint8_t writeGain(uint8_t gain);
 protected:
     VEML7700Driver(SmartSensorMeasurement* luMeasurement): Driver(luMeasurement), state(0), testloop(0) {};

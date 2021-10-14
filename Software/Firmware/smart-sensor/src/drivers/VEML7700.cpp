@@ -9,6 +9,7 @@
 //TODO: Reset, Sleep, and wakeup functions
 //TODO: Figure out checksum, productcode and id
 //TODO: Figure out how accurate the VEML7700 sensor is, currently readings sometimes vary greatly from what is expected
+//TODO: Figure out how to properly utilise all config
 
 uint8_t VEML7700Driver::setup() {
     if (!this->isConnected())
@@ -19,42 +20,43 @@ uint8_t VEML7700Driver::setup() {
     I2C0* i2c = I2C0::getInstance();
     //start I2C
     i2c->start(); i2c->wait(TW_START);
-    //Select VEML7700 Address
-    i2c->select(VEML7700_I2C_ADDRESS, TW_WRITE); i2c->wait(TW_MT_SLA_ACK);
-    //write to config
-    i2c->write(VEML7700_CONFIG); i2c->wait(TW_MT_DATA_ACK);
-    //write shutdown true
-    i2c->write(0x00); i2c->wait(TW_MT_DATA_ACK);
-    //Select VEML7700 Address
-    i2c->select(VEML7700_I2C_ADDRESS, TW_WRITE); i2c->wait(TW_MT_SLA_ACK);
-    //write to config
-    i2c->write(VEML7700_CONFIG); i2c->wait(TW_MT_DATA_ACK);
-    //write persistence
-    i2c->write(VEML7700_PERS_1 << 4); i2c->wait(TW_MT_DATA_ACK);
-    //select VEML7700 Address
-    i2c->select(VEML7700_I2C_ADDRESS, TW_WRITE); i2c->wait(TW_MT_SLA_ACK);
-    //write to config
-    i2c->write(VEML7700_CONFIG); i2c->wait(TW_MT_DATA_ACK);
-    //write gain
-    i2c->write(VEML7700_GAIN_1 << 11); i2c->wait(TW_MT_DATA_ACK);
-    //select VEML7700 Address
-    i2c->select(VEML7700_I2C_ADDRESS, TW_WRITE); i2c->wait(TW_MT_SLA_ACK);
-    //write to config
-    i2c->write(VEML7700_CONFIG); i2c->wait(TW_MT_DATA_ACK);
-    //write interrupt
-    i2c->write(VEML7700_IT_100MS << 6); i2c->wait(TW_MT_DATA_ACK);
-    //Select VEML7700 Address
-    i2c->select(VEML7700_I2C_ADDRESS, TW_WRITE); i2c->wait(TW_MT_SLA_ACK);
-    //write to config
-    i2c->write(VEML7700_POWER_SAVE); i2c->wait(TW_MT_DATA_ACK);
-    //write power_save disable
-    i2c->write(0x00); i2c->wait(TW_MT_DATA_ACK);
-    //Select VEML7700 Address
-    i2c->select(VEML7700_I2C_ADDRESS, TW_WRITE); i2c->wait(TW_MT_SLA_ACK);
-    //write to config
-    i2c->write(VEML7700_CONFIG); i2c->wait(TW_MT_DATA_ACK);
-    //write Shutdown false
-    i2c->write(0x01); i2c->wait(TW_MT_DATA_ACK);
+    // //Select VEML7700 Address
+    // i2c->select(VEML7700_I2C_ADDRESS, TW_WRITE); i2c->wait(TW_MT_SLA_ACK);
+    // //write to config
+    // i2c->write(VEML7700_CONFIG); i2c->wait(TW_MT_DATA_ACK);
+    // //write shutdown true
+    // i2c->write(0x00); i2c->wait(TW_MT_DATA_ACK);
+    // //Select VEML7700 Address
+    // i2c->select(VEML7700_I2C_ADDRESS, TW_WRITE); i2c->wait(TW_MT_SLA_ACK);
+    // //write to config
+    // i2c->write(VEML7700_CONFIG); i2c->wait(TW_MT_DATA_ACK);
+    // //write persistence
+    // i2c->write(VEML7700_PERS_1 << 4); i2c->wait(TW_MT_DATA_ACK);
+    // //select VEML7700 Address
+    // i2c->select(VEML7700_I2C_ADDRESS, TW_WRITE); i2c->wait(TW_MT_SLA_ACK);
+    // //write to config
+    // i2c->write(VEML7700_CONFIG); i2c->wait(TW_MT_DATA_ACK);
+    // //write gain
+    // i2c->write(VEML7700_GAIN_1 << 11); i2c->wait(TW_MT_DATA_ACK);
+    // //select VEML7700 Address
+    // i2c->select(VEML7700_I2C_ADDRESS, TW_WRITE); i2c->wait(TW_MT_SLA_ACK);
+    // //write to config
+    // i2c->write(VEML7700_CONFIG); i2c->wait(TW_MT_DATA_ACK);
+    // //write interrupt
+    // i2c->write(VEML7700_IT_100MS << 6); i2c->wait(TW_MT_DATA_ACK);
+    // //Select VEML7700 Address
+    // i2c->select(VEML7700_I2C_ADDRESS, TW_WRITE); i2c->wait(TW_MT_SLA_ACK);
+    // //write to config
+    // i2c->write(VEML7700_POWER_SAVE); i2c->wait(TW_MT_DATA_ACK);
+    // //write power_save disable
+    // i2c->write(0x00); i2c->wait(TW_MT_DATA_ACK);
+    // //Select VEML7700 Address
+    // i2c->select(VEML7700_I2C_ADDRESS, TW_WRITE); i2c->wait(TW_MT_SLA_ACK);
+    // //write to config
+    // i2c->write(VEML7700_CONFIG); i2c->wait(TW_MT_DATA_ACK);
+    // //write Shutdown false
+    // i2c->write(0x01); i2c->wait(TW_MT_DATA_ACK);
+    this->writeGain(VEML7700_GAIN_1);
     i2c->stop();
     
 
@@ -71,7 +73,7 @@ bool VEML7700Driver::isConnected() {
     return i2c->isConnected(VEML7700_I2C_ADDRESS);
 }
 
-uint8_t VEML7700Driver::CHANGEGAIN(uint8_t gain) {
+uint16_t VEML7700Driver::readGain() {
 
     uint16_t currentgain = 0x00;
     I2C0* i2c = I2C0::getInstance();
@@ -81,31 +83,13 @@ uint8_t VEML7700Driver::CHANGEGAIN(uint8_t gain) {
     i2c->write(VEML7700_CONFIG); i2c->wait(TW_MT_DATA_ACK);
     i2c->repeatedStart(); i2c->wait(TW_REP_START);
     i2c->select(VEML7700_I2C_ADDRESS, TW_READ); i2c->wait(TW_MR_SLA_ACK);
+    //read command, shift bits so the two 8bit recieved become one 16bit
     i2c->readAck(); i2c->wait(TW_MR_DATA_ACK);
     currentgain = i2c->getData();
     i2c->readNack(); i2c->wait(TW_MR_DATA_NACK);
     currentgain |= i2c->getData() << 8;
-
-    
-    // i2c->repeatedStart(); i2c->wait(TW_REP_START);
-    // //select config
-    // i2c->select(VEML7700_I2C_ADDRESS, TW_WRITE); i2c->wait(TW_MT_SLA_ACK);
-    // //write to config
-    // i2c->write(VEML7700_CONFIG); i2c->wait(TW_MT_DATA_ACK);
-    // //write gain
-    // i2c->write(0x00); i2c->wait(TW_MT_DATA_ACK);
-    // i2c->write((gain & 0x03) << 3); i2c->wait(TW_MT_DATA_ACK);
-    // // i2c->write(0b0001'1000); i2c->wait(TW_MT_DATA_ACK);
     i2c->stop();
-    
-    Serial0* s = Serial0::getInstance();
-            char m[50];
-            sprintf_P(m, PSTR("loop reached with value: %p\nprev gain: %p\n"), currentgain, (gain & 0x03) << 3);
-            s->print(m);
-    
-    this->writeGain(gain);
-
-    return 0;
+    return currentgain;
 }
 
 uint8_t VEML7700Driver::writeGain(uint8_t gain) {
@@ -211,15 +195,18 @@ uint8_t VEML7700Driver::sampleLoop() {
             i2c->stop();
             if (this->testloop == 0)
             {
-                this->CHANGEGAIN(VEML7700_GAIN_1);
+                // this->readGain();
+                this->writeGain(VEML7700_GAIN_1);
             }
             if (this->testloop == 3)
             {
-                this->CHANGEGAIN(VEML7700_GAIN_1_8);
+                // this->readGain();
+                this->writeGain(VEML7700_GAIN_1_8);
             }
             if (this->testloop == 6)
             {
-                this->CHANGEGAIN(VEML7700_GAIN_2);
+                // this->readGain();
+                this->writeGain(VEML7700_GAIN_2);
             }
             if (this->testloop == 9)
             {
@@ -237,6 +224,8 @@ uint8_t VEML7700Driver::sampleLoop() {
             sprintf_P(m, PSTR("Luminosity:%.1f\n"), (double)_luminosity);
             s->print(m);
             this->getMeasurementCallback()->addMeasurement(m);
+            sprintf_P(m, PSTR("Gain:%p\n"), this->readGain());
+            s->print(m);
             
             this->setDataValid();
             this->state = 0; // Start over
