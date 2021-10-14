@@ -69,7 +69,7 @@ private:
 
     uint8_t testloop;
     uint16_t readConfig();
-    uint16_t readGain();
+    uint8_t readGain();
     uint8_t writeGain(uint8_t gain);
     uint8_t writeShutdown(uint8_t power);
 protected:

@@ -72,19 +72,19 @@ bool VEML7700Driver::isConnected() {
 //function to read all of the config, used with the configValue variable to keep track of all parts of config
 //also functions as an update of the configValue
 uint16_t VEML7700Driver::readConfig() {
-    // I2C0* i2c = I2C0::getInstance();
-    // i2c->start(); i2c->wait(TW_START);
-    // //read from config, the current gain
-    // i2c->select(VEML7700_I2C_ADDRESS, TW_WRITE); i2c->wait(TW_MT_SLA_ACK);
-    // i2c->write(VEML7700_CONFIG); i2c->wait(TW_MT_DATA_ACK);
-    // i2c->repeatedStart(); i2c->wait(TW_REP_START);
-    // i2c->select(VEML7700_I2C_ADDRESS, TW_READ); i2c->wait(TW_MR_SLA_ACK);
-    // //read command, shift bits so the two 8bit recieved become one 16bit
-    // i2c->readAck(); i2c->wait(TW_MR_DATA_ACK);
-    // currentgain = i2c->getData();
-    // i2c->readNack(); i2c->wait(TW_MR_DATA_NACK);
-    // currentgain |= i2c->getData() << 8;
-    // i2c->stop();
+    I2C0* i2c = I2C0::getInstance();
+    i2c->start(); i2c->wait(TW_START);
+    //read from config, the current gain
+    i2c->select(VEML7700_I2C_ADDRESS, TW_WRITE); i2c->wait(TW_MT_SLA_ACK);
+    i2c->write(VEML7700_CONFIG); i2c->wait(TW_MT_DATA_ACK);
+    i2c->repeatedStart(); i2c->wait(TW_REP_START);
+    i2c->select(VEML7700_I2C_ADDRESS, TW_READ); i2c->wait(TW_MR_SLA_ACK);
+    //read command, shift bits so the two 8bit recieved become one 16bit
+    i2c->readAck(); i2c->wait(TW_MR_DATA_ACK);
+    this->configValue = i2c->getData();
+    i2c->readNack(); i2c->wait(TW_MR_DATA_NACK);
+    this->configValue |= i2c->getData() << 8;
+    i2c->stop();
 
     return this->configValue;
 }
@@ -101,7 +101,7 @@ uint8_t VEML7700Driver::writeShutdown(uint8_t power) {
     i2c->write(VEML7700_CONFIG); i2c->wait(TW_MT_DATA_ACK);
     //write gain
     uint8_t tempValue = this->configValue << 8;
-    i2c->write((tempValue &= ~((power & 0x01) << 1)) |= ((power & 0x01) << 1)); i2c->wait(TW_MT_DATA_ACK);
+    i2c->write((tempValue &= ~((power & 0x01) << 0)) |= ((power & 0x01) << 0)); i2c->wait(TW_MT_DATA_ACK);
     i2c->write(this->configValue >> 8); i2c->wait(TW_MT_DATA_ACK);
     // i2c->write(0b0001'1000); i2c->wait(TW_MT_DATA_ACK);
     i2c->stop();
@@ -110,25 +110,12 @@ uint8_t VEML7700Driver::writeShutdown(uint8_t power) {
 }
 
 //function to read the gain from the sensor
-uint16_t VEML7700Driver::readGain() {
+uint8_t VEML7700Driver::readGain() {
 
-    uint16_t currentgain = 0x00;
-    I2C0* i2c = I2C0::getInstance();
-    i2c->start(); i2c->wait(TW_START);
-    //read from config, the current gain
-    i2c->select(VEML7700_I2C_ADDRESS, TW_WRITE); i2c->wait(TW_MT_SLA_ACK);
-    i2c->write(VEML7700_CONFIG); i2c->wait(TW_MT_DATA_ACK);
-    i2c->repeatedStart(); i2c->wait(TW_REP_START);
-    i2c->select(VEML7700_I2C_ADDRESS, TW_READ); i2c->wait(TW_MR_SLA_ACK);
-    //read command, shift bits so the two 8bit recieved become one 16bit
-    i2c->readAck(); i2c->wait(TW_MR_DATA_ACK);
-    currentgain = i2c->getData();
-    i2c->readNack(); i2c->wait(TW_MR_DATA_NACK);
-    currentgain |= i2c->getData() << 8;
-    i2c->stop();
-
-    this->configValue = currentgain;
-    return currentgain;
+    uint8_t currentGain = 0x00;
+    uint8_t tempValue = this->configValue >> 8;
+    currentGain = tempValue & (0x03 << 3);
+    return currentGain;
 }
 
 //function to write gain to sensor, gains are defined in the VEML7700.h file, please use those provided
@@ -143,7 +130,6 @@ uint8_t VEML7700Driver::writeGain(uint8_t gain) {
     i2c->write(this->configValue << 8); i2c->wait(TW_MT_DATA_ACK);
     uint8_t tempValue = this->configValue;
     i2c->write((tempValue &= ~((gain & 0x03) << 3)) |= ((gain & 0x03) << 3)); i2c->wait(TW_MT_DATA_ACK);
-    // i2c->write(0b0001'1000); i2c->wait(TW_MT_DATA_ACK);
     i2c->stop();
 
     return 0;
@@ -234,7 +220,7 @@ uint8_t VEML7700Driver::sampleLoop() {
             i2c->status(TW_MR_DATA_NACK);
             i2c->getData();
             i2c->stop();
-            this->readGain();
+            this->readConfig();
             if (this->testloop == 0)
             {
                 // this->readGain();
@@ -274,7 +260,9 @@ uint8_t VEML7700Driver::sampleLoop() {
             sprintf_P(m, PSTR("Luminosity:%.1f\n"), (double)_luminosity);
             s->print(m);
             this->getMeasurementCallback()->addMeasurement(m);
-            sprintf_P(m, PSTR("Config:%p\n"), this->readGain());
+            sprintf_P(m, PSTR("Config:%p\n"), this->readConfig());
+            s->print(m);
+            sprintf_P(m, PSTR("Gain:%p\n"), this->readGain());
             s->print(m);
             
             this->setDataValid();
