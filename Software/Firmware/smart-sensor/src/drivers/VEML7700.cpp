@@ -74,7 +74,7 @@ uint8_t VEML7700Driver::writeShutdown(uint8_t power) {
     //write to config
     i2c->write(VEML7700_CONFIG); i2c->wait(TW_MT_DATA_ACK);
     //write power
-    uint8_t tempValue = this->configValue << 8;
+    uint8_t tempValue = this->configValue;
     i2c->write((tempValue &= ~(0x01 << 0)) |= ((power & 0x01) << 0)); i2c->wait(TW_MT_DATA_ACK);
     i2c->write(this->configValue >> 8); i2c->wait(TW_MT_DATA_ACK);
     // i2c->write(0b0001'1000); i2c->wait(TW_MT_DATA_ACK);
@@ -100,7 +100,7 @@ uint8_t VEML7700Driver::writeInterruptEnable(uint8_t interruptenable) {
     //write to config
     i2c->write(VEML7700_CONFIG); i2c->wait(TW_MT_DATA_ACK);
     //write interrupt
-    uint8_t tempValue = this->configValue << 8;
+    uint8_t tempValue = this->configValue;
     i2c->write((tempValue &= ~(0x01 << 1)) |= ((interruptenable & 0x01) << 1)); i2c->wait(TW_MT_DATA_ACK);
     i2c->write(this->configValue >> 8); i2c->wait(TW_MT_DATA_ACK);
     // i2c->write(0b0001'1000); i2c->wait(TW_MT_DATA_ACK);
@@ -126,7 +126,7 @@ uint8_t VEML7700Driver::writePersistence(uint8_t persistence) {
     //write to config
     i2c->write(VEML7700_CONFIG); i2c->wait(TW_MT_DATA_ACK);
     //write persistence
-    uint8_t tempValue = this->configValue << 8;
+    uint8_t tempValue = this->configValue;
     i2c->write((tempValue &= ~(0x03 << 4)) |= ((persistence & 0x03) << 4)); i2c->wait(TW_MT_DATA_ACK);
     i2c->write(this->configValue >> 8); i2c->wait(TW_MT_DATA_ACK);
     // i2c->write(0b0001'1000); i2c->wait(TW_MT_DATA_ACK);
@@ -281,6 +281,19 @@ uint8_t VEML7700Driver::sampleLoop() {
             }
             if (this->testloop == 15)
             {
+                this->writeInterruptEnable(VEML7700_INTERRUPT_ENABLE);
+            }
+            if (this->testloop == 18)
+            {
+                this->writeInterruptEnable(VEML7700_INTERRUPT_DISABLE);
+            }
+            if (this->testloop == 21)
+            {
+                this->writeShutdown(VEML7700_POWER_OFF);
+            }
+            if (this->testloop == 24)
+            {
+                this->writeShutdown(VEML7700_POWER_ON);
                 this->testloop = 0;
             } else {
                 this->testloop++;
@@ -300,6 +313,10 @@ uint8_t VEML7700Driver::sampleLoop() {
             sprintf_P(m, PSTR("persistence:%p\n"), this->readPersistence());
             s->print(m);
             sprintf_P(m, PSTR("interrupt:%p\n"), this->readInterruptEnable());
+            s->print(m);
+            sprintf_P(m, PSTR("gain:%p\n"), this->readGain());
+            s->print(m);
+            sprintf_P(m, PSTR("shutdown:%p\n"), this->readShutdown());
             s->print(m);
             
             this->setDataValid();
