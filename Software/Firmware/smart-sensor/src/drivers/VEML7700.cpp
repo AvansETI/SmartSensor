@@ -22,11 +22,11 @@ uint8_t VEML7700Driver::setup() {
     I2C0* i2c = I2C0::getInstance();
     //start I2C
     i2c->start(); i2c->wait(TW_START);
-    this->writeShutdown(VEML7700_POWER_OFF);
+    // this->writeShutdown(VEML7700_POWER_OFF);
     this->writeGain(VEML7700_GAIN_1);
-    this->writeInterruptEnable(VEML7700_INTERRUPT_DISABLE);
-    this->writePersistence(VEML7700_PERS_1);
-    this->writeShutdown(VEML7700_POWER_ON);
+    // this->writeInterruptEnable(VEML7700_INTERRUPT_DISABLE);
+    // this->writePersistence(VEML7700_PERS_1);
+    // this->writeShutdown(VEML7700_POWER_ON);
     i2c->stop();
     
 
@@ -75,7 +75,7 @@ uint8_t VEML7700Driver::writeShutdown(uint8_t power) {
     i2c->write(VEML7700_CONFIG); i2c->wait(TW_MT_DATA_ACK);
     //write power
     uint8_t tempValue = this->configValue << 8;
-    i2c->write((tempValue &= ~((power & 0x01) << 0)) |= ((power & 0x01) << 0)); i2c->wait(TW_MT_DATA_ACK);
+    i2c->write((tempValue &= ~(0x01 << 0)) |= ((power & 0x01) << 0)); i2c->wait(TW_MT_DATA_ACK);
     i2c->write(this->configValue >> 8); i2c->wait(TW_MT_DATA_ACK);
     // i2c->write(0b0001'1000); i2c->wait(TW_MT_DATA_ACK);
     i2c->stop();
@@ -101,7 +101,7 @@ uint8_t VEML7700Driver::writeInterruptEnable(uint8_t interruptenable) {
     i2c->write(VEML7700_CONFIG); i2c->wait(TW_MT_DATA_ACK);
     //write interrupt
     uint8_t tempValue = this->configValue << 8;
-    i2c->write((tempValue &= ~((interruptenable & 0x01) << 1)) |= ((interruptenable & 0x01) << 1)); i2c->wait(TW_MT_DATA_ACK);
+    i2c->write((tempValue &= ~(0x01 << 1)) |= ((interruptenable & 0x01) << 1)); i2c->wait(TW_MT_DATA_ACK);
     i2c->write(this->configValue >> 8); i2c->wait(TW_MT_DATA_ACK);
     // i2c->write(0b0001'1000); i2c->wait(TW_MT_DATA_ACK);
     i2c->stop();
@@ -127,7 +127,7 @@ uint8_t VEML7700Driver::writePersistence(uint8_t persistence) {
     i2c->write(VEML7700_CONFIG); i2c->wait(TW_MT_DATA_ACK);
     //write persistence
     uint8_t tempValue = this->configValue << 8;
-    i2c->write((tempValue &= ~((persistence & 0x03) << 4)) |= ((persistence & 0x03) << 4)); i2c->wait(TW_MT_DATA_ACK);
+    i2c->write((tempValue &= ~(0x03 << 4)) |= ((persistence & 0x03) << 4)); i2c->wait(TW_MT_DATA_ACK);
     i2c->write(this->configValue >> 8); i2c->wait(TW_MT_DATA_ACK);
     // i2c->write(0b0001'1000); i2c->wait(TW_MT_DATA_ACK);
     i2c->stop();
@@ -161,9 +161,10 @@ uint8_t VEML7700Driver::writeGain(uint8_t gain) {
     //write to config
     i2c->write(VEML7700_CONFIG); i2c->wait(TW_MT_DATA_ACK);
     //write gain
-    i2c->write(this->configValue << 8); i2c->wait(TW_MT_DATA_ACK);
-    uint8_t tempValue = this->configValue;
-    i2c->write((tempValue &= ~((gain & 0x03) << 3)) |= ((gain & 0x03) << 3)); i2c->wait(TW_MT_DATA_ACK);
+    i2c->write(this->configValue); i2c->wait(TW_MT_DATA_ACK);
+    //will overwrite without bitshifting, doesn't work with bitshifting WIP
+    uint8_t tempValue = this->configValue >> 8;
+    i2c->write((tempValue &= ~(0x03 << 3)) |= ((gain & 0x03) << 3)); i2c->wait(TW_MT_DATA_ACK);
     i2c->stop();
 
     return 0;
