@@ -17,6 +17,8 @@ uint8_t VEML7700Driver::setup() {
         return 1; //cannot select the VEML7700
     }
 
+    this->configValue = 0x00;
+
     I2C0* i2c = I2C0::getInstance();
     //start I2C
     i2c->start(); i2c->wait(TW_START);
@@ -32,12 +34,6 @@ uint8_t VEML7700Driver::setup() {
     // i2c->write(VEML7700_CONFIG); i2c->wait(TW_MT_DATA_ACK);
     // //write persistence
     // i2c->write(VEML7700_PERS_1 << 4); i2c->wait(TW_MT_DATA_ACK);
-    // //select VEML7700 Address
-    // i2c->select(VEML7700_I2C_ADDRESS, TW_WRITE); i2c->wait(TW_MT_SLA_ACK);
-    // //write to config
-    // i2c->write(VEML7700_CONFIG); i2c->wait(TW_MT_DATA_ACK);
-    // //write gain
-    // i2c->write(VEML7700_GAIN_1 << 11); i2c->wait(TW_MT_DATA_ACK);
     // //select VEML7700 Address
     // i2c->select(VEML7700_I2C_ADDRESS, TW_WRITE); i2c->wait(TW_MT_SLA_ACK);
     // //write to config
@@ -73,6 +69,45 @@ bool VEML7700Driver::isConnected() {
     return i2c->isConnected(VEML7700_I2C_ADDRESS);
 }
 
+//function to read all of the config, used with the configValue variable to keep track of all parts of config
+uint16_t VEML7700Driver::readConfig() {
+    // I2C0* i2c = I2C0::getInstance();
+    // i2c->start(); i2c->wait(TW_START);
+    // //read from config, the current gain
+    // i2c->select(VEML7700_I2C_ADDRESS, TW_WRITE); i2c->wait(TW_MT_SLA_ACK);
+    // i2c->write(VEML7700_CONFIG); i2c->wait(TW_MT_DATA_ACK);
+    // i2c->repeatedStart(); i2c->wait(TW_REP_START);
+    // i2c->select(VEML7700_I2C_ADDRESS, TW_READ); i2c->wait(TW_MR_SLA_ACK);
+    // //read command, shift bits so the two 8bit recieved become one 16bit
+    // i2c->readAck(); i2c->wait(TW_MR_DATA_ACK);
+    // currentgain = i2c->getData();
+    // i2c->readNack(); i2c->wait(TW_MR_DATA_NACK);
+    // currentgain |= i2c->getData() << 8;
+    // i2c->stop();
+
+    return this->configValue;
+}
+
+//function to write shutdown command to the sensor, 0x00 is on, 0x01 is off
+//for all write commands please use defines from the header file when available to prevent errors
+uint8_t VEML7700Driver::writeShutdown(uint8_t power) {
+    
+    I2C0* i2c = I2C0::getInstance();
+    i2c->start(); i2c->wait(TW_START);
+    //select config
+    i2c->select(VEML7700_I2C_ADDRESS, TW_WRITE); i2c->wait(TW_MT_SLA_ACK);
+    //write to config
+    i2c->write(VEML7700_CONFIG); i2c->wait(TW_MT_DATA_ACK);
+    //write gain
+    i2c->write((this->configValue &= ~((power & 0x01) << 1)) |= ((power & 0x01) << 1)); i2c->wait(TW_MT_DATA_ACK);
+    i2c->write(this->configValue >> 8); i2c->wait(TW_MT_DATA_ACK);
+    // i2c->write(0b0001'1000); i2c->wait(TW_MT_DATA_ACK);
+    i2c->stop();
+
+    return 0;
+}
+
+//function to read the gain from the sensor
 uint16_t VEML7700Driver::readGain() {
 
     uint16_t currentgain = 0x00;
@@ -89,9 +124,12 @@ uint16_t VEML7700Driver::readGain() {
     i2c->readNack(); i2c->wait(TW_MR_DATA_NACK);
     currentgain |= i2c->getData() << 8;
     i2c->stop();
+
+    this->configValue = currentgain;
     return currentgain;
 }
 
+//function to write gain to sensor, gains are defined in the VEML7700.h file, please use those provided
 uint8_t VEML7700Driver::writeGain(uint8_t gain) {
     I2C0* i2c = I2C0::getInstance();
     i2c->start(); i2c->wait(TW_START);
@@ -100,8 +138,8 @@ uint8_t VEML7700Driver::writeGain(uint8_t gain) {
     //write to config
     i2c->write(VEML7700_CONFIG); i2c->wait(TW_MT_DATA_ACK);
     //write gain
-    i2c->write(0x00); i2c->wait(TW_MT_DATA_ACK);
-    i2c->write((gain & 0x03) << 3); i2c->wait(TW_MT_DATA_ACK);
+    i2c->write(this->configValue); i2c->wait(TW_MT_DATA_ACK);
+    i2c->write((this->configValue &= (~((gain & 0x03) << 3)) << 8) |= ((gain & 0x03) << 3)); i2c->wait(TW_MT_DATA_ACK);
     // i2c->write(0b0001'1000); i2c->wait(TW_MT_DATA_ACK);
     i2c->stop();
 
@@ -209,6 +247,14 @@ uint8_t VEML7700Driver::sampleLoop() {
                 this->writeGain(VEML7700_GAIN_2);
             }
             if (this->testloop == 9)
+            {
+                this->writeShutdown(VEML7700_POWER_OFF);
+            }
+            if (this->testloop == 12)
+            {
+                this->writeShutdown(VEML7700_POWER_ON);
+            }
+            if (this->testloop == 15)
             {
                 this->testloop = 0;
             } else {

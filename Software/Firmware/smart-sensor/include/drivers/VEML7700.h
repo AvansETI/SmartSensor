@@ -3,9 +3,9 @@
  * @file       : VEML7700.h
  * @description: This driver handles the ambient light sensor, able to measure changes in the brightness of light. 
  *               https://www.vishay.com/docs/84286/veml7700.pdf
- * @date       : 21-09-2021
+ * @date       : 14-10-2021
  * @author     : Tom Kaasenbrood
- * @version    : 0.2
+ * @version    : 0.4
  * @todo       : 
  * @updates
  * 
@@ -14,6 +14,7 @@
 
 #include <util/I2C0.h>
 
+//defines to be used by the VEML7700 sensor, not all of these are used but they are available for desired expansion of functionality
 #define VEML7700_CONFIG 0x00        ///< Light configuration register
 #define VEML7700_THREHOLD_HIGH 0x01 ///< Light high threshold for irq
 #define VEML7700_THREHOLD_LOW 0x02  ///< Light low threshold for irq
@@ -47,6 +48,9 @@
 #define VEML7700_POWERSAVE_MODE3 0x02 ///< Power saving mode 3
 #define VEML7700_POWERSAVE_MODE4 0x03 ///< Power saving mode 4
 
+#define VEML7700_POWER_ON 0x00 // shutdown is false
+#define VEML7700_POWER_OFF 0x01 // shutdown is true
+
 // Address of the VEML7700 sensor
 constexpr uint8_t VEML7700_I2C_ADDRESS PROGMEM = 0x20;
 
@@ -61,9 +65,13 @@ private:
     uint32_t samplingInterval;
     uint32_t loopTiming;
 
+    uint16_t configValue;
+
     uint8_t testloop;
+    uint16_t readConfig();
     uint16_t readGain();
     uint8_t writeGain(uint8_t gain);
+    uint8_t writeShutdown(uint8_t power);
 protected:
     VEML7700Driver(SmartSensorMeasurement* luMeasurement): Driver(luMeasurement), state(0), testloop(0) {};
 
