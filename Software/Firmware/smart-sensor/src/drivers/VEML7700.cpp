@@ -70,6 +70,7 @@ bool VEML7700Driver::isConnected() {
 }
 
 //function to read all of the config, used with the configValue variable to keep track of all parts of config
+//also functions as an update of the configValue
 uint16_t VEML7700Driver::readConfig() {
     // I2C0* i2c = I2C0::getInstance();
     // i2c->start(); i2c->wait(TW_START);
@@ -99,7 +100,8 @@ uint8_t VEML7700Driver::writeShutdown(uint8_t power) {
     //write to config
     i2c->write(VEML7700_CONFIG); i2c->wait(TW_MT_DATA_ACK);
     //write gain
-    i2c->write((this->configValue &= ~((power & 0x01) << 1)) |= ((power & 0x01) << 1)); i2c->wait(TW_MT_DATA_ACK);
+    uint8_t tempValue = this->configValue << 8;
+    i2c->write((tempValue &= ~((power & 0x01) << 1)) |= ((power & 0x01) << 1)); i2c->wait(TW_MT_DATA_ACK);
     i2c->write(this->configValue >> 8); i2c->wait(TW_MT_DATA_ACK);
     // i2c->write(0b0001'1000); i2c->wait(TW_MT_DATA_ACK);
     i2c->stop();
@@ -138,8 +140,9 @@ uint8_t VEML7700Driver::writeGain(uint8_t gain) {
     //write to config
     i2c->write(VEML7700_CONFIG); i2c->wait(TW_MT_DATA_ACK);
     //write gain
-    i2c->write(this->configValue); i2c->wait(TW_MT_DATA_ACK);
-    i2c->write((this->configValue &= (~((gain & 0x03) << 3)) << 8) |= ((gain & 0x03) << 3)); i2c->wait(TW_MT_DATA_ACK);
+    i2c->write(this->configValue << 8); i2c->wait(TW_MT_DATA_ACK);
+    uint8_t tempValue = this->configValue;
+    i2c->write((tempValue &= ~((gain & 0x03) << 3)) |= ((gain & 0x03) << 3)); i2c->wait(TW_MT_DATA_ACK);
     // i2c->write(0b0001'1000); i2c->wait(TW_MT_DATA_ACK);
     i2c->stop();
 
@@ -231,6 +234,7 @@ uint8_t VEML7700Driver::sampleLoop() {
             i2c->status(TW_MR_DATA_NACK);
             i2c->getData();
             i2c->stop();
+            this->readGain();
             if (this->testloop == 0)
             {
                 // this->readGain();
@@ -270,7 +274,7 @@ uint8_t VEML7700Driver::sampleLoop() {
             sprintf_P(m, PSTR("Luminosity:%.1f\n"), (double)_luminosity);
             s->print(m);
             this->getMeasurementCallback()->addMeasurement(m);
-            sprintf_P(m, PSTR("Gain:%p\n"), this->readGain());
+            sprintf_P(m, PSTR("Config:%p\n"), this->readGain());
             s->print(m);
             
             this->setDataValid();
