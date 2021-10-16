@@ -19,14 +19,14 @@ void SmartSensorBoardV1_2::setup() {
     this->i2c0 = Atmega324PBI2C0::getInstance();
     this->addTask(this->i2c0, PSTR("I2C0"));
 
-    this->shtc3Driver    = SHTC3Driver::getInstance(this);
-    this->addTask(this->shtc3Driver,    PSTR("SHTC3Driver"));
-
     this->ledDriver      = LedDriver::getInstance();
     this->addTask(this->ledDriver,      PSTR("LedDriver"));
 
+    this->shtc3Driver    = SHTC3Driver::getInstance(this);
+    //this->addTask(this->shtc3Driver,    PSTR("SHTC3Driver"));
+
     this->mcp7940nDriver = MCP7940NDriver::getInstance(this);
-    this->addTask(this->mcp7940nDriver, PSTR("MCP7940NDriver"));
+    //this->addTask(this->mcp7940nDriver, PSTR("MCP7940NDriver"));
 
     SmartSensorBoard::setup(); // Base class setup() when everything is loaded.
 

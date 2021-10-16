@@ -15,8 +15,9 @@ ISR(TWI0_vect) {
 
 uint8_t Atmega324PBI2C0::setup() {
     TWSR0 = 0x00;
-    TWBR0 = ((F_CPU/I2C_SCL_CLOCK)-16)/2;
+    TWBR0 = ((F_CPU/I2C0_SCL_CLOCK)-16)/2;
     
+    this->timer = 0;
     this->state = I2CState::WAITING;
     cbInterruptEvent = this;
 
@@ -37,12 +38,16 @@ uint8_t Atmega324PBI2C0::loop(uint32_t millis) {
     case I2CState::COMMAND:
         executeCommand();
         this->state = I2CState::CHECK;
+        this->timer = millis;
         break;
 
     case I2CState::CHECK: // TODO: This is interrupt driven, so nothing to do here! We could check after a while that things go wrong?!
     //    if ( this->ready() ) { // When the I2C operation has finished, proceed to check the status.
     //        this->state = I2CState::STATUS;
     //    }
+        if ( millis - timer > 1000 ) { // More than one second!
+            board->debug("CHECK TAKES TOO LONG!!");
+        }
         break;
 
     case I2CState::STATUS:

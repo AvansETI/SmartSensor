@@ -31,6 +31,8 @@ uint8_t Atmega324PBSerial0::loop(uint32_t millis) {
             }
         }
     }
+
+    return 0;
 }
 
 uint8_t Atmega324PBSerial0::reset() {
