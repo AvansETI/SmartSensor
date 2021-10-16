@@ -353,7 +353,7 @@ void MCP7940NDriver::setTimeLoop() {
     i2c->stop();
 }
 
-void MCP7940NDriver::i2c0Interrupt() {
+void MCP7940NDriver::i2cInterrupt() {
     /*
     switch( this->function ) {
     case MCP7940NFunction::GETTIME:

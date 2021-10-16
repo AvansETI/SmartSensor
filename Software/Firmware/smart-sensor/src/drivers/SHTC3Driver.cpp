@@ -219,6 +219,6 @@ uint8_t SHTC3Driver::sampleLoop() {
     return 0;
 }
 
-void SHTC3Driver::i2c0Interrupt() {
+void SHTC3Driver::i2cInterrupt() {
     this->sampleLoop();
 }

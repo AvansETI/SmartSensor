@@ -24,7 +24,7 @@
 constexpr uint8_t SHTC3_I2C_ADDRESS PROGMEM = 0xE0;
 
 /* The concreate SHTC3Driver that handles the hardware SHTC3 chip. */
-class SHTC3Driver: public Driver, public I2C0InterruptEvent {
+class SHTC3Driver: public Driver, public I2CInterruptEvent {
 private:
     uint16_t id;
     uint8_t state;
@@ -63,7 +63,7 @@ public:
     uint16_t getProductCode();
 
     // When using the I2C module, this event is issued when an I2C is ready!
-    void i2c0Interrupt();
+    void i2cInterrupt();
 
     void setSamplingInterval(uint32_t samplingInterval) { this->samplingInterval = samplingInterval; }
 };

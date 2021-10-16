@@ -1,4 +1,3 @@
-#if not defined(BOOTLOADER)
 /**
  * Entry point of the application
  * @date   : 12 May 2020
@@ -32,5 +31,3 @@ int main() {
         board->loop();
     }
 }
-
-#endif

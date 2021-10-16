@@ -35,7 +35,7 @@ enum MCP7940NFunction {
     SETTIME
 };
 
-class MCP7940NDriver: public Driver, public I2C0InterruptEvent {
+class MCP7940NDriver: public Driver, public I2CInterruptEvent {
 private:
     /* The callback when a time has been retrieved from the chip. */
     RTCReadTimestampEvent* rtcEvent;
@@ -67,7 +67,7 @@ public:
     uint8_t wakeup();
 
     void sampleLoop();
-    void i2c0Interrupt();
+    void i2cInterrupt();
     
     /* Add POWER-DOWN/POWER-UP TIME-STAMP */
     RTCTime getPowerDownTimestamp();

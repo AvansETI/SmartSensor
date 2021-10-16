@@ -53,7 +53,7 @@ void SmartSensorBoardV1_2::setup() {
 
     this->ledDriver->led1Flash(5'000, 100);
 
-    //this->i2c0->executeCommands(); // test
+    this->i2c0->test();
 
     sei(); // Enable the interrupts!
 }

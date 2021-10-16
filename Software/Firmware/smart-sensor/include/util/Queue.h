@@ -69,14 +69,23 @@ public:
       it just returns the element where the start pointer points at. Make sure you always check if
       any elements are in the queue.
    */
-   V pop() {
+   V* pop() {
       if ( this->size() > 0 ) {
-         V element = this->list[this->start];
+         V* element = &this->list[this->start];
          this->start = (this->start + 1) % T;
          return element;
       }
 
-      return this->list[this->start]; // The caller should check is something is in.
+      return &this->list[this->start]; // The caller should check is something is in.
+   }
+
+   V* peek() {
+      if ( this->size() > 0 ) {
+         V* element = &this->list[this->start];
+         return element;
+      }
+
+      return &this->list[this->start]; // The caller should check is something is in.
    }
 
    /* Returns the size of the queue.
