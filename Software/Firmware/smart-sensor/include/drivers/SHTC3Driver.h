@@ -18,24 +18,34 @@
 #include <math.h>
 #include <avr/pgmspace.h>
 
+#include <util/I2C.h>
 #include <tasks/Atmega324PBI2C0.h>
+
 
 /* Address of the SHTC3 chip on the I2C bus */
 constexpr uint8_t SHTC3_I2C_ADDRESS PROGMEM = 0xE0;
 
+/* The enumeration that is used for the data array. */
+enum SHTC3Data {
+    HUMIDITY_0,
+    HUMIDITY_1,
+    HUMIDITY_CHECKSUM,
+    TEMPERATURE_0,
+    TEMPERATURE_1,
+    TEMPERATURE_CHECKSUM
+};
+
 /* The concreate SHTC3Driver that handles the hardware SHTC3 chip. */
-class SHTC3Driver: public Driver, public I2CInterruptEvent {
+class SHTC3Driver: public Driver, public I2CReadEvent {
 private:
     uint16_t id;
-    uint8_t state;
-    uint16_t humidity;
-    uint16_t temperature;
+    uint8_t data[6];
 
     uint32_t samplingInterval;
     uint32_t loopTiming;
 
 protected:
-    SHTC3Driver(SmartSensorMeasurement* cbMeasurement): Driver(cbMeasurement), id(0), state(0) {};
+    SHTC3Driver(SmartSensorMeasurement* cbMeasurement): Driver(cbMeasurement), id(0) {};
 
     bool isConnected();
 
@@ -52,7 +62,7 @@ public:
     uint8_t wakeup();
 
     static bool checkChecksum(uint16_t data, uint8_t checksum);
-    uint8_t sampleLoop();
+    uint8_t sample();
 
     /* Returns the unique ID of the SHTC3 chip. Note that bit 15L12 and 10:6 contain unspecified info
        that vary from sensor to sensor. Bits 11 and 5:0 contain the SHTC3 specific product code.
@@ -62,8 +72,12 @@ public:
     /* Returns the specific product code of the sensor. */
     uint16_t getProductCode();
 
-    // When using the I2C module, this event is issued when an I2C is ready!
-    void i2cInterrupt();
-
     void setSamplingInterval(uint32_t samplingInterval) { this->samplingInterval = samplingInterval; }
+
+    // Interface: I2CReadEvent
+    void i2cReadEvent(uint8_t data, uint8_t index);
+
+    float getTemperature();
+    float getHumidity();
+
 };

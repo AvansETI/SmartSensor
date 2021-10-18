@@ -29,27 +29,27 @@
 /* Address of the MCP7940N chip on the I2C bus */
 constexpr uint8_t MCP7940_I2C_ADDRESS PROGMEM = 0xDE;
 
-enum MCP7940NFunction {
-    IDLE,
-    GETTIME,
-    SETTIME
+enum MCP7940NData {
+    SECONDS,
+    MINUTES,
+    HOURS,
+    WEEKDAY,
+    DAY,
+    MONTH,
+    YEAR
 };
 
-class MCP7940NDriver: public Driver, public I2CInterruptEvent {
+class MCP7940NDriver: public Driver, public I2CReadEvent {
 private:
     /* The callback when a time has been retrieved from the chip. */
     RTCReadTimestampEvent* rtcEvent;
-
-    /* The function is to determine which function is called. The state machine of that particular function is used. */
-    MCP7940NFunction function;
-    uint8_t state;
 
     uint32_t samplingInterval;
     uint32_t loopTiming;
 
     // Time that has been retrieved last time from the chip. */
     RTCTime rtcTime;
-    uint8_t timeData[7];
+    uint8_t data[7];
 
 protected:
     MCP7940NDriver(RTCReadTimestampEvent* rtcReadTimestampEvent): rtcEvent(rtcReadTimestampEvent) { }
@@ -66,8 +66,7 @@ public:
     uint8_t sleep();
     uint8_t wakeup();
 
-    void sampleLoop();
-    void i2cInterrupt();
+    void sample();
     
     /* Add POWER-DOWN/POWER-UP TIME-STAMP */
     RTCTime getPowerDownTimestamp();
@@ -86,6 +85,9 @@ public:
     bool isConnected();
 
     RTCTime getRTCTime() { return this->rtcTime; }
+
+    // Interface: I2CReadEvent
+    void i2cReadEvent(uint8_t data, uint8_t index);
 
     // TODO: Design and implement how the alarm should work?!
 

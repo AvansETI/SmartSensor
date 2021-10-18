@@ -7,27 +7,17 @@
 #include <util/twi.h>
 #include <util/delay.h>
 
-ISR(TWI0_vect) {
-    if ( cbInterruptEvent != NULL ) {
-        cbInterruptEvent->i2cInterrupt();
-    }
-}
-
 uint8_t Atmega324PBI2C0::setup() {
     TWSR0 = 0x00;
     TWBR0 = ((F_CPU/I2C0_SCL_CLOCK)-16)/2;
     
     this->timer = 0;
     this->state = I2CState::WAITING;
-    cbInterruptEvent = this;
 
     return 0;
 }
 
-uint8_t Atmega324PBI2C0::loop(uint32_t millis) {
-    SmartSensorBoard* board = SmartSensorBoard::getBoard();
-    board->debugf("LOOP I2C State: %d", this->state);
-
+uint8_t Atmega324PBI2C0::loop(uint32_t millis) { // TODO: Use millis to check when the I2C is stuck.
     switch (this->state) {
     case I2CState::WAITING:
         if ( this->commands.size() > 0 ) {
@@ -38,15 +28,15 @@ uint8_t Atmega324PBI2C0::loop(uint32_t millis) {
     case I2CState::COMMAND:
         executeCommand();
         this->state = I2CState::CHECK;
-        this->timer = millis;
         break;
 
-    case I2CState::CHECK: // TODO: This is interrupt driven, so nothing to do here! We could check after a while that things go wrong?!
-    //    if ( this->ready() ) { // When the I2C operation has finished, proceed to check the status.
-    //        this->state = I2CState::STATUS;
-    //    }
-        if ( millis - timer > 1000 ) { // More than one second!
-            board->debug("CHECK TAKES TOO LONG!!");
+    case I2CState::CHECK:
+        {
+            I2CCommand* command = this->commands.peek();
+
+            if ( this->ready() || *command == I2CCommand::STOP ) { // When the I2C operation has finished, proceed to check the status.
+                this->state = I2CState::STATUS;
+            }
         }
         break;
 
@@ -75,19 +65,8 @@ uint8_t Atmega324PBI2C0::loop(uint32_t millis) {
     return 0;
 }
 
-void Atmega324PBI2C0::i2cInterrupt() {
-    if ( this->state != I2CState::CHECK ) {
-        // TODO: Error!!!
-    }
-
-    this->state = I2CState::STATUS; // The state is check because the command has been given! I2C finished.
-}
-
 void Atmega324PBI2C0::executeCommand() {
-    SmartSensorBoard* board = SmartSensorBoard::getBoard();
-
     I2CCommand* command = this->commands.peek();
-    board->debugf("EXECUTE I2C: %d", *command);
     switch (*command) {
     case I2CCommand::START:
         this->start();
@@ -97,11 +76,17 @@ void Atmega324PBI2C0::executeCommand() {
         this->repeatedStart();
         break;
 
-    case I2CCommand::SELECT:
+    case I2CCommand::SELECT_WRITE:
         { // Variable used inside a switch are known to all cases, so limiting the scope here.
             uint8_t address = *this->data.pop();
-            uint8_t mode    = *this->data.pop();
-            this->select(address, mode);
+            this->select(address, TW_WRITE);
+        }
+        break;
+
+    case I2CCommand::SELECT_READ:
+        { // Variable used inside a switch are known to all cases, so limiting the scope here.
+            uint8_t address = *this->data.pop();
+            this->select(address, TW_READ);
         }
         break;
 
@@ -129,7 +114,6 @@ void Atmega324PBI2C0::executeCommand() {
     this->state = I2CState::CHECK;
 }
 
-
 uint8_t Atmega324PBI2C0::reset() {
     return 0;
 }
@@ -154,10 +138,15 @@ uint8_t Atmega324PBI2C0::cmdRepeatedStart() {
     return 0;
 }
 
-uint8_t Atmega324PBI2C0::cmdSelect(uint8_t address, uint8_t mode) {
-    this->commands.add(I2CCommand::SELECT);
+uint8_t Atmega324PBI2C0::cmdSelectWrite(uint8_t address) {
+    this->commands.add(I2CCommand::SELECT_WRITE);
     this->data.add(address);
-    this->data.add(mode);
+    return 0;
+}
+
+uint8_t Atmega324PBI2C0::cmdSelectRead(uint8_t address) {
+    this->commands.add(I2CCommand::SELECT_READ);
+    this->data.add(address);
     return 0;
 }
 
@@ -187,6 +176,10 @@ uint8_t Atmega324PBI2C0::cmdStop() {
     return 0;
 }
 
+uint8_t Atmega324PBI2C0::isAvailable() {
+    return ( this->commands.size() == 0 && this->state == I2CState::WAITING );
+}
+
 bool Atmega324PBI2C0::ready() {
     return (TWCR0 & (1<<TWINT));
 }
@@ -201,29 +194,29 @@ bool Atmega324PBI2C0::wait(uint8_t status) { // TW_START
 }
 
 void Atmega324PBI2C0::repeatedStart() { // Same as start different result
-    TWCR0 = (1<<TWINT) | (1<<TWSTA) | (1<<TWEN) | (1<<TWIE);
+    TWCR0 = (1<<TWINT) | (1<<TWSTA) | (1<<TWEN);
 }
 
 void Atmega324PBI2C0::start() {
-    TWCR0 = (1<<TWINT) | (1<<TWSTA) | (1<<TWEN) | (1<<TWIE);
+    TWCR0 = (1<<TWINT) | (1<<TWSTA) | (1<<TWEN);
 }
 
 void Atmega324PBI2C0::select(uint8_t address, uint8_t mode) {
     TWDR0 = address + mode;
-    TWCR0 = (1<<TWINT) | (1<<TWEN) | (1<<TWIE);
+    TWCR0 = (1<<TWINT) | (1<<TWEN);
 }
 
 void Atmega324PBI2C0::write(uint8_t data) {
     TWDR0 = data;
-    TWCR0 = (1<<TWINT) | (1<<TWEN) | (1<<TWIE);
+    TWCR0 = (1<<TWINT) | (1<<TWEN);
 }
 
 void Atmega324PBI2C0::readAck() {
-    TWCR0 = (1<<TWINT) | (1<<TWEN) | (1<<TWEA) | (1<<TWIE);
+    TWCR0 = (1<<TWINT) | (1<<TWEN) | (1<<TWEA);
 }
 
 void Atmega324PBI2C0::readNack() {
-    TWCR0 = (1<<TWINT) | (1<<TWEN) | (1<<TWIE);
+    TWCR0 = (1<<TWINT) | (1<<TWEN);
 }
 
 uint8_t Atmega324PBI2C0::getData() {
@@ -231,25 +224,7 @@ uint8_t Atmega324PBI2C0::getData() {
 }
 
 void Atmega324PBI2C0::stop() {
-    TWCR0 = (1<<TWINT) | (1<<TWEN)|(1<<TWSTO) | (1<<TWIE);
-}
-
-bool Atmega324PBI2C0::claim(I2CInterruptEvent* event) {
-    if ( this->state != I2CState::WAITING ) return false;
-
-    cbInterruptEvent = event;
-    //this->busy = true;
-    return true;
-}
-
-bool Atmega324PBI2C0::release(I2CInterruptEvent* event) {
-    if ( this->state != I2CState::WAITING ) return false;
-    if ( event != cbInterruptEvent ) return false;
-
-    cbInterruptEvent = NULL;
-    //this->busy = false;
-
-    return true;
+    TWCR0 = (1<<TWINT) | (1<<TWEN)|(1<<TWSTO);
 }
 
 bool Atmega324PBI2C0::isConnected(uint8_t address) {
@@ -264,24 +239,4 @@ bool Atmega324PBI2C0::isConnected(uint8_t address) {
     this->stop();
     
     return result;
-}
-
-
-// Kan ook weg na de test!!
-void Atmega324PBI2C0::i2cReadEvent(uint8_t data, uint8_t index) {
-    SmartSensorBoard* board = SmartSensorBoard::getBoard();
-    board->debugf("READ I2C: [%d] => %d", index, data);
-}
-
-void Atmega324PBI2C0::test() {
-    this->cmdStart();
-    this->cmdSelect(0xE0, TW_WRITE);
-    this->cmdWrite(0xEF);
-    this->cmdWrite(0xC8);
-    this->cmdRepeatedStart();
-    this->cmdSelect(0xE0, TW_READ);
-    this->cmdReadAck(this, 0);
-    this->cmdReadAck(this, 1);
-    this->cmdReadAck(this, 2);
-    this->stop();    
 }

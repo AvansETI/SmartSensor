@@ -29,8 +29,6 @@ uint8_t MCP7940NDriver::setup() {
 
     this->samplingInterval = 1000; // msecond
     this->loopTiming       = 0;
-    this->state            = 0;
-    this->function         = MCP7940NFunction::IDLE;
 
 /*
     // start clock
@@ -60,20 +58,17 @@ uint8_t MCP7940NDriver::loop(uint32_t millis) {
         this->loopTiming = millis;        
     }
 
-
-/*
-    I2C0* i2c = I2C0::getInstance();
+    Atmega324PBI2C0* i2c = Atmega324PBI2C0::getInstance();
     uint32_t loopTime = (millis - this->loopTiming);
-    if ( loopTime > this->samplingInterval &&
-         this->state == 0 && i2c->claim(this) ) {
-        this->sampleLoop(); // Start the sampling process which is interrupt driven!
+    if ( loopTime > this->samplingInterval && i2c->isAvailable() ) {
+        this->getTimeLoop(); // Start the sampling process which is interrupt driven!
         this->loopTiming = millis; // Restart the timing
     }
-*/
+
     return 0;
 }
 
-void MCP7940NDriver::sampleLoop() {
+void MCP7940NDriver::sample() {
     //Atmega324PBI2C0* i2c = Atmega324PBI2C0::getInstance();
     //i2c->release(this);
     //RTCTime t("20110101T10:11:11");
@@ -131,78 +126,47 @@ RTCTime MCP7940NDriver::getTime() {
     return RTCTime(data);
 }
 
+// Kan ook weg na de test!!
+#include <boards/Board.h>
+void MCP7940NDriver::i2cReadEvent(uint8_t data, uint8_t index) {
+    SmartSensorBoard* board = SmartSensorBoard::getBoard();
+
+    this->data[index] = data;
+
+    if ( index == 6 ) { // last one!
+        this->rtcTime = RTCTime(this->data);
+        char m[30];
+        this->rtcTime.getIso8601String(m);
+        board->debugf("TIME LOOP: %s\n", m);
+    }
+}
+
 void MCP7940NDriver::getTimeLoop() {
     Atmega324PBI2C0* i2c = Atmega324PBI2C0::getInstance();
 
-    switch (this->state) {
-        case 0:
-            this->state++;
-            this->setDataInvalid();
-            i2c->start();
-            break;
-        case 1:
-            i2c->status(TW_START);
-            this->state++;
-            i2c->select(MCP7940_I2C_ADDRESS, TW_WRITE);
-            break;
-        case 2:
-            i2c->status(TW_MT_SLA_ACK);
-            this->state++;
-            i2c->write(0x00); 
-            break;
-        case 3:
-            i2c->status(TW_MT_DATA_ACK);
-            this->state++;
-            i2c->repeatedStart();
-            break;
-        case 4:
-            i2c->status(TW_REP_START);
-            this->state++;
-            i2c->select(MCP7940_I2C_ADDRESS, TW_READ);
-            break;
-        case 5:
-            i2c->status(TW_MR_SLA_ACK);
-            this->state++;
-            i2c->readAck();
-            break;
-        case 6: case 7: case 8: case 9: case 10: case 11: case 12:
-            i2c->status(TW_MR_DATA_ACK);
-            this->state++;
-            this->timeData[this->state-6] = i2c->getData();
-            i2c->readAck();
-            break;
-        case 13:
-            i2c->status(TW_MR_DATA_ACK);
-            this->state++;
-            this->timeData[this->state-6] = i2c->getData();
-            i2c->repeatedStart();    
-            break;
-        case 14:
-            i2c->wait(TW_REP_START);
-            this->state++;
-            i2c->select(MCP7940_I2C_ADDRESS, TW_WRITE);
-            break;
-        case 15:
-            i2c->status(TW_MT_SLA_ACK);
-            this->state++;
-            i2c->write(0x00);
-            break;
-        case 16:
-            i2c->status(TW_MT_DATA_ACK);
-            this->state++;
-            i2c->write(0x80 | this->timeData[0]);
-            break;
-        case 17:
-            i2c->status(TW_MT_DATA_ACK);
-            i2c->stop();
-
+    if ( i2c->isAvailable() ) {
+        i2c->cmdStart();
+        i2c->cmdSelectWrite(MCP7940_I2C_ADDRESS);
+        i2c->cmdWrite(0x00); // Select start address 0x00
+        i2c->cmdRepeatedStart();
+        i2c->cmdSelectRead(MCP7940_I2C_ADDRESS);
+        i2c->cmdReadAck(this, 0); // seconds
+        i2c->cmdReadAck(this, 1); // minutes
+        i2c->cmdReadAck(this, 2); // hours
+        i2c->cmdReadAck(this, 3); // weekday
+        i2c->cmdReadAck(this, 4); // day
+        i2c->cmdReadAck(this, 5); // month
+        i2c->cmdReadNack(this, 6); // year
+        i2c->cmdStop(); 
+    }
+    /*
             this->rtcTime = RTCTime(this->timeData);
 
             this->setDataValid();
             this->rtcEvent->rtcReadTimestampEvent(this->rtcTime);
             this->state = 0; // Start over
             break;
-    }
+    }*/
 }
 
 /*
@@ -223,9 +187,6 @@ void MCP7940NDriver::setTime(const RTCTime &t) {
     //if ( )
 
     Atmega324PBI2C0* i2c = Atmega324PBI2C0::getInstance();
-    if ( this->state == 0 && i2c->claim(this) ) { // When the state == 0, a next function can be started.
-
-    }
 }
 
 void MCP7940NDriver::setTime(const char* iso8601) {
@@ -245,82 +206,6 @@ void MCP7940NDriver::setTimeLoop() {
     };
 
     Atmega324PBI2C0* i2c = Atmega324PBI2C0::getInstance();
-
-    switch (this->state) {
-        case 0:
-            this->state++;
-            i2c->start();
-            break;
-        case 1:
-            i2c->status(TW_START);
-            this->state++;
-            i2c->select(MCP7940_I2C_ADDRESS, TW_WRITE);
-            break;
-        case 2:
-            i2c->status(TW_MT_SLA_ACK);
-            this->state++;
-            i2c->write(0x07); 
-            break;
-        case 3:
-            i2c->status(TW_MT_DATA_ACK);
-            this->state++;
-            i2c->write(0x00); 
-            break;
-        case 4:
-            i2c->repeatedStart();
-
-
-            i2c->status(TW_MT_DATA_ACK);
-            this->state++;
-            i2c->repeatedStart();
-            break;
-        case 40:
-            i2c->status(TW_REP_START);
-            this->state++;
-            i2c->select(MCP7940_I2C_ADDRESS, TW_WRITE);
-            break;
-        case 5:
-            i2c->status(TW_MT_SLA_ACK);
-            this->state++;
-            i2c->readAck();
-            break;
-        case 6: case 7: case 8: case 9: case 10: case 11: case 12:
-            i2c->status(TW_MT_DATA_ACK);
-            this->state++;
-            this->timeData[this->state-6] = i2c->getData();
-            i2c->readAck();
-            break;
-        case 13:
-            i2c->status(TW_MR_DATA_ACK);
-            this->state++;
-            this->timeData[this->state-6] = i2c->getData();
-            i2c->repeatedStart();    
-            break;
-        case 14:
-            i2c->wait(TW_REP_START);
-            this->state++;
-            i2c->select(MCP7940_I2C_ADDRESS, TW_WRITE);
-            break;
-        case 15:
-            i2c->status(TW_MT_SLA_ACK);
-            this->state++;
-            i2c->write(0x00);
-            break;
-        case 16:
-            i2c->status(TW_MT_DATA_ACK);
-            this->state++;
-            i2c->write(0x80 | this->timeData[0]);
-            break;
-        case 17:
-            i2c->status(TW_MT_DATA_ACK);
-            i2c->stop();
-
-            this->rtcTime = RTCTime(this->timeData);
-
-            this->rtcEvent->rtcReadTimestampEvent(this->rtcTime);
-            this->state = 0; // Start over
-            break;
-    }
 
     i2c->start(); i2c->wait(TW_START);
     i2c->select(MCP7940_I2C_ADDRESS, TW_WRITE); i2c->wait(TW_MT_SLA_ACK);
@@ -353,13 +238,3 @@ void MCP7940NDriver::setTimeLoop() {
     i2c->stop();
 }
 
-void MCP7940NDriver::i2cInterrupt() {
-    /*
-    switch( this->function ) {
-    case MCP7940NFunction::GETTIME:
-        this->getTimeLoop();
-        break;
-    case MCP7940NFunction::SETTIME:
-        this->setTimeLoop();
-    }*/
-}

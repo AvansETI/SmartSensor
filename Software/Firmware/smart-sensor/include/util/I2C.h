@@ -53,7 +53,8 @@ enum I2CState {
 enum I2CCommand {
     START,
     REPEATED_START,
-    SELECT,
+    SELECT_WRITE,
+    SELECT_READ,
     WRITE,
     READ_ACK,
     READ_NACK,
@@ -64,7 +65,8 @@ static const uint8_t I2CCommandResultStatus[] {
     TW_START,
     TW_REP_START,
     TW_MT_SLA_ACK,
-    TW_MT_DATA_ACK,
     TW_MR_SLA_ACK,
-    TW_MR_SLA_NACK
+    TW_MT_DATA_ACK,
+    TW_MR_DATA_ACK,
+    TW_MR_DATA_NACK,
 };

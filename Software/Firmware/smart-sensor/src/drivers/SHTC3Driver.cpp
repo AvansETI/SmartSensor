@@ -33,9 +33,8 @@ uint8_t SHTC3Driver::loop(uint32_t millis) {
 
     Atmega324PBI2C0* i2c = Atmega324PBI2C0::getInstance();
     uint32_t loopTime = ((millis/1000) - this->loopTiming);
-    if ( loopTime > this->samplingInterval &&
-         this->state == 0 && i2c->claim(this) ) {
-        this->sampleLoop(); // Start the sampling process which is interrupt driven!
+    if ( loopTime > this->samplingInterval && i2c->isAvailable() ) {
+        this->sample(); // Start the sampling process which is interrupt driven!
         this->loopTiming = millis/1000; // Restart the timing
     }
 
@@ -44,7 +43,7 @@ uint8_t SHTC3Driver::loop(uint32_t millis) {
 
 // Software reset 0x805D 1000’0000’0101’1101 => page 8: https://taoic.oss-cn-hangzhou.aliyuncs.com/sku/pdf/d16078ca630c4b401c5bec25674afc26833e7455.pdf
 uint8_t SHTC3Driver::reset() {
-    
+
     return 0;
 }
 
@@ -113,112 +112,52 @@ uint16_t SHTC3Driver::getID() {
     return this->id;
 }
 
-// Sample loop is interrupt driven.
-uint8_t SHTC3Driver::sampleLoop() {
+void SHTC3Driver::i2cReadEvent(uint8_t data, uint8_t index) {
+    this->data[index] = data;
+
+    if ( index == 5 ) { // last one!
+        char m[30];
+
+        sprintf_P(m, PSTR("humidity: %.1f"), (double)this->getHumidity());
+        this->getMeasurementCallback()->addMeasurement(m);
+        
+        sprintf_P(m, PSTR("temperature: %.1f"), (double)this->getTemperature());
+        this->getMeasurementCallback()->addMeasurement(m);
+    }
+}
+
+uint8_t SHTC3Driver::sample() {
     Atmega324PBI2C0* i2c = Atmega324PBI2C0::getInstance();
-
-    switch (this->state) {
-        case 0:
-            this->state++;
-            this->setDataInvalid();
-            i2c->start();
-            break;
-        case 1:
-            if ( i2c->status(TW_START) ) {
-                this->state++;
-                i2c->select(0xE0, TW_WRITE);
-            }
-            break;
-        case 2:
-            if ( i2c->status(TW_MT_SLA_ACK) ) {
-                this->state++;
-                i2c->write(0x5C);
-            }
-            break;
-        case 3:
-            if ( i2c->status(TW_MT_DATA_ACK) ) {
-                this->state++;
-                i2c->write(0x24);
-            }
-            break;
-        case 4:
-            if ( i2c->status(TW_MT_DATA_ACK) ) {
-                this->state++;
-                i2c->repeatedStart();
-            }
-            break;
-        case 5:
-            if ( i2c->status(TW_REP_START) ) {
-                this->state++;
-                i2c->select(0xE0, TW_READ);
-            }
-            break;
-        case 6:
-            if ( i2c->status(TW_MR_SLA_ACK) ) {
-                this->state++;
-                i2c->readAck();
-            }
-            break;
-        case 7:
-            if ( i2c->status(TW_MR_DATA_ACK) ) {
-                this->state++;
-                this->humidity = i2c->getData() << 8;
-                i2c->readAck();
-            }
-            break;
-        case 8:
-            if ( i2c->status(TW_MR_DATA_ACK) ) {
-                this->state++;
-                this->humidity |= i2c->getData();
-                i2c->readAck();
-            }
-            break;
-        case 9:
-            if ( i2c->status(TW_MR_DATA_ACK) ) {
-                this->state++;
-                i2c->getData();
-                i2c->readAck();
-            }
-            break;
-        case 10:
-            if ( i2c->status(TW_MR_DATA_ACK) ) {
-                this->state++;
-                this->temperature = i2c->getData() << 8;
-                i2c->readAck();
-            }
-            break;
-        case 11:
-            if ( i2c->status(TW_MR_DATA_ACK) ) {
-                this->state++;
-                this->temperature |= i2c->getData();
-                i2c->readNack();
-            }
-            break;
-        case 12:
-            if ( i2c->status(TW_MR_DATA_ACK) ) {
-                this->state++;
-                i2c->getData();
-                i2c->stop();
-                i2c->release(this);
-                
-                char m[30];
-                float _humidity = 100 * float(this->humidity) / 65536.0f;
-                float _tempature = 175 * float(this->temperature) / 65536.0f - 45.0f;
-
-                sprintf_P(m, PSTR("humidity: %.1f"), (double)_humidity);
-                this->getMeasurementCallback()->addMeasurement(m);
-                
-                sprintf_P(m, PSTR("temperature: %.1f"), (double)_tempature);
-                this->getMeasurementCallback()->addMeasurement(m);
-                
-                this->setDataValid();
-                this->state = 0; // Start over
-            }
+    
+    if ( i2c->isAvailable() ) {
+        i2c->cmdStart();
+        i2c->cmdSelectWrite(SHTC3_I2C_ADDRESS);
+        i2c->cmdWrite(0x5C); //??
+        i2c->cmdWrite(0x24); //??
+        i2c->cmdRepeatedStart();
+        i2c->cmdSelectRead(SHTC3_I2C_ADDRESS);
+        i2c->cmdReadAck(this, 0); // humidity 0
+        i2c->cmdReadAck(this, 1); // humidity 1
+        i2c->cmdReadAck(this, 2); // humidity checksum
+        i2c->cmdReadAck(this, 3); // temperature 0
+        i2c->cmdReadAck(this, 4); // temperature 1
+        i2c->cmdReadNack(this, 5); // temperature checksum
+        i2c->cmdStop(); 
     }
 
     return 0;
 }
 
-void SHTC3Driver::i2cInterrupt() {
-    this->sampleLoop();
+float SHTC3Driver::getTemperature () {
+    uint16_t t = this->data[SHTC3Data::TEMPERATURE_0] << 8;
+    t         |= this->data[SHTC3Data::TEMPERATURE_1];
+    
+    return 175 * float(t) / 65536.0f - 45.0f;
+}
+
+float SHTC3Driver::getHumidity () {
+    uint16_t h = this->data[SHTC3Data::HUMIDITY_0] << 8;
+    h         |= this->data[SHTC3Data::HUMIDITY_1];
+
+    return 100 * float(h) / 65536.0f;
 }
