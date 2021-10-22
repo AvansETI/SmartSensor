@@ -52,8 +52,10 @@ uint8_t Atmega324PBI2C0::loop(uint32_t millis) { // TODO: Use millis to check wh
                         readEvent[0]->i2cReadEvent(this->getData(), index);
                     }
 
-                } else { // The status is not correct, pop all commands until the stop command!
-                    // TODO: Not yet implemented!
+                } else { // The status is not correct, empty the queue
+                    this->commands.empty();
+                    this->data.empty();
+                    this->cbReadEvents.empty();
                 }
 
             }

@@ -73,7 +73,7 @@ void SmartSensorBoardV1_2::debug_P( const char* message) {
 }
 
 void SmartSensorBoardV1_2::addMeasurement(const char* measurement) {
-    this->debugf("Measurement: %s\n", measurement);
+    this->debugf_P(PSTR("Measurement: %s\n"), measurement);
     this->buffer.addMeasurement(measurement);
 }
 

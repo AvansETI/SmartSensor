@@ -142,7 +142,7 @@ uint8_t SHTC3Driver::sample() {
         i2c->cmdReadAck(this, 3); // temperature 0
         i2c->cmdReadAck(this, 4); // temperature 1
         i2c->cmdReadNack(this, 5); // temperature checksum
-        i2c->cmdStop(); 
+        i2c->cmdStop();
     }
 
     return 0;

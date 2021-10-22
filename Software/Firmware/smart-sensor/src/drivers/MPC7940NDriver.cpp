@@ -23,12 +23,15 @@ uint8_t MCP7940NDriver::setup() {
         return 1; // Cannot select the chip
     }
 
-    this->rtcTime = this->getTime(); // Dit gaat fout!
+    this->rtcTime = this->getTime();
 
     // TODO: Finish the setup! Read the date
 
     this->samplingInterval = 1000; // msecond
     this->loopTiming       = 0;
+
+    this->rtcTime = RTCTime(01, 02, 03, 04, 05, 06, 07);
+    this->setTimeLoop();
 
 /*
     // start clock
@@ -61,7 +64,7 @@ uint8_t MCP7940NDriver::loop(uint32_t millis) {
     Atmega324PBI2C0* i2c = Atmega324PBI2C0::getInstance();
     uint32_t loopTime = (millis - this->loopTiming);
     if ( loopTime > this->samplingInterval && i2c->isAvailable() ) {
-        this->getTimeLoop(); // Start the sampling process which is interrupt driven!
+        this->getTimeLoop(); 
         this->loopTiming = millis; // Restart the timing
     }
 
@@ -137,7 +140,7 @@ void MCP7940NDriver::i2cReadEvent(uint8_t data, uint8_t index) {
         this->rtcTime = RTCTime(this->data);
         char m[30];
         this->rtcTime.getIso8601String(m);
-        board->debugf("TIME LOOP: %s\n", m);
+        board->debugf_P(PSTR("TIME LOOP: %s\n"), m);
     }
 }
 
@@ -159,14 +162,6 @@ void MCP7940NDriver::getTimeLoop() {
         i2c->cmdReadNack(this, 6); // year
         i2c->cmdStop(); 
     }
-    /*
-            this->rtcTime = RTCTime(this->timeData);
-
-            this->setDataValid();
-            this->rtcEvent->rtcReadTimestampEvent(this->rtcTime);
-            this->state = 0; // Start over
-            break;
-    }*/
 }
 
 /*
@@ -207,34 +202,23 @@ void MCP7940NDriver::setTimeLoop() {
 
     Atmega324PBI2C0* i2c = Atmega324PBI2C0::getInstance();
 
-    i2c->start(); i2c->wait(TW_START);
-    i2c->select(MCP7940_I2C_ADDRESS, TW_WRITE); i2c->wait(TW_MT_SLA_ACK);
-    i2c->write(0x07); i2c->wait(TW_MT_DATA_ACK);
-    i2c->write(0b0000'0000); i2c->wait(TW_MT_DATA_ACK); // Unset osc
-
-    i2c->repeatedStart(); i2c->wait(TW_REP_START);
-    i2c->select(MCP7940_I2C_ADDRESS, TW_WRITE); i2c->wait(TW_MT_SLA_ACK);
-    i2c->write(0x00); i2c->wait(TW_MT_DATA_ACK); // Unset ST bit!
-    i2c->write(0b0000'0000); i2c->wait(TW_MT_DATA_ACK); // unset st
-
-    i2c->repeatedStart(); i2c->wait(TW_REP_START);
-    i2c->select(MCP7940_I2C_ADDRESS, TW_WRITE); i2c->wait(TW_MT_SLA_ACK);
-    i2c->write(0x00); i2c->wait(TW_MT_DATA_ACK);
-    
-    for ( uint8_t i=0; i < 7; ++i ) {
-        i2c->write(data[i]); i2c->wait(TW_MT_DATA_ACK);
+    if ( i2c->isAvailable() ) {
+        i2c->cmdStart();
+        i2c->cmdSelectWrite(MCP7940_I2C_ADDRESS);
+        i2c->cmdWrite(0x07); // Switch off oscillator
+        i2c->cmdWrite(0x00);
+        i2c->cmdRepeatedStart();
+        i2c->cmdSelectWrite(MCP7940_I2C_ADDRESS);
+        i2c->cmdWrite(0x00); // Start address of register to write to
+        i2c->cmdWrite(0x80 | data[0]);
+        for ( uint8_t i=1; i < 7; ++i ) {
+            i2c->cmdWrite(data[i]);
+        }
+        i2c->cmdRepeatedStart();
+        i2c->cmdSelectWrite(MCP7940_I2C_ADDRESS);
+        i2c->cmdWrite(0x03); // Switch on oscillator
+        i2c->cmdWrite(data[3] | 0b0010'0000);
+        i2c->cmdStop(); 
     }
-
-    i2c->repeatedStart(); i2c->wait(TW_REP_START);
-    i2c->select(MCP7940_I2C_ADDRESS, TW_WRITE); i2c->wait(TW_MT_SLA_ACK);
-    i2c->write(0x00); i2c->wait(TW_MT_DATA_ACK);
-    i2c->write(0x80 | data[0]); i2c->wait(TW_MT_DATA_ACK); // Set ST bit!
-
-    i2c->repeatedStart(); i2c->wait(TW_REP_START);
-    i2c->select(MCP7940_I2C_ADDRESS, TW_WRITE); i2c->wait(TW_MT_SLA_ACK);
-    i2c->write(0x07); i2c->wait(TW_MT_DATA_ACK);
-    i2c->write(0b0000'0100); i2c->wait(TW_MT_DATA_ACK);
-    
-    i2c->stop();
 }
 
