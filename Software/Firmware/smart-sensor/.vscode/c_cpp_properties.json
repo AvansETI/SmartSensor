@@ -32,7 +32,7 @@
             },
             "defines": [
                 "F_CPU=20000000L",
-                "PLATFORMIO=50101",
+                "PLATFORMIO=50201",
                 "ARDUINO_AVR_ATmega324",
                 "BOARD_REVISION_11",
                 "LOGGER_LEVEL=3",
