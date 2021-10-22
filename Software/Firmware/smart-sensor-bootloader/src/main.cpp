@@ -30,5 +30,4 @@ int main() {
     while (true) {
         board->loop();
     }
-    
 }
