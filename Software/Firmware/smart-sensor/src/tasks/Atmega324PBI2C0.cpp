@@ -44,7 +44,7 @@ uint8_t Atmega324PBI2C0::loop(uint32_t millis) { // TODO: Use millis to check wh
         { // Variable used inside a switch are known to all cases, so limiting the scope here.
             I2CCommand* command = this->commands.pop();
             if ( *command != I2CCommand::STOP ) {
-                uint8_t status = I2CCommandResultStatus[*command];
+                uint8_t status = pgm_read_byte(&I2CCommandResultStatus[*command]);
                 if ( this->status(status) ) { // The status is correct, we are finished!
                     if ( *command == I2CCommand::READ_ACK || *command == I2CCommand::READ_NACK ) { // Get the data!
                         I2CReadEvent** readEvent = this->cbReadEvents.pop();

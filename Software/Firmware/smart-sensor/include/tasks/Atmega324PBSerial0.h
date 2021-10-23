@@ -2,12 +2,14 @@
 /**
  * @file       : util/Serial0.h
  * @description: -
- * @date       : 11-09-2021
+ * @date       : 24-10-2021
  * @author     : Maurice Snoeren (MS)
- * @version    : 0.2
+ * @version    : 1.0
+ * @license    : GNU version 3.0
  * @todo       : -
- * @updates    : Updated to be used async as task.
- * 
+ * @changes
+ *  11-09-2021: Updated to be used async as task.
+ *  24-10-2021: 
  */
 #include <stdint.h>
 
@@ -19,25 +21,21 @@
 */
 #define SERIAL0_BAUD 9600
 
-/* Calculate the UBRR to set it to the correct BAUD rate.
-*/
+/* Calculate the UBRR to set it to the correct BAUD rate. */
 #define SERIAL0_UBRR F_CPU/16/SERIAL0_BAUD-1
 
 /* Class: Atmega324PBSerial0
    This class implements the task to write data to the serial port.
-*/ 
+ */ 
 class Atmega324PBSerial0: public Task {
 private:
-    /* When the class is busy to send a message, this busy flag is set to true.
-    */
+    /* When the class is busy to send a message, this busy flag is set to true. */
     uint8_t busy;
 
-    /* The buffer that is used to copy the message to and send on the serial port.
-    */
+    /* The buffer that is used to copy the message to and send on the serial port. */
     char buffer[30];
 
-    /* The pointer points to the position of the character that needs to be send.
-    */
+    /* The pointer points to the position of the character that needs to be send. */
     uint8_t pointer;
 
 protected:

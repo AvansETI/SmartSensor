@@ -19,10 +19,10 @@ uint8_t Atmega324PBSerial0::setup() {
 }
 
 uint8_t Atmega324PBSerial0::loop(uint32_t millis) {
-    if ( this->busy ) { // Yes we can try to send the next character!
-        if ( UCSR0A & (1<<UDRE) )  { // If the transmit buffer is empty, we can send the next character
+    if ( this->busy ) { // If busy is true, we are sending characters
+        if ( UCSR0A & (1<<UDRE) )  { // Check if the transmit buffer is empty, before sending the next character
             if ( this->buffer[this->pointer] != '\0' ) { 
-                UDR0 = this->buffer[this->pointer]; // send the byte!
+                UDR0 = this->buffer[this->pointer]; // Send the character
                 this->pointer++;
             
             } else {

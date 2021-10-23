@@ -1,3 +1,10 @@
+/*
+ * @file       : boards/Board.cpp
+ * @author     : Maurice Snoeren (MS)
+ * @license    : GNU version 3.0
+ * @todo       : -
+ * @changes
+ */
 #include <boards/Board.h>
 
 #include <stdlib.h>
@@ -8,12 +15,13 @@
 /* Define in the main.c which board you would like to compile to. In the future
    it is possible that the software detects the version itself. */
 #if defined(SMARTSENSOR_BOARD_1_2)
-    #pragma message "SmartSensor v1.2 has been selected to be compiled."
     #include "boards/v1_2/Board.h"
+    #pragma message "SmartSensor v1.2 has been selected to be compiled."
     SmartSensorBoardV1_2 board;
+
 #else
-    #pragma message "SMARTSENSOR_BOARD_X_X has not been defined, using the newest SmartBoard version v1.2."
     #include "boards/BoardV1_2.h"
+    #pragma message "SMARTSENSOR_BOARD_X_X has not been defined, using the newest SmartBoard version v1.2."
     SmartSensorBoardV1_2 board;
 #endif
 
@@ -31,19 +39,19 @@ void SmartSensorBoard::addTask(ITask *task, const char* taskName) {
         if ( result == 0 ) {
             this->drivers[this->totalDrivers] = task;
             this->totalDrivers++;
-            this->debug_P(PSTR(": Succesfully!\n"));
+            this->debug_P(PSTR(": Succes\n"));
         
         } else {
-            this->debugf_P(PSTR(": Could not be loaded: %d\n"), result);
+            this->debugf_P(PSTR(": Error %d\n"), result);
         }
     
     } else {
-        this->debugf_P(PSTR(": Maximum drivers reached, not added to the system.\n"), taskName);
+        this->debugf_P(PSTR(": Max drivers reached\n"), taskName);
     }
 }
 
 void SmartSensorBoard::setup() {
-    this->loopTiming = this->millis();
+    this->loopTimstamp = this->millis();
 }
 
 void SmartSensorBoard::loop() {
@@ -51,11 +59,12 @@ void SmartSensorBoard::loop() {
         this->drivers[i]->loop(this->millis());
     }
 
-    this->loopTime = ( this->millis() - this->loopTiming );
+    this->loopTime = ( this->millis() - this->loopTimstamp );
     //this->debugf_P(PSTR("Loop time %d ms\n"), this->loopTime); // Show the actual loop timing in the serial
-    this->loopTiming = this->millis();
+    this->loopTimstamp = this->millis();
 }
 
+// TODO: 
 void SmartSensorBoard::rtcReadTimestampEvent(RTCTime& time) { // Of toch niet hier doen? Als de timestamp er is, dan in de loop de buffer leeg maken.
     if ( this->buffer.getSize() > 0 ) { // TODO: handle the buffer! => IDEA to handle this buffer when a new timestemp arrived (callback RTC)
         // When an overflow has been detected, what to do?
@@ -69,7 +78,7 @@ void SmartSensorBoard::rtcReadTimestampEvent(RTCTime& time) { // Of toch niet hi
 }
 
 
-// http://www.cplusplus.com/reference/cstdio/vsprintf/
+// Documentation: http://www.cplusplus.com/reference/cstdio/vsprintf/
 void SmartSensorBoard::debugf( const char* message, ...) { // TODO: Maybe move these functions to Serial0 (think of it)?
     char buffer[50];
     va_list args;

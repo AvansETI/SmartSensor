@@ -15,8 +15,8 @@ uint8_t SHTC3Driver::setup() {
         return 2; // The given ID is not correct!
     }
 
-    this->samplingInterval = 60*1; // seconds
-    this->loopTiming       = 0;
+    this->samplingInterval = 60*5; // five minutes
+    this->loopTimestamp    = 0;
 
     return 0;
 }
@@ -27,15 +27,15 @@ bool SHTC3Driver::isConnected() {
 }
 
 uint8_t SHTC3Driver::loop(uint32_t millis) {
-    if ( this->loopTiming == 0 ) { // Start the timing process
-        this->loopTiming = millis/1000;        
+    if ( this->loopTimestamp == 0 ) { // Start the timing process
+        this->loopTimestamp = millis/1000;        
     }
 
     Atmega324PBI2C0* i2c = Atmega324PBI2C0::getInstance();
-    uint32_t loopTime = ((millis/1000) - this->loopTiming);
+    uint32_t loopTime = ((millis/1000) - this->loopTimestamp);
     if ( loopTime > this->samplingInterval && i2c->isAvailable() ) {
         this->sample(); // Start the sampling process which is interrupt driven!
-        this->loopTiming = millis/1000; // Restart the timing
+        this->loopTimestamp = millis/1000; // Restart the timing
     }
 
     return 0;

@@ -4,14 +4,15 @@
  * @description: This driver handles all the aspects of the SHT3 chip from Sensiron that is connected to the I2C(0) bus. The
  *               chip is able to measure the temperature and humidity. 
  *               https://www.sensirion.com/en/environmental-sensors/humidity-sensors/digital-humidity-sensor-shtc3-our-new-standard-for-consumer-electronics/
- * @date       : 10-09-2021
+ * @date       : 24-10-2021
  * @author     : Floris Bob van Elzelingen, Maurice Snoeren (MS)
- * @version    : 0.1
+ * @version    : 1.0
+ * @license    : GNU version 3.0
  * @todo       : The loop contains blocking function calls!
  *               Idea is to create a class for I2C that contains some mutex to get the resource for yourself. 
  *               each driver that requires the I2C need to wait until it gets the unique access and use it until is releases it.
- * @updates
- * 
+ * @changes
+ *  24-10-2021: MS: Improved the memory with 2 bytes.
  */
 #include <drivers/Driver.h>
 
@@ -21,9 +22,8 @@
 #include <util/I2C.h>
 #include <tasks/Atmega324PBI2C0.h>
 
-
 /* Address of the SHTC3 chip on the I2C bus */
-constexpr uint8_t SHTC3_I2C_ADDRESS PROGMEM = 0xE0;
+constexpr uint8_t SHTC3_I2C_ADDRESS = 0xE0;
 
 /* The enumeration that is used for the data array. */
 enum SHTC3Data {
@@ -38,11 +38,17 @@ enum SHTC3Data {
 /* The concreate SHTC3Driver that handles the hardware SHTC3 chip. */
 class SHTC3Driver: public Driver, public I2CReadEvent {
 private:
+    /* The id of the SHTC3 chip. */
     uint16_t id;
+
+    /* The data that is read from the I2C bus. */
     uint8_t data[6];
 
-    uint32_t samplingInterval;
-    uint32_t loopTiming;
+    /* Set the sampling interval of the sensor in seconds. */
+    uint16_t samplingInterval;
+
+    /* Used to provide a loopTimestamp to calculate when to sample. */
+    uint32_t loopTimestamp;
 
 protected:
     SHTC3Driver(SmartSensorMeasurement* cbMeasurement): Driver(cbMeasurement), id(0) {};
@@ -55,6 +61,7 @@ public:
         return &_shtc3Driver;
     }
 
+    /* Task interface methods .*/
     uint8_t setup();
     uint8_t loop(uint32_t millis);
     uint8_t reset();

@@ -2,14 +2,17 @@
 /**
  * @file       : I2C.h
  * @description: This file contains all generic classes for I2C functions.
- * @date       : 16-10-2021
+ * @date       : 24-10-2021
  * @author     : Maurice Snoeren (MS)
- * @version    : 0.1
+ * @version    : 1.0
+ * @license    : GNU version 3.0
  * @todo       : -
- * @updates
- * 
+ * @changes
+ *  24-10-2021: MS: Improved memory to bring I2CCommandResultStatus to PROGMEM, make sure your read with pgm_read_byte.
  */
 #include <stdint.h>
+
+#include <avr/pgmspace.h>
 #include <util/twi.h>
 
 /* Interface: I2CInterruptEvent
@@ -61,7 +64,7 @@ enum I2CCommand {
     STOP
 };
 
-static const uint8_t I2CCommandResultStatus[] {
+static const uint8_t I2CCommandResultStatus[] PROGMEM = {
     TW_START,
     TW_REP_START,
     TW_MT_SLA_ACK,
