@@ -2,7 +2,7 @@
  * @file       : main.cpp
  * @description: The start of the embedded application of the SmartSensor. 
  * @date       : 23 October 2021
- * @author     : Patrick de Jong, Paul Hobbel, Sergen Peker, Carlos Cadel, Floris Bob van Elzelingen, Maurice Snoeren (MS)
+ * @author     : Maurice Snoeren (MS)
  * @students   : Patrick de Jong, Paul Hobbel, Sergen Peker, Carlos Cadel, Floris Bob van Elzelingen, Tom Kaasenbrood (TK)
  * @version    : 1.0
  * @license    : GNU version 3.0
@@ -13,6 +13,7 @@
  */
 #define FOSC 20000000 // Clock Speed
 
+#include <avr/wdt.h>
 #include <avr/pgmspace.h>
 
 #include "boards/Board.h"
@@ -26,6 +27,8 @@ static const char FIRMWARE_VERSION[] PROGMEM = "v1.0";
    started. In case of a watchdog timeout it is wise to send this as message back to the back-end systems.
  */
 int main() {
+    wdt_enable(WDTO_8S);
+
     SmartSensorBoard* board = SmartSensorBoard::getBoard();
 
     board->setup();
@@ -35,6 +38,7 @@ int main() {
     board->debug_P(PSTR("\n"));
  
     while (true) {
+        wdt_reset();
         board->loop();
     }
 }
