@@ -54,7 +54,7 @@ void SmartSensorBoardV1_2::setup() {
     this->ledDriver->led1Off();
 
     this->ledDriver->led1Flash(5'000, 100);
-
+    
     sei(); // Enable the interrupts!
 }
 
@@ -95,5 +95,9 @@ const char* SmartSensorBoardV1_2::getID() {
     this->id[20] = '\0';
 
     return this->id;
+}
+
+void SmartSensorBoardV1_2::getActualTimestamp() {
+    this->mcp7940nDriver->requestTime();
 }
 

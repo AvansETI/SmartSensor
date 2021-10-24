@@ -50,12 +50,21 @@ void SmartSensorBoard::addTask(ITask *task, const char* taskName) {
 
 void SmartSensorBoard::setup() {
     this->loopTimstamp = this->millis();
+    this->resetCause = MCUSR; // Read the reset cause
+    MCUSR = 0x00; // Reset the flags
 }
 
 void SmartSensorBoard::loop() {
     for ( uint8_t i=0; i < this->totalDrivers; ++i ) { // Loop through all the drivers
         this->drivers[i]->loop(this->millis());
     }
+
+    if ( this->buffer.getSize() > 0 ) { // We have measurements!
+        this->getActualTimestamp();
+    }
+
+    // test
+    _delay_ms(10);
 
     this->loopTime = ( this->millis() - this->loopTimstamp );
     //this->debugf_P(PSTR("Loop time %d ms\n"), this->loopTime); // Show the actual loop timing in the serial
@@ -66,13 +75,17 @@ void SmartSensorBoard::loop() {
 void SmartSensorBoard::rtcReadTimestampEvent(RTCTime& time, RTCEventMode mode) { // Of toch niet hier doen? Als de timestamp er is, dan in de loop de buffer leeg maken.
     if ( this->buffer.getSize() > 0 ) { // TODO: handle the buffer! => IDEA to handle this buffer when a new timestemp arrived (callback RTC)
         // When an overflow has been detected, what to do?
+        
     }
     // Check the measurement buffer and sent the messages to the broker. (BELOW some test code)
     //this->debugf("Buffer size: %d (overflow:%d)\n", this->buffer.getSize(), this->buffer.getBufferOverflow());
     char m[MESSAGE_TOTAL_CHARS];
-    if ( this->buffer.popMeasurement(m) ) {
+    while ( this->buffer.popMeasurement(m) ) {
         this->debugf("Popped: %s\n", m);
     }
+    this->debugf("loopTime: %dms\n", this->loopTime);
+    time.getIso8601String(m);
+    this->debugf("%s\n", m);
 }
 
 
@@ -95,4 +108,12 @@ void SmartSensorBoard::debugf_P( const char* message, ...) {
     va_end (args);
 
     this->debug(buffer);
+}
+
+bool SmartSensorBoard::resetCauseWatchdog() {
+    return (this->resetCause & ( 1 << WDRF )) != 0;
+}
+
+bool SmartSensorBoard::resetCauseExternalReset() {
+    return (this->resetCause & ( 1 << EXTRF )) != 0;
 }

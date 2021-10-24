@@ -36,9 +36,9 @@ int main() {
     board->debug_P(PSTR("Firmware: "));
     board->debug_P(FIRMWARE_VERSION);
     board->debug_P(PSTR("\n"));
- 
+    
     while (true) {
-        wdt_reset();
+        //wdt_reset();
         board->loop();
     }
 }

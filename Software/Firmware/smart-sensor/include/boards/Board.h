@@ -10,7 +10,7 @@
  * @license    : GNU version 3.0
  * @todo       : -
  * @changes
- *  24-10-2021: MS: Added documentation.
+ *  24-10-2021: MS: Added documentation. Added reset flags handling and reset cause for watchdog handling.
  * 
  */
 #include <stdint.h>
@@ -20,7 +20,6 @@
 
 #include <tasks/Task.h>
 #include <util/MessageBuffer.h>
-#include <util/Queue.h>
 #include <util/RTC.h>
 
 /* Define the maximum tasks the board is able to run. */
@@ -38,6 +37,9 @@ protected:
     /* The id of the board that is used for identification with the back-end */
     char id[21];
 
+    /* Reset cause is hold by this variable. */
+    uint8_t resetCause;
+
     /* Total drivers that have been added to the board. */
     uint8_t totalDrivers;
 
@@ -46,7 +48,6 @@ protected:
 
     /* Holds the measurements that come back from the sensors. */
     MeasurementBuffer buffer;
-    //Queue<char[30], 10> buffer; // TODO: Can we replace the Measurement buffer with Queue?
 
     /* Holds the timestampe of the loop, so the total loop time can be calculated. */
     uint32_t loopTimstamp;
@@ -98,4 +99,15 @@ public:
 
     /* Returns the pointer to the char id of the SmartSensor. */
     virtual const char* getID() { return this->id; };
+
+    /* Request a timestamp from the RTC. This method will be implemented by the concrete board. When
+       the timestamp is retrieved the callback rtcReadTimestampEvent is called. */
+    virtual void getActualTimestamp() = 0;
+
+    /* Returns true when the reset cause is due a watch dog timeout. */
+    bool resetCauseWatchdog ();
+    
+    /* Returns true when the reset cause is due an external reset. */
+    bool resetCauseExternalReset ();
+    
 };

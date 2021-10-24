@@ -54,6 +54,8 @@ public:
     void debug_P( const char* message);
 
     void addMeasurement(const char* measurement);
+
+    void getActualTimestamp();
     
     const char* getID();
 
