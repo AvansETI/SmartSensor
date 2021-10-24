@@ -20,6 +20,7 @@
 
 #include <tasks/Task.h>
 #include <util/MessageBuffer.h>
+#include <util/Queue.h>
 #include <util/RTC.h>
 
 /* Define the maximum tasks the board is able to run. */
@@ -45,6 +46,7 @@ protected:
 
     /* Holds the measurements that come back from the sensors. */
     MeasurementBuffer buffer;
+    //Queue<char[30], 10> buffer; // TODO: Can we replace the Measurement buffer with Queue?
 
     /* Holds the timestampe of the loop, so the total loop time can be calculated. */
     uint32_t loopTimstamp;
@@ -55,7 +57,7 @@ protected:
     /* Interface: RTCReadTimestampEvent
      * When the time has been read, this method is used to get the real time.
      */
-    void rtcReadTimestampEvent(RTCTime& time);
+    void rtcReadTimestampEvent(RTCTime& time, RTCEventMode mode);
 
     /* Protected constructor in order to create an singleton. */
     SmartSensorBoard(): totalDrivers(0) {}

@@ -2,8 +2,6 @@
  * @file       : boards/Board.cpp
  * @author     : Maurice Snoeren (MS)
  * @license    : GNU version 3.0
- * @todo       : -
- * @changes
  */
 #include <boards/Board.h>
 
@@ -65,7 +63,7 @@ void SmartSensorBoard::loop() {
 }
 
 // TODO: 
-void SmartSensorBoard::rtcReadTimestampEvent(RTCTime& time) { // Of toch niet hier doen? Als de timestamp er is, dan in de loop de buffer leeg maken.
+void SmartSensorBoard::rtcReadTimestampEvent(RTCTime& time, RTCEventMode mode) { // Of toch niet hier doen? Als de timestamp er is, dan in de loop de buffer leeg maken.
     if ( this->buffer.getSize() > 0 ) { // TODO: handle the buffer! => IDEA to handle this buffer when a new timestemp arrived (callback RTC)
         // When an overflow has been detected, what to do?
     }

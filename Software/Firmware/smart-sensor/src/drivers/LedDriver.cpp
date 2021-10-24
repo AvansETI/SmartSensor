@@ -1,4 +1,10 @@
+/*
+ * @file       : boards/Board.cpp
+ * @author     : Maurice Snoeren (MS)
+ * @license    : GNU version 3.0
+ */
 #include "drivers/LedDriver.h"
+
 #include "avr/io.h"
 #include <util/delay.h>
 

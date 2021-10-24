@@ -55,7 +55,7 @@ public:
 
     void addMeasurement(const char* measurement);
     
-    char* getID();
+    const char* getID();
 
 };
 

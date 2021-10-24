@@ -1,3 +1,8 @@
+/*
+ * @file       : drivers/MPC7940NDriver.cpp
+ * @author     : Maurice Snoeren (MS)
+ * @license    : GNU version 3.0
+ */
 #include "drivers/MCP7940NDriver.h"
 
 #include <stdio.h>

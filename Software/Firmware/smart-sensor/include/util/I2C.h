@@ -51,8 +51,7 @@ enum I2CState {
     STATUS,  // Command has been executed and the check was okay, check for the correct status.
 };
 
-/* The I2C commands are configured with this enumeration type.
- */
+/* The I2C commands are configured with this enumeration type. */
 enum I2CCommand {
     START,
     REPEATED_START,
@@ -64,7 +63,10 @@ enum I2CCommand {
     STOP
 };
 
-// Example: pgm_read_byte(&I2CCommandResultStatus[4]);
+/* An array that contains the result statuses of the I2CCommand enumeration. It
+ * is stored in flash, so you need to get it using the progmem interface.
+ * Example: pgm_read_byte(&I2CCommandResultStatus[4]);
+ */
 static const uint8_t I2CCommandResultStatus[] PROGMEM = {
     TW_START,
     TW_REP_START,

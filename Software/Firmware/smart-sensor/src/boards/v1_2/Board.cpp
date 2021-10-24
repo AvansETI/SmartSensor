@@ -1,11 +1,17 @@
+/*
+ * @file       : boards/Board.cpp
+ * @author     : Maurice Snoeren (MS)
+ * @license    : GNU version 3.0
+ */
 #include <boards/v1_2/Board.h>
+
+#include <string.h>
 
 #include <avr/boot.h>
 #include <avr/io.h>
 #include <avr/interrupt.h>
 #include <avr/pgmspace.h>
 #include <util/delay.h>
-#include <string.h>
 
 void SmartSensorBoardV1_2::setup() {
     BOARDV1_2_ADAPTER_IN_USE_DDR = BOARDV1_2_ADAPTER_IN_USE_DDR & ~(1 << BOARDV1_2_ADAPTER_IN_USE_PIN); // Set pin for adapter in use as input.
@@ -73,7 +79,7 @@ void SmartSensorBoardV1_2::addMeasurement(const char* measurement) {
     this->buffer.addMeasurement(measurement);
 }
 
-char* SmartSensorBoardV1_2::getID() {
+const char* SmartSensorBoardV1_2::getID() {
     // Get the Atmege unique serial number
     for ( uint8_t i=0; i < 20; i=i+2 ) {
         uint8_t b = boot_signature_byte_get(0x0E + i); // 0x0E => SER0

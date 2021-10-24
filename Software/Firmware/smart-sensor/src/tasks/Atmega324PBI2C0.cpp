@@ -1,3 +1,8 @@
+/*
+ * @file       : boards/Board.cpp
+ * @author     : Maurice Snoeren (MS)
+ * @license    : GNU version 3.0
+ */
 #include <tasks/Atmega324PBI2C0.h>
 
 #include <stdio.h>

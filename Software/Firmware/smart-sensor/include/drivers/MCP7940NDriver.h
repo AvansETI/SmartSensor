@@ -16,10 +16,10 @@
  *                  Some SRAM has been freed because of this.
  */
 #include <stdint.h>
+
 #include <avr/pgmspace.h>
 
 #include <util/RTC.h>
-
 #include <tasks/Atmega324PBI2C0.h>
 #include <drivers/Driver.h>
 

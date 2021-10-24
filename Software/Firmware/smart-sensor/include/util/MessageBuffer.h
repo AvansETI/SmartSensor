@@ -2,11 +2,11 @@
 /**
  * @file       : MeasurementBuffer.h
  * @description: -
- * @date       : 11-09-2021
+ * @date       : 24-10-2021
  * @author     : Maurice Snoeren (MS)
- * @version    : 0.1
+ * @version    : 1.0
  * @todo       : 
- * @updates
+ * @changes
  * 
  */
 

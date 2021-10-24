@@ -1,3 +1,8 @@
+/*
+ * @file       : boards/Board.cpp
+ * @author     : Maurice Snoeren (MS)
+ * @license    : GNU version 3.0
+ */
 #include <util/MessageBuffer.h>
 
 #include <string.h>
