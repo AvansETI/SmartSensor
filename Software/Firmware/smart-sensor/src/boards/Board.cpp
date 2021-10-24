@@ -63,11 +63,8 @@ void SmartSensorBoard::loop() {
         this->getActualTimestamp();
     }
 
-    // test
-    _delay_ms(10);
-
-    this->loopTime = ( this->millis() - this->loopTimstamp );
-    //this->debugf_P(PSTR("Loop time %d ms\n"), this->loopTime); // Show the actual loop timing in the serial
+    this->loopTime = ( (SMARTSENSOR_RUNNING_AVERAGE_LOOP_TIME-1)*this->loopTime + (this->millis() - this->loopTimstamp) )/SMARTSENSOR_RUNNING_AVERAGE_LOOP_TIME; // Running average of 10 loops
+    this->debugf_P(PSTR("Loop time %d ms\n"), this->loopTime); // Show the actual loop timing in the serial
     this->loopTimstamp = this->millis();
 }
 

@@ -35,7 +35,7 @@ uint8_t SHTC3Driver::loop(uint32_t millis) {
         this->sample();
     }
 
-    if ( millis % (this->samplingInterval*1000) == 0 ) {
+    if ( millis % (this->samplingInterval*1000) == 0 ) { // BUG: Werkt toch niet altijd lekker, want soms komt ie er niet.
         this->sample(); // Start the sampling process using callbacks when the measurement is ready!
     }
 

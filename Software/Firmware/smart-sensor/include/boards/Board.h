@@ -11,7 +11,7 @@
  * @todo       : -
  * @changes
  *  24-10-2021: MS: Added documentation. Added reset flags handling and reset cause for watchdog handling.
- * 
+ *                  Added loop timing running average to get some filtering on the loop timing.
  */
 #include <stdint.h>
 #include <stdio.h>
@@ -24,6 +24,9 @@
 
 /* Define the maximum tasks the board is able to run. */
 #define SMARTSENSOR_MAX_TASKS 20
+
+/* Define the amount of running average samples of the main loop timing calculation. */
+#define SMARTSENSOR_RUNNING_AVERAGE_LOOP_TIME 5
 
 /* The class SmartSensorBoard is the base class that is extended by the actual board class.
  * Within the main.c application, this base class is used, so no board specific aspects are
