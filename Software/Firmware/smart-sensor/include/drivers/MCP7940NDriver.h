@@ -6,12 +6,14 @@
  *               about 5 days (calculated) using an 1F super cap. Furthermore, the MFP pin (interrupt) of the chip is connected
  *               to PB2 pin of the Atmega.
                  http://ww1.microchip.com/downloads/en/devicedoc/20005010f.pdf
- * @date       : 10-09-2021
+ * @date       : 24-10-2021
  * @author     : Maurice Snoeren (MS)
- * @version    : 0.1
- * @todo       : The loop contains blocking function calls!
- * @updates
- * 
+ * @version    : 1.0
+ * @license    : GNU version 3.0
+ * @todo       : Test, while it does not work at this moment!
+ * @changes
+ *  24-10-2021: MS: This class does not require a sampling interval. It should be queried when a timestamp is needed.
+ *                  Some SRAM has been freed because of this.
  */
 #include <stdint.h>
 #include <avr/pgmspace.h>
@@ -29,6 +31,7 @@
 /* Address of the MCP7940N chip on the I2C bus */
 constexpr uint8_t MCP7940_I2C_ADDRESS PROGMEM = 0xDE;
 
+/* The organization of the data that comes from the I2C bus. */
 enum MCP7940NData {
     SECONDS,
     MINUTES,
@@ -39,43 +42,42 @@ enum MCP7940NData {
     YEAR
 };
 
+/* This class implements the driver for the MCP7940 RTC (real-time) chip. It implements the
+ * interface I2CReadEvent to get the data from the I2C. 
+ */
 class MCP7940NDriver: public Driver, public I2CReadEvent {
 private:
     /* The callback when a time has been retrieved from the chip. */
     RTCReadTimestampEvent* rtcEvent;
 
-    uint32_t samplingInterval;
-    uint32_t loopTiming;
-
-    // Time that has been retrieved last time from the chip. */
-    RTCTime rtcTime;
+    /* Holds the data that has been retrieved from the I2C bus. */ 
     uint8_t data[7];
 
 protected:
+    /* Protected constructor to create a singleton. */
     MCP7940NDriver(RTCReadTimestampEvent* rtcReadTimestampEvent): rtcEvent(rtcReadTimestampEvent) { }
 
 public:
+    /* Returns the singleton instance. */
     static MCP7940NDriver* getInstance(RTCReadTimestampEvent* rtcReadTimestampEvent) {
         static MCP7940NDriver _mcp7940NDriver(rtcReadTimestampEvent);
         return &_mcp7940NDriver;
     }
 
+    /* Interface: Task */
     uint8_t setup();
     uint8_t loop(uint32_t millis);
     uint8_t reset();
     uint8_t sleep();
     uint8_t wakeup();
-
-    void sample();
     
-    /* Add POWER-DOWN/POWER-UP TIME-STAMP */
-    RTCTime getPowerDownTimestamp();
+    /* TODO: Add POWER-DOWN/POWER-UP TIME-STAMP. Do we need this?  */
+    //RTCTime getPowerDownTimestamp();
 
-    /* Returns the current time from the chip. When available it calls the callback. */
-    RTCTime getTime();
+    /* The class is going to ask the RTC chip a new time. When available it calls the callback. */
+    void requestTime();
 
-
-    /* Set the time based on a RTCTimestamp instance of the chip. */
+    /* Set the time based on a RTCTimestamp instance of the chip. The I2C is used for this. */
     void setTime(const RTCTime &t);
 
     /* Set the time based on an ISO8601 string of the chip. */
@@ -83,8 +85,6 @@ public:
 
     /* Check whether the chip reacts on a I2C message. */
     bool isConnected();
-
-    RTCTime getRTCTime() { return this->rtcTime; }
 
     // Interface: I2CReadEvent
     void i2cReadEvent(uint8_t data, uint8_t index);
@@ -105,12 +105,6 @@ Although the SRAM is a separate block from the RTCC
 registers, they are accessed using the same control
 byte, ‘1101111X’.*/
     // Add setByte, getByte to use the SRAM of the chip, storing things to remember?
-
-private:
-    /* Set the time loop */
-    void setTimeLoop();
-    
-    void getTimeLoop();
 
 };
 

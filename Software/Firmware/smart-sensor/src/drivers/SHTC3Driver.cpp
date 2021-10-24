@@ -57,7 +57,7 @@ uint8_t SHTC3Driver::wakeup() {
     return 0;
 }
 
-// Where is the source of this calculation?
+// See the documentation for the checksum calculation.
 bool SHTC3Driver::checkChecksum(const uint16_t data, const uint8_t checksum) {
     constexpr auto polynomial = 0x131; // P(x) = x^8 + x^5 + x^4 + 1 = 100110001
 
@@ -89,7 +89,7 @@ uint16_t SHTC3Driver::getID() {
         return this->id;
     }
 
-    // TODO: handle result of the wait functions.
+    // TODO: handle result of the wait functions. Convert to Async methods?
     Atmega324PBI2C0* i2c = Atmega324PBI2C0::getInstance();
     i2c->start(); i2c->wait(TW_START);
     i2c->select(SHTC3_I2C_ADDRESS, TW_WRITE); i2c->wait(TW_MT_SLA_ACK);
@@ -148,16 +148,32 @@ uint8_t SHTC3Driver::sample() {
     return 0;
 }
 
-float SHTC3Driver::getTemperature () {
+uint16_t SHTC3Driver::getTemperatureData() {
     uint16_t t = this->data[SHTC3Data::TEMPERATURE_0] << 8;
     t         |= this->data[SHTC3Data::TEMPERATURE_1];
-    
-    return 175 * float(t) / 65536.0f - 45.0f;
+
+    return t;
 }
 
-float SHTC3Driver::getHumidity () {
+uint16_t SHTC3Driver::getHumidityData() {
     uint16_t h = this->data[SHTC3Data::HUMIDITY_0] << 8;
     h         |= this->data[SHTC3Data::HUMIDITY_1];
 
-    return 100 * float(h) / 65536.0f;
+    return h;
+}
+
+float SHTC3Driver::getTemperature () {
+    return 175 * float(this->getTemperatureData()) / 65536.0f - 45.0f;
+}
+
+float SHTC3Driver::getHumidity () {
+    return 100 * float(this->getHumidityData()) / 65536.0f;
+}
+
+bool SHTC3Driver::isTemperatureValid() {
+    return this->checkChecksum(this->getTemperatureData(), this->data[SHTC3Data::TEMPERATURE_CHECKSUM]);
+}
+
+bool SHTC3Driver::isHumidityValid() {
+    return this->checkChecksum(this->getHumidityData(), this->data[SHTC3Data::HUMIDITY_CHECKSUM]);
 }

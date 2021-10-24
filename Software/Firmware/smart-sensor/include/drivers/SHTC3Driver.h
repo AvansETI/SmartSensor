@@ -51,24 +51,30 @@ private:
     uint32_t loopTimestamp;
 
 protected:
+    /* Protected constructor to create a singleton. */
     SHTC3Driver(SmartSensorMeasurement* cbMeasurement): Driver(cbMeasurement), id(0) {};
 
+    /* Check whether the SHTC3 is connected to the I2C bus on the specific address. */
     bool isConnected();
 
 public:
+    /* Get the instance of the singleton. */
     static SHTC3Driver* getInstance(SmartSensorMeasurement* cbMeasurement) {
         static SHTC3Driver _shtc3Driver(cbMeasurement);
         return &_shtc3Driver;
     }
 
-    /* Task interface methods .*/
+    /* Interface: Task */
     uint8_t setup();
     uint8_t loop(uint32_t millis);
     uint8_t reset();
     uint8_t sleep();
     uint8_t wakeup();
 
+    /* Check the checksum of the returned values to determine the correctness of data transfer. */
     static bool checkChecksum(uint16_t data, uint8_t checksum);
+
+    /* Execute a sample from the SHTC3. In this case the I2C is used. */
     uint8_t sample();
 
     /* Returns the unique ID of the SHTC3 chip. Note that bit 15L12 and 10:6 contain unspecified info
@@ -76,15 +82,31 @@ public:
     */
     uint16_t getID();
 
-    /* Returns the specific product code of the sensor. */
+    /* Returns the specific product code of the sensor, see datasheet. */
     uint16_t getProductCode();
 
-    void setSamplingInterval(uint32_t samplingInterval) { this->samplingInterval = samplingInterval; }
+    /* Set the required sampling interval in seconds that this sensor needs to be sampled. */
+    void setSamplingInterval(uint16_t samplingInterval) { this->samplingInterval = samplingInterval; }
 
-    // Interface: I2CReadEvent
+    /* Interface: I2CReadEvent */
     void i2cReadEvent(uint8_t data, uint8_t index);
 
+    /* Read the temperature from the data that has been send from the I2C. */
+    uint16_t getTemperatureData();
+
+    /* Read the humidity from the data that has been send from the I2C. */
+    uint16_t getHumidityData();
+
+    /* Read the real temperature from the data that has been send from the I2C. */
     float getTemperature();
+
+    /* Read the real humidity from the data that has been send from the I2C. */
     float getHumidity();
+
+    /* Returns true when the checksum of the temperature is correct, otherwise false. */ 
+    bool isTemperatureValid();
+
+    /* Returns true when the checksum of the humidity is correct, otherwise false. */ 
+    bool isHumidityValid();
 
 };

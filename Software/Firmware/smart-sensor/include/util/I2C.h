@@ -64,6 +64,7 @@ enum I2CCommand {
     STOP
 };
 
+// Example: pgm_read_byte(&I2CCommandResultStatus[4]);
 static const uint8_t I2CCommandResultStatus[] PROGMEM = {
     TW_START,
     TW_REP_START,

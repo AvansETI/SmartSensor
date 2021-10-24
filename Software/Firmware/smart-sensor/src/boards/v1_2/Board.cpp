@@ -36,11 +36,7 @@ void SmartSensorBoardV1_2::setup() {
         this->debug_P(PSTR("Adapter is not in use.\n"));
     }
 
-    char iso8601[25];
-    RTCTime time = this->mcp7940nDriver->getRTCTime();
-    time.getIso8601String(iso8601);
-    this->debugf_P(PSTR("ID: %s\n"), this->getID());
-    this->debugf_P(PSTR("Timestamp: %s\n"), iso8601 );
+    this->debugf_P(PSTR("RTC ID: %s\n"), this->getID());
 
     /* Show the user that we have started up, by one-second led on and then flash led. */
     this->ledDriver->led1On();
