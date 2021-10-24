@@ -42,7 +42,7 @@ void SmartSensorBoardV1_2::setup() {
         this->debug_P(PSTR("Adapter is not in use.\n"));
     }
 
-    this->debugf_P(PSTR("RTC ID: %s\n"), this->getID());
+    this->debugf_P(PSTR("ID: %s\n"), this->getID());
 
     /* Show the user that we have started up, by one-second led on and then flash led. */
     this->ledDriver->led1On();

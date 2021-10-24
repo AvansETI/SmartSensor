@@ -21,7 +21,6 @@ uint8_t SHTC3Driver::setup() {
     }
 
     this->samplingInterval = 60*5; // five minutes
-    this->loopTimestamp    = 0;
 
     return 0;
 }
@@ -32,15 +31,12 @@ bool SHTC3Driver::isConnected() {
 }
 
 uint8_t SHTC3Driver::loop(uint32_t millis) {
-    if ( this->loopTimestamp == 0 ) { // Start the timing process
-        this->loopTimestamp = millis/1000;        
+    if ( this->waitingOnI2C ) { // Last time the sample could not be processed.
+        this->sample();
     }
 
-    Atmega324PBI2C0* i2c = Atmega324PBI2C0::getInstance();
-    uint32_t loopTime = ((millis/1000) - this->loopTimestamp);
-    if ( loopTime > this->samplingInterval && i2c->isAvailable() ) {
-        this->sample(); // Start the sampling process which is interrupt driven!
-        this->loopTimestamp = millis/1000; // Restart the timing
+    if ( millis % (this->samplingInterval*1000) == 0 ) {
+        this->sample(); // Start the sampling process using callbacks when the measurement is ready!
     }
 
     return 0;
@@ -123,10 +119,10 @@ void SHTC3Driver::i2cReadEvent(uint8_t data, uint8_t index) {
     if ( index == 5 ) { // last one!
         char m[30];
 
-        sprintf_P(m, PSTR("humidity: %.1f"), (double)this->getHumidity());
+        sprintf_P(m, PSTR("humidity:%.1f"), (double)this->getHumidity());
         this->getMeasurementCallback()->addMeasurement(m);
         
-        sprintf_P(m, PSTR("temperature: %.1f"), (double)this->getTemperature());
+        sprintf_P(m, PSTR("temperature:%.1f"), (double)this->getTemperature());
         this->getMeasurementCallback()->addMeasurement(m);
     }
 }
@@ -135,6 +131,7 @@ uint8_t SHTC3Driver::sample() {
     Atmega324PBI2C0* i2c = Atmega324PBI2C0::getInstance();
     
     if ( i2c->isAvailable() ) {
+        this->waitingOnI2C = false;
         i2c->cmdStart();
         i2c->cmdSelectWrite(SHTC3_I2C_ADDRESS);
         i2c->cmdWrite(0x5C); //??
@@ -148,6 +145,9 @@ uint8_t SHTC3Driver::sample() {
         i2c->cmdReadAck(this, 4); // temperature 1
         i2c->cmdReadNack(this, 5); // temperature checksum
         i2c->cmdStop();
+    
+    } else {
+        this->waitingOnI2C = true;
     }
 
     return 0;

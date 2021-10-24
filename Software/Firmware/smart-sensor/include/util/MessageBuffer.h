@@ -7,11 +7,12 @@
  * @version    : 1.0
  * @todo       : 
  * @changes
- * 
+ *  24-10-2021: Made total chars smaller, 30 is not required. Example: temperature:23.4 is 16 characters big.
+ *              Having at this moment 4 measurements (light, CO2, temp and hum) this is doubled and not 10.
  */
 
-#define MESSAGE_TOTAL_CHARS 30
-#define MESSAGE_TOTAL 10
+#define MESSAGE_TOTAL_CHARS 20
+#define MESSAGE_TOTAL 8
 
 #include <stdint.h>
 

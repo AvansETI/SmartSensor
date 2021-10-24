@@ -47,12 +47,12 @@ private:
     /* Set the sampling interval of the sensor in seconds. */
     uint16_t samplingInterval;
 
-    /* Used to provide a loopTimestamp to calculate when to sample. */
-    uint32_t loopTimestamp;
+    /* When the sampling could not occur due to a busy I2C bus, this flag becomes true. */
+    bool waitingOnI2C; 
 
 protected:
     /* Protected constructor to create a singleton. */
-    SHTC3Driver(SmartSensorMeasurement* cbMeasurement): Driver(cbMeasurement), id(0) {};
+    SHTC3Driver(SmartSensorMeasurement* cbMeasurement): Driver(cbMeasurement), id(0), waitingOnI2C(false) {};
 
     /* Check whether the SHTC3 is connected to the I2C bus on the specific address. */
     bool isConnected();
