@@ -29,7 +29,23 @@
 
 enum XBeeProS2CStateReciever {
     IDLE, // Nothing todo...
-    BUSY, // Started recieving something
+    BUSY, // Started recieving something that is not an API request.
+    BUSY_API_LENGTH_H, // Busy with processing an API message length
+    BUSY_API_LENGTH_L, // Busy with processing an API message length
+    BUSY_API_API_ID,
+    BUSY_API_FRAME_ID,
+    BUSY_API_64B_ADDRESS_7,
+    BUSY_API_64B_ADDRESS_6,
+    BUSY_API_64B_ADDRESS_5,
+    BUSY_API_64B_ADDRESS_4,
+    BUSY_API_64B_ADDRESS_3,
+    BUSY_API_64B_ADDRESS_2,
+    BUSY_API_64B_ADDRESS_1,
+    BUSY_API_64B_ADDRESS_0,
+    BUSY_API_16B_ADDRESS_1,
+    BUSY_API_16B_ADDRESS_0,
+    //...
+    PROCESSING_API,
     PROCESSING // Processing the recieved data
 };
 
@@ -47,6 +63,10 @@ private:
     bool isCoordinator;
 
     uint32_t timestamp;
+
+    uint16_t apiLength;
+    uint64_t apiAddress;
+    uint8_t apiChecksum;
 
 protected:
     /* Protected constructor in order to create a singleton class. */
@@ -87,10 +107,7 @@ public:
 
     bool checkResultOk();
 
-
     bool isInstalled() { return (this->state != XBEEPROS2C_STATE_NOTFOUND); }
-
-    void test();
 
 private:
 

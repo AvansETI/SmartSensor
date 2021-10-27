@@ -33,14 +33,14 @@ uint8_t XBeeProS2C::loop(uint32_t millis) {
 
     case 1:
         if ( this->stateReciever == XBeeProS2CStateReciever::PROCESSING ) {
-            this->stateReciever = XBeeProS2CStateReciever::IDLE;
             if ( this->checkResultOk() ) {
                 SmartSensorBoard::getBoard()->debug_P(PSTR("XBeeProS2C: Found\n"));
                 this->state++;
 
             } else {
-                this->state = 0; // Start over!
+                this->state = 0; // Start over?!
             }
+            this->stateReciever = XBeeProS2CStateReciever::IDLE;
 
         } else { // Not processing yet!
             if ( millis - this->timestamp > XBEEPROS2C_TIMEOUT_TIME_S ) { 
@@ -66,7 +66,7 @@ uint8_t XBeeProS2C::loop(uint32_t millis) {
         break;
 
     case 8:
-        Atmega324PBSerial1::getInstance()->printAsync_P(PSTR("ATAP 0\r"));
+        Atmega324PBSerial1::getInstance()->printAsync_P(PSTR("ATAP 0\r")); // 0 Transparant, 1 API, 2 API with escapes
         this->state++;
         break;
 
@@ -100,13 +100,13 @@ uint8_t XBeeProS2C::loop(uint32_t millis) {
     case 17:
     case 33:
         if ( this->stateReciever == XBeeProS2CStateReciever::PROCESSING ) {
-            this->stateReciever = XBeeProS2CStateReciever::IDLE;
             if ( this->checkResultOk() ) {
                 this->state++;
     
             } else {
                 this->state = 0; // start over? TODO
             }
+            this->stateReciever = XBeeProS2CStateReciever::IDLE;
         }
         break;
 
@@ -117,8 +117,8 @@ uint8_t XBeeProS2C::loop(uint32_t millis) {
 
     case 19:
         if ( this->stateReciever == XBeeProS2CStateReciever::PROCESSING ) {
-            this->stateReciever = XBeeProS2CStateReciever::IDLE;
             SmartSensorBoard::getBoard()->debugf_P(PSTR("XBeeProS2C PAN ID: %s\n"), this->recieveBuffer);
+            this->stateReciever = XBeeProS2CStateReciever::IDLE;
             this->state++;
         }
         break;
@@ -130,8 +130,8 @@ uint8_t XBeeProS2C::loop(uint32_t millis) {
     
     case 21:
         if ( this->stateReciever == XBeeProS2CStateReciever::PROCESSING ) {
-            this->stateReciever = XBeeProS2CStateReciever::IDLE;
             SmartSensorBoard::getBoard()->debugf_P(PSTR("XBeeProS2C SERIAL: %s"), this->recieveBuffer);
+            this->stateReciever = XBeeProS2CStateReciever::IDLE;
             this->state++;
         }
         break;
@@ -143,8 +143,8 @@ uint8_t XBeeProS2C::loop(uint32_t millis) {
     
     case 23:
         if ( this->stateReciever == XBeeProS2CStateReciever::PROCESSING ) {
-            this->stateReciever = XBeeProS2CStateReciever::IDLE;
             SmartSensorBoard::getBoard()->debugf_P(PSTR("%s\n"), this->recieveBuffer);
+            this->stateReciever = XBeeProS2CStateReciever::IDLE;
             this->state++;
         }
         break;
@@ -156,8 +156,8 @@ uint8_t XBeeProS2C::loop(uint32_t millis) {
     
     case 25:
         if ( this->stateReciever == XBeeProS2CStateReciever::PROCESSING ) {
-            this->stateReciever = XBeeProS2CStateReciever::IDLE;
             SmartSensorBoard::getBoard()->debugf_P(PSTR("XBeeProS2C Coordinator: %s\n"), this->recieveBuffer);
+            this->stateReciever = XBeeProS2CStateReciever::IDLE;
             this->state++;
         }
         break;
@@ -169,8 +169,8 @@ uint8_t XBeeProS2C::loop(uint32_t millis) {
     
     case 27:
         if ( this->stateReciever == XBeeProS2CStateReciever::PROCESSING ) {
-            this->stateReciever = XBeeProS2CStateReciever::IDLE;
             SmartSensorBoard::getBoard()->debugf_P(PSTR("XBeeProS2C Node Identifier: %s\n"), this->recieveBuffer);
+            this->stateReciever = XBeeProS2CStateReciever::IDLE;
             this->state++;
         }
         break;
@@ -182,8 +182,8 @@ uint8_t XBeeProS2C::loop(uint32_t millis) {
     
     case 29:
         if ( this->stateReciever == XBeeProS2CStateReciever::PROCESSING ) {
-            this->stateReciever = XBeeProS2CStateReciever::IDLE;
             SmartSensorBoard::getBoard()->debugf_P(PSTR("XBeeProS2C Firmware Version: %s\n"), this->recieveBuffer);
+            this->stateReciever = XBeeProS2CStateReciever::IDLE;
             this->state++;
         }
         break;
@@ -195,8 +195,8 @@ uint8_t XBeeProS2C::loop(uint32_t millis) {
     
     case 31:
         if ( this->stateReciever == XBeeProS2CStateReciever::PROCESSING ) {
-            this->stateReciever = XBeeProS2CStateReciever::IDLE;
             SmartSensorBoard::getBoard()->debugf_P(PSTR("XBeeProS2C Hardware Version: %s\n"), this->recieveBuffer);
+            this->stateReciever = XBeeProS2CStateReciever::IDLE;
             this->state++;
         }
         break;
@@ -218,8 +218,12 @@ uint8_t XBeeProS2C::loop(uint32_t millis) {
 
         } else {
             if ( this->stateReciever == XBeeProS2CStateReciever::PROCESSING ) {
-                this->stateReciever = XBeeProS2CStateReciever::IDLE;
                 SmartSensorBoard::getBoard()->debugf_P(PSTR("XBeeProS2C Message: %s\n"), this->recieveBuffer);
+                this->stateReciever = XBeeProS2CStateReciever::IDLE;
+            }
+
+            if ( this->stateReciever == XBeeProS2CStateReciever::PROCESSING_API ) {
+                this->stateReciever = XBeeProS2CStateReciever::IDLE;
             }
         }
         break;
@@ -251,9 +255,15 @@ void XBeeProS2C::recievedCharacter(char c) {
     switch (this->stateReciever) {
     case XBeeProS2CStateReciever::IDLE:
         if ( c != '\r') {
-            this->recieveBuffer[0] = c;
-            this->recieveBufferPointer = 1;
-            this->stateReciever = XBeeProS2CStateReciever::BUSY;
+            if ( c == 0x7E ) { // API detected!
+                this->stateReciever = XBeeProS2CStateReciever::BUSY_API_LENGTH_H;
+                SmartSensorBoard::getBoard()->debug("GOT API FRAME\n");
+
+            } else {
+                this->recieveBuffer[0] = c;
+                this->recieveBufferPointer = 1;
+                this->stateReciever = XBeeProS2CStateReciever::BUSY;
+            }
         }
         break;
 
@@ -271,6 +281,9 @@ void XBeeProS2C::recievedCharacter(char c) {
         }
 
         this->recieveBufferPointer++;
+        break;
+
+    case XBeeProS2CStateReciever::BUSY_API_LENGTH_H:
 
         break;
 
@@ -337,38 +350,4 @@ void XBeeProS2C::atSetNodeIdentifier(const char* id) {
 
 void XBeeProS2C::atWrite() {
     Atmega324PBSerial1::getInstance()->printAsync_P(PSTR("ATWR\r"));
-}
-
-void XBeeProS2C::test() {
-    Atmega324PBSerial1* s = Atmega324PBSerial1::getInstance();
-    Atmega324PBSerial0* d = Atmega324PBSerial0::getInstance();
-
-    char c = 0x00;
-
-    d->print("XBEE SEND\n");
-    // Perform a first setup of the XBee Module
-    s->print("+++"); // COMMAND MODE AT
-    _delay_ms(500);
-    s->print("AT\r");
-    _delay_ms(100);
-    s->print("ATAP\r"); // Enable API mode
-    _delay_ms(100);
-    s->print("ATAO\r"); // Enable API Explicit mode
-    _delay_ms(100);
-    s->print("ATAP 1\r"); // Enable API mode
-    _delay_ms(100);
-    s->print("ATAO 0\r"); // Enable API Explicit mode
-    _delay_ms(100);
-    d->print("END\n");
-
-/*
-    s->transmitChar(0x7E);
-    s->transmitChar(0x00);
-    s->transmitChar(0x04);
-    s->transmitChar(0x08); // AT Command
-    s->transmitChar(0x01);
-    s->transmitChar(0x56); // VR
-    s->transmitChar(0x52);
-    s->transmitChar(0xFF-(0x08+0x01+0x56+0x52));
-*/
 }
