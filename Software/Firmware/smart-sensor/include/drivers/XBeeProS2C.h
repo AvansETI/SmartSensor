@@ -78,6 +78,12 @@ public:
     void atGetCoordinatorEnable();
     void atGetSerialNumberHigh();
     void atGetSerialNumberLow();
+    
+    void atSetPanId(const char* id);
+    void atSetCoordinator(bool enable);
+
+    bool checkResultOk();
+
 
     bool isInstalled() { return (this->state != XBEEPROS2C_STATE_NOTFOUND); }
 

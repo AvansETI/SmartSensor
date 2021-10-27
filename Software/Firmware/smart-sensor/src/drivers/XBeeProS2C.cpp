@@ -36,7 +36,7 @@ uint8_t XBeeProS2C::loop(uint32_t millis) {
     case 1: // Start recieve
         if ( this->stateReciever == XBeeProS2CStateReciever::PROCESSING ) {
             this->stateReciever = XBeeProS2CStateReciever::IDLE;
-            if ( this->recieveBuffer[0] == 'O' && this->recieveBuffer[1] == 'K' ) {
+            if ( this->checkResultOk() ) {
                 SmartSensorBoard::getBoard()->debug_P(PSTR("XBeeProS2C: Found\n"));
                 this->state++;
 
@@ -52,12 +52,35 @@ uint8_t XBeeProS2C::loop(uint32_t millis) {
         }
         break;
 
-    case 2: // Get PAN ID
-        this->atGetPanId();
+    case 2: // Set PAN ID
+        this->atSetPanId("1234");
         this->state++;
         break;
 
     case 3:
+    case 5:
+        if ( this->stateReciever == XBeeProS2CStateReciever::PROCESSING ) {
+            this->stateReciever = XBeeProS2CStateReciever::IDLE;
+            if ( this->checkResultOk() ) {
+                this->state++;
+    
+            } else {
+                this->state = 0; // start over? TODO
+            }
+        }
+        break;
+
+    case 4:
+        this->atSetCoordinator(false); //this->isCoordinator);
+        this->state++;
+        break;
+
+    case 6: // Get PAN ID
+        this->atGetPanId();
+        this->state++;
+        break;
+
+    case 7:
         if ( this->stateReciever == XBeeProS2CStateReciever::PROCESSING ) {
             this->stateReciever = XBeeProS2CStateReciever::IDLE;
             SmartSensorBoard::getBoard()->debugf_P(PSTR("XBeeProS2C PAN ID: %s\n"), this->recieveBuffer);
@@ -65,12 +88,12 @@ uint8_t XBeeProS2C::loop(uint32_t millis) {
         }
         break;
 
-    case 4:
+    case 8:
         this->atGetSerialNumberHigh();
         this->state++;
         break;
     
-    case 5:
+    case 9:
         if ( this->stateReciever == XBeeProS2CStateReciever::PROCESSING ) {
             this->stateReciever = XBeeProS2CStateReciever::IDLE;
             SmartSensorBoard::getBoard()->debugf_P(PSTR("XBeeProS2C SERIAL: %s"), this->recieveBuffer);
@@ -78,12 +101,12 @@ uint8_t XBeeProS2C::loop(uint32_t millis) {
         }
         break;
 
-    case 6:
+    case 10:
         this->atGetSerialNumberLow();
         this->state++;
         break;
     
-    case 7:
+    case 11:
         if ( this->stateReciever == XBeeProS2CStateReciever::PROCESSING ) {
             this->stateReciever = XBeeProS2CStateReciever::IDLE;
             SmartSensorBoard::getBoard()->debugf_P(PSTR("%s\n"), this->recieveBuffer);
@@ -91,18 +114,21 @@ uint8_t XBeeProS2C::loop(uint32_t millis) {
         }
         break;
 
-    case 8:
+    case 12:
         this->atGetCoordinatorEnable();
         this->state++;
         break;
     
-    case 9:
+    case 13:
         if ( this->stateReciever == XBeeProS2CStateReciever::PROCESSING ) {
             this->stateReciever = XBeeProS2CStateReciever::IDLE;
-            SmartSensorBoard::getBoard()->debugf_P(PSTR("Coordinator enabled: %s\n"), this->recieveBuffer);
+            SmartSensorBoard::getBoard()->debugf_P(PSTR("XBeeProS2C Coordinator: %s\n"), this->recieveBuffer);
             this->state++;
         }
         break;
+
+    // case waiting 1->recieved message from XBee as coordinator (relay to gateway), 2->sending message to coordinator
+
 
     }
 
@@ -138,8 +164,7 @@ void XBeeProS2C::recievedCharacter(char c) {
         this->recieveBuffer[this->recieveBufferPointer] = c;
 
         if ( this->recieveBufferPointer > XBEEPROS2C_RECIEVE_BUFFER_AMOUNT - 1 ) { // Error, beyond the buffer!
-            Atmega324PBSerial0* s = Atmega324PBSerial0::getInstance();
-            s->print_P(PSTR("XBEE: Buffer overflow!\n"));
+             SmartSensorBoard::getBoard()->debug_P(PSTR("XBeeProS2C: Buffer overflow!\n"));
             this->stateReciever = XBeeProS2CStateReciever::IDLE;
         }
 
@@ -188,8 +213,23 @@ void XBeeProS2C::atGetSerialNumberHigh() {
 }
 
 void XBeeProS2C::atGetSerialNumberLow() {
-    Atmega324PBSerial1* x = Atmega324PBSerial1::getInstance();
-    x->printAsync_P(PSTR("ATSL\r"));
+    Atmega324PBSerial1::getInstance()->printAsync_P(PSTR("ATSL\r"));
+}
+
+bool XBeeProS2C::checkResultOk() {
+    return ( this->recieveBuffer[0] == 'O' && this->recieveBuffer[1] == 'K' );
+}
+
+void XBeeProS2C::atSetPanId(const char* id) {
+    char m[15];
+    sprintf(m, "ATID %s\r", id);
+    Atmega324PBSerial1::getInstance()->printAsync(m);
+}
+
+void XBeeProS2C::atSetCoordinator(bool enable) {
+    char m[15];
+    sprintf(m, "ATCE %d\r", enable);
+    Atmega324PBSerial1::getInstance()->printAsync(m);
 }
 
 void XBeeProS2C::test() {

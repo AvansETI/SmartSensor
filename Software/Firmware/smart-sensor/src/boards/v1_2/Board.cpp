@@ -106,7 +106,7 @@ const char* SmartSensorBoardV1_2::getID() {
         uint8_t h2 = (b >> 4);
 
         // Convert to HEX
-        this->id[20-i-1]   = (char) (h1 < 10 ? h1+'0' : h1-10+'A');
+        this->id[20-i-1] = (char) (h1 < 10 ? h1+'0' : h1-10+'A');
         this->id[20-i-2] = (char) (h2 < 10 ? h2+'0' : h2-10+'A');
     }
 

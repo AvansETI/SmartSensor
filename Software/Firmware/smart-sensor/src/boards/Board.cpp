@@ -87,6 +87,8 @@ void SmartSensorBoard::rtcReadTimestampEvent(RTCTime& time, RTCEventMode mode) {
     char mm[30];
     time.getIso8601String(mm);
     this->debugf("%s\n", mm);
+
+    // Note that if this is a gate wat 
 }
 
 // Documentation: http://www.cplusplus.com/reference/cstdio/vsprintf/
