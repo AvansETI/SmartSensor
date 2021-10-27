@@ -25,6 +25,7 @@
 
 #define XBEEPROS2C_RECIEVE_BUFFER_AMOUNT 50
 #define XBEEPROS2C_TIMEOUT_TIME_S 2000
+#define XBEEPROS2C_PAN_ID "2316"
 
 enum XBeeProS2CStateReciever {
     IDLE, // Nothing todo...
@@ -81,6 +82,8 @@ public:
     
     void atSetPanId(const char* id);
     void atSetCoordinator(bool enable);
+    void atSetNodeIdentifier(const char* id);
+    void atWrite();
 
     bool checkResultOk();
 
