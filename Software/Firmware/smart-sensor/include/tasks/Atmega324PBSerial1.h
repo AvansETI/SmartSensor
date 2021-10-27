@@ -19,15 +19,21 @@
 
 /* Set the BAUD rate of the serial communicatio port.
 */
-#define SERIAL0_BAUD 9600
+#define SERIAL1_BAUD 9600
 
 /* Calculate the UBRR to set it to the correct BAUD rate. */
-#define SERIAL0_UBRR F_CPU/16/SERIAL0_BAUD-1
+#define SERIAL1_UBRR F_CPU/16/SERIAL1_BAUD-1
+
+/* Interface: SerialRecievedCharacter */
+class SerialRecievedCharacter {
+public:
+    virtual void recievedCharacter(char c) = 0;
+};
 
 /* Class: Atmega324PBSerial0
    This class implements the task to write data to the serial port.
  */ 
-class Atmega324PBSerial0: public Task {
+class Atmega324PBSerial1: public Task {
 private:
     /* When the class is busy to send a message, this busy flag is set to true. */
     uint8_t busy;
@@ -42,15 +48,17 @@ protected:
     /* Also this class uses a specific part of the hardware, and therefore it is
        required to be singleton.
     */
-    Atmega324PBSerial0() {}; // singleton!
+    Atmega324PBSerial1() {}; // singleton!
 
 public:
     /* Returns the instance of the singleton.
     */
-    static Atmega324PBSerial0* getInstance() {
-        static Atmega324PBSerial0 _serial0;
-        return &_serial0;
+    static Atmega324PBSerial1* getInstance() {
+        static Atmega324PBSerial1 _serial1;
+        return &_serial1;
     }
+
+    void setCallback( SerialRecievedCharacter* callback );
 
     /* Task method overrides.
     */
@@ -70,9 +78,12 @@ public:
     uint8_t printAsync(const char* message);
     uint8_t printAsync_P(const char* message);
 
+    bool isCharacterReceieved();
+    char readCharacter();
+
     /* Check wheter the serial port is busy.
     */
-    uint8_t isBusy();
+   uint8_t isBusy();
 
     /* Transmits one character over the serial port.
     */

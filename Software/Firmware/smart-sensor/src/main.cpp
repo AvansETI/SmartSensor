@@ -9,7 +9,7 @@
  * @todo       : Implement the avr functions directly in stead of abstracting it like Ardiuno.
  * @changes    :
  * 10-09-2021: MS: Updating the code to a mature version.
- * 23-11-2021: MS: Create a first worksing first version. 
+ * 23-11-2021: MS: Create a first working first version. 
  */
 #define FOSC 20000000 // Clock Speed
 
@@ -36,6 +36,8 @@ int main() {
     board->debug_P(PSTR("Firmware: "));
     board->debug_P(FIRMWARE_VERSION);
     board->debug_P(PSTR("\n"));
+
+    DDRA = 0x00;
 
     while (true) {
         wdt_reset();

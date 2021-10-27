@@ -21,6 +21,7 @@ uint8_t SHTC3Driver::setup() {
     }
 
     this->samplingInterval = 10;//60*5; // five minutes
+    this->samplingTimestamp = 0;
 
     return 0;
 }
@@ -31,11 +32,16 @@ bool SHTC3Driver::isConnected() {
 }
 
 uint8_t SHTC3Driver::loop(uint32_t millis) {
+    if ( this->samplingTimestamp == 0 ) {
+        this->samplingTimestamp = millis/1000;
+    }
+
     if ( this->waitingOnI2C ) { // Last time the sample could not be processed.
         this->sample();
     }
 
-    if ( millis % (this->samplingInterval*1000) == 0 ) { // BUG: Werkt toch niet altijd lekker, want soms komt ie er niet.
+    if ( (millis/1000) - this->samplingTimestamp > this->samplingInterval ) {
+        this->samplingTimestamp = millis/1000;
         this->sample(); // Start the sampling process using callbacks when the measurement is ready!
     }
 
@@ -119,10 +125,16 @@ void SHTC3Driver::i2cReadEvent(uint8_t data, uint8_t index) {
     if ( index == 5 ) { // last one!
         char m[30];
 
-        sprintf_P(m, PSTR("humidity:%.1f"), (double)this->getHumidity());
+        //sprintf_P(m, PSTR("humidity:%.1f"), (double)this->getHumidity());
+        //this->getMeasurementCallback()->addMeasurement(m);
+        
+        //sprintf_P(m, PSTR("temperature:%.1f"), (double)this->getTemperature());
+        //this->getMeasurementCallback()->addMeasurement(m);
+
+        sprintf_P(m, PSTR("mh:%.1f"), (double)this->getHumidity());
         this->getMeasurementCallback()->addMeasurement(m);
         
-        sprintf_P(m, PSTR("temperature:%.1f"), (double)this->getTemperature());
+        sprintf_P(m, PSTR("mt:%.1f"), (double)this->getTemperature());
         this->getMeasurementCallback()->addMeasurement(m);
     }
 }

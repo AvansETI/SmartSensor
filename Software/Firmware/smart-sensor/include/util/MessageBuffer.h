@@ -5,23 +5,25 @@
  * @date       : 24-10-2021
  * @author     : Maurice Snoeren (MS)
  * @version    : 1.0
- * @todo       : 
+ * @todo       : This can become much smaller when temperature is set to t for example.
  * @changes
  *  24-10-2021: Made total chars smaller, 30 is not required. Example: temperature:23.4 is 16 characters big.
  *              Having at this moment 4 measurements (light, CO2, temp and hum) this is doubled and not 10.
+ *              Trying now to have small data like measurement temperature => mt:23.8 or error watchdog ew:1
  */
 
-#define MESSAGE_TOTAL_CHARS 20
+#define MESSAGE_TOTAL_CHARS 10
 #define MESSAGE_TOTAL 8
 
 #include <stdint.h>
 
 #include <avr/pgmspace.h>
 
-/* Interface */
+/* Interface (does not really belong in here :S) */
 class SmartSensorMeasurement {
 public:
     virtual void addMeasurement(const char* measurement) = 0;
+    virtual void addMessage(const char* measurement) = 0;
 };
 
 struct Measurement {

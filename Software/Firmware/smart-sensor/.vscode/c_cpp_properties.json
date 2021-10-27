@@ -10,10 +10,6 @@
             "includePath": [
                 "d:/Projects/SmartSensor/Software/Firmware/smart-sensor/include",
                 "d:/Projects/SmartSensor/Software/Firmware/smart-sensor/src",
-                "d:/Projects/SmartSensor/Software/Firmware/smart-sensor/lib/board-support/include",
-                "d:/Projects/SmartSensor/Software/Firmware/smart-sensor/lib/board-support/src",
-                "d:/Projects/SmartSensor/Software/Firmware/smart-sensor/.pio/libdeps/R11_SmartSensor/FreeRTOS/include",
-                "d:/Projects/SmartSensor/Software/Firmware/smart-sensor/.pio/libdeps/R11_SmartSensor/FreeRTOS/src",
                 "C:/Users/macsnoer/.platformio/packages/tool-unity",
                 ""
             ],
@@ -22,21 +18,15 @@
                 "path": [
                     "d:/Projects/SmartSensor/Software/Firmware/smart-sensor/include",
                     "d:/Projects/SmartSensor/Software/Firmware/smart-sensor/src",
-                    "d:/Projects/SmartSensor/Software/Firmware/smart-sensor/lib/board-support/include",
-                    "d:/Projects/SmartSensor/Software/Firmware/smart-sensor/lib/board-support/src",
-                    "d:/Projects/SmartSensor/Software/Firmware/smart-sensor/.pio/libdeps/R11_SmartSensor/FreeRTOS/include",
-                    "d:/Projects/SmartSensor/Software/Firmware/smart-sensor/.pio/libdeps/R11_SmartSensor/FreeRTOS/src",
                     "C:/Users/macsnoer/.platformio/packages/tool-unity",
                     ""
                 ]
             },
             "defines": [
                 "F_CPU=20000000L",
-                "PLATFORMIO=50201",
+                "PLATFORMIO=50202",
                 "ARDUINO_AVR_ATmega324",
-                "BOARD_REVISION_11",
-                "LOGGER_LEVEL=3",
-                "DEBUG_LOG",
+                "SMARTSENSOR_BOARD_1_2",
                 "__AVR_ATmega324PB__",
                 ""
             ],

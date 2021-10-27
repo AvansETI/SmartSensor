@@ -22,24 +22,31 @@ void SmartSensorBoardV1_2::setup() {
     this->serial0 = Atmega324PBSerial0::getInstance();
     this->addTask(this->serial0, PSTR("Serial0"));
 
+    this->serial1 = Atmega324PBSerial1::getInstance();
+    this->addTask(this->serial1, PSTR("Serial1"));
+
     this->i2c0 = Atmega324PBI2C0::getInstance();
     this->addTask(this->i2c0, PSTR("I2C0"));
 
     this->ledDriver      = LedDriver::getInstance();
-    this->addTask(this->ledDriver,      PSTR("LedDriver"));
+    this->addTask(this->ledDriver, PSTR("LedDriver"));
 
     this->shtc3Driver    = SHTC3Driver::getInstance(this);
-    this->addTask(this->shtc3Driver,    PSTR("SHTC3Driver"));
+    this->addTask(this->shtc3Driver, PSTR("SHTC3Driver"));
 
     this->mcp7940nDriver = MCP7940NDriver::getInstance(this);
     this->addTask(this->mcp7940nDriver, PSTR("MCP7940NDriver"));
 
+    this->xbeeProS2CDriver = XBeeProS2C::getInstance();
+    this->addTask(this->xbeeProS2CDriver, PSTR("XbeeProS2CDriver"));
+
     SmartSensorBoard::setup(); // Base class setup() when everything is loaded.
 
+    this->debug_P(PSTR("Adapter: "));
     if ( this->adapterInUse() ) {
-        this->debug_P(PSTR("Adapter is in use.\n"));
+         this->debug_P(PSTR("Yes\n"));
     } else {
-        this->debug_P(PSTR("Adapter is not in use.\n"));
+        this->debug_P(PSTR("No\n"));
     }
 
     this->debugf_P(PSTR("ID: %s\n"), this->getID());
@@ -77,6 +84,11 @@ void SmartSensorBoardV1_2::debug_P( const char* message) {
 void SmartSensorBoardV1_2::addMeasurement(const char* measurement) {
     this->debugf_P(PSTR("Measurement: %s\n"), measurement);
     this->buffer.addMeasurement(measurement);
+}
+
+// TODO:!
+void SmartSensorBoardV1_2::addMessage(const char* message) {
+    this->debugf_P(PSTR("Message: %s\n"), message);
 }
 
 const char* SmartSensorBoardV1_2::getID() {

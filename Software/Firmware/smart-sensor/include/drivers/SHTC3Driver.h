@@ -47,6 +47,9 @@ private:
     /* Set the sampling interval of the sensor in seconds. */
     uint16_t samplingInterval;
 
+    /* Hold the timestamp in seconds where we have started the sampling. */
+    uint16_t samplingTimestamp;
+
     /* When the sampling could not occur due to a busy I2C bus, this flag becomes true. */
     bool waitingOnI2C; 
 

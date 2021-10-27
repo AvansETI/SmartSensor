@@ -100,6 +100,11 @@ public:
      */
     virtual void addMeasurement(const char* measurment) = 0;
 
+    /* Interface: SmartSensorMeasurement
+     * Callback to provide measurement data from the sensors.
+     */
+    virtual void addMessage(const char* measurement) = 0;
+
     /* Returns the pointer to the char id of the SmartSensor. */
     virtual const char* getID() { return this->id; };
 

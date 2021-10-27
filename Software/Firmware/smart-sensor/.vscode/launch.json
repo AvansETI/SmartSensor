@@ -29,6 +29,16 @@
             "projectEnvName": "SmartSensor_V1_2",
             "toolchainBinDir": "C:/Users/macsnoer/.platformio/packages/toolchain-atmelavr/bin",
             "internalConsoleOptions": "openOnSessionStart"
+        },
+        {
+            "type": "platformio-debug",
+            "request": "launch",
+            "name": "PIO Debug (without uploading)",
+            "executable": "d:/Projects/SmartSensor/Software/Firmware/smart-sensor/.pio/build/SmartSensor_V1_2/firmware.elf",
+            "projectEnvName": "SmartSensor_V1_2",
+            "toolchainBinDir": "C:/Users/macsnoer/.platformio/packages/toolchain-atmelavr/bin",
+            "internalConsoleOptions": "openOnSessionStart",
+            "loadMode": "manual"
         }
     ]
 }

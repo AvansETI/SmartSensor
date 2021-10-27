@@ -28,11 +28,11 @@ SmartSensorBoard* SmartSensorBoard::getBoard() {
 }
 
 void SmartSensorBoard::addTask(ITask *task, const char* taskName) {
-    this->debug_P(PSTR("Adding task: "));
-    this->debug_P(taskName);
-
     if ( this->totalDrivers < SMARTSENSOR_MAX_TASKS) {
         uint8_t result = task->setup();
+
+        this->debug_P(PSTR("Adding task: "));
+        this->debug_P(taskName);
 
         if ( result == 0 ) {
             this->drivers[this->totalDrivers] = task;
@@ -44,6 +44,8 @@ void SmartSensorBoard::addTask(ITask *task, const char* taskName) {
         }
     
     } else {
+        this->debug_P(PSTR("Adding task: "));
+        this->debug_P(taskName);
         this->debugf_P(PSTR(": Max drivers reached\n"), taskName);
     }
 }
@@ -64,7 +66,7 @@ void SmartSensorBoard::loop() {
     }
 
     this->loopTime = ( (SMARTSENSOR_RUNNING_AVERAGE_LOOP_TIME-1)*this->loopTime + (this->millis() - this->loopTimstamp) )/SMARTSENSOR_RUNNING_AVERAGE_LOOP_TIME; // Running average of 10 loops
-    this->debugf_P(PSTR("Loop time %d ms\n"), this->loopTime); // Show the actual loop timing in the serial
+    //this->debugf_P(PSTR("Loop time %d ms\n"), this->loopTime); // Show the actual loop timing in the serial
     this->loopTimstamp = this->millis();
 }
 
@@ -81,10 +83,11 @@ void SmartSensorBoard::rtcReadTimestampEvent(RTCTime& time, RTCEventMode mode) {
         this->debugf("Popped: %s\n", m);
     }
     this->debugf("loopTime: %dms\n", this->loopTime);
-    time.getIso8601String(m);
-    this->debugf("%s\n", m);
-}
 
+    char mm[30];
+    time.getIso8601String(mm);
+    this->debugf("%s\n", mm);
+}
 
 // Documentation: http://www.cplusplus.com/reference/cstdio/vsprintf/
 void SmartSensorBoard::debugf( const char* message, ...) { // TODO: Maybe move these functions to Serial0 (think of it)?
