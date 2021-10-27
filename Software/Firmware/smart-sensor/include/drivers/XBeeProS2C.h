@@ -24,12 +24,15 @@
 #define XBEEPROS2C_SLEEP_PORT PORTB
 
 #define XBEEPROS2C_RECIEVE_BUFFER_AMOUNT 50
+#define XBEEPROS2C_TIMEOUT_TIME_S 2000
 
 enum XBeeProS2CStateReciever {
     IDLE, // Nothing todo...
     BUSY, // Started recieving something
     PROCESSING // Processing the recieved data
 };
+
+#define XBEEPROS2C_STATE_NOTFOUND 200
 
 /* The class LedDriver handles the two leds that are on the board. */
 class XBeeProS2C: public Driver, public SerialRecievedCharacter {
@@ -40,9 +43,13 @@ private:
     uint8_t recieveBufferPointer;
     char recieveBuffer[XBEEPROS2C_RECIEVE_BUFFER_AMOUNT];
 
+    bool isCoordinator;
+
+    uint32_t timestamp;
+
 protected:
     /* Protected constructor in order to create a singleton class. */
-    XBeeProS2C(): state(0), stateReciever(XBeeProS2CStateReciever::IDLE), recieveBufferPointer(0) {}
+    XBeeProS2C(): state(0), stateReciever(XBeeProS2CStateReciever::IDLE), recieveBufferPointer(0), isCoordinator(false), timestamp(0) {}
 
 public:
     /* Returns the singleton instance to this class. */
@@ -64,13 +71,15 @@ public:
      */
     void recievedCharacter(char c);
 
-/*
+    void enableCoordinator(); 
+
     void atStart();
     void atGetPanId();
     void atGetCoordinatorEnable();
     void atGetSerialNumberHigh();
     void atGetSerialNumberLow();
-  */  
+
+    bool isInstalled() { return (this->state != XBEEPROS2C_STATE_NOTFOUND); }
 
     void test();
 

@@ -38,6 +38,7 @@ void SmartSensorBoardV1_2::setup() {
     this->addTask(this->mcp7940nDriver, PSTR("MCP7940NDriver"));
 
     this->xbeeProS2CDriver = XBeeProS2C::getInstance();
+    this->xbeeProS2CDriver->enableCoordinator(); // TODO: Must be switched on when adapter is in use and wemos is connected. Print it to the serial
     this->addTask(this->xbeeProS2CDriver, PSTR("XbeeProS2CDriver"));
 
     SmartSensorBoard::setup(); // Base class setup() when everything is loaded.
@@ -67,6 +68,11 @@ void SmartSensorBoardV1_2::setup() {
 
 bool SmartSensorBoardV1_2::adapterInUse() {
     return ( ( BOARDV1_2_ADAPTER_IN_USE_PORT & (1 << BOARDV1_2_ADAPTER_IN_USE_PIN) ) != 0 );
+}
+
+// TODO: When the 
+bool SmartSensorBoardV1_2::isGateway() {
+    return false;
 }
 
 uint32_t SmartSensorBoardV1_2::millis() {

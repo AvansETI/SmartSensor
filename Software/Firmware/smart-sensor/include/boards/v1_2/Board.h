@@ -69,6 +69,9 @@ public:
 
     bool adapterInUse();
 
+    /* Returns true when this board is connected to a gateway. */
+    bool isGateway();
+
     void debug( const char* message);
     void debug_P( const char* message);
 

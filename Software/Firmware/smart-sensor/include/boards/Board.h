@@ -87,6 +87,9 @@ public:
     /* When true an adapter has been inserted. */
     virtual bool adapterInUse() = 0;
 
+    /* Returns true when this board is connected to a gateway. */
+    virtual bool isGateway() = 0;
+
     /* These methods print messages to the serial port. */
     virtual void debug( const char* message) = 0;
     virtual void debugf( const char* message, ...);
