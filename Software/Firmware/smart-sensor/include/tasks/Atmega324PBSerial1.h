@@ -19,7 +19,8 @@
 
 /* Set the BAUD rate of the serial communicatio port.
 */
-#define SERIAL1_BAUD 9600
+//#define SERIAL1_BAUD 9600
+#define SERIAL1_BAUD 115200
 
 /* Calculate the UBRR to set it to the correct BAUD rate. */
 #define SERIAL1_UBRR F_CPU/16/SERIAL1_BAUD-1

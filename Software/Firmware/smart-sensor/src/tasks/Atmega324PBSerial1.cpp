@@ -32,13 +32,17 @@ void Atmega324PBSerial1::setCallback( SerialRecievedCharacter* callback ) {
 }
 
 uint8_t Atmega324PBSerial1::setup() {
+    //#define FOSC 1843200 // Clock Speed
+    //#define BAUD 9600
+    //#define MYUBRR FOSC/16/BAUD-1
+
     uint32_t baudrate = 9600;
-    uint16_t ubrr = ((F_CPU -((baudrate) * 8L)) / ((baudrate) * 16UL));
+    uint32_t ubrr = 20000000 / 16 / 9600-1;//((20000000 -((baudrate) * 8L)) / ((baudrate) * 16UL));
 
     UBRR1H = (unsigned char) (ubrr >> 8); // Configuration of the baudrate
     UBRR1L = (unsigned char) ubrr;
     UCSR1A = 0x00;
-    UCSR1B = (1<<RXEN)|(1<<TXEN)|(1<<RXCIE); // Enable TX and RX and recieve interrupt
+    UCSR1B = (1<<RXEN)|(1<<TXEN);//|(1<<RXCIE); // Enable TX and RX and recieve interrupt
     UCSR1C = (1<<UCPOL)|(1<<UCSZ0)|(1<<UCSZ1); // 8 data and 1 stop
 
     return 0;

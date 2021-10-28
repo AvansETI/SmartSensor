@@ -11,7 +11,8 @@
  * 10-09-2021: MS: Updating the code to a mature version.
  * 23-11-2021: MS: Create a first working first version. 
  */
-#define FOSC 20000000 // Clock Speed
+#define FOSC 20'000'000 // Clock Speed
+#define F_CPU 20'000'000 // Clock Speed
 
 #include <avr/wdt.h>
 #include <avr/pgmspace.h>
