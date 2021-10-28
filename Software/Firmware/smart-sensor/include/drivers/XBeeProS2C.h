@@ -32,8 +32,6 @@ enum XBeeProS2CStateReciever {
     BUSY, // Started recieving something that is not an API request.
     BUSY_API_LENGTH_H, // Busy with processing an API message length
     BUSY_API_LENGTH_L, // Busy with processing an API message length
-    BUSY_API_API_ID,
-    BUSY_API_FRAME_ID,
     BUSY_API_DATA,
     PROCESSING_API,
     PROCESSING // Processing the recieved data
@@ -55,11 +53,8 @@ private:
     uint32_t timestamp;
 
     uint16_t apiLength;
-    uint8_t apiId;
-    uint8_t apiFrameId;
-    uint8_t apiChecksum;
-    uint16_t apiChecksumCalculated;
-
+    uint16_t counter;
+    
 protected:
     /* Protected constructor in order to create a singleton class. */
     XBeeProS2C(): state(0), stateReciever(XBeeProS2CStateReciever::IDLE), recieveBufferPointer(0), isCoordinator(false), timestamp(0) {}

@@ -15,16 +15,54 @@
 
 static SerialRecievedCharacter* cbAtmega324PBSerial1 = NULL;
 
+static char buffer[50];
+static uint16_t length;
+static uint8_t state = 0;
+static uint16_t counter = 0;
+
 /* When a character is received on the serial bus, this interrupt is called. */
 ISR(USART1_RX_vect) {
-    Atmega324PBSerial0* s = Atmega324PBSerial0::getInstance();
-    
-    if ( cbAtmega324PBSerial1 != NULL ) {
-        cbAtmega324PBSerial1->recievedCharacter(UDR1);
+    char c = UDR1;
+/*
+    switch (state) {
+    case 1:// length H
+        length = c << 8;
+        state = 2;
+        break;
+    case 2: // length L
+        length = length | c;
+        counter = 0;
+        state = 3;
+        break;
+    case 3: // data!
+        if ( length == counter ) { // ready
+            buffer[counter] = c;
+            state = 0;
+            for (uint8_t i=0; i <= length; i++ ) {
+                uint8_t h2 = (buffer[i] & 0b11110000) >>4;
+                uint8_t h1 = buffer[i] & 0b00001111;
+                Atmega324PBSerial0::getInstance()->transmitChar((h2 < 10 ? h2+'0' : h2-10+'A'));
+                Atmega324PBSerial0::getInstance()->transmitChar((h1 < 10 ? h1+'0' : h1-10+'A'));
+                Atmega324PBSerial0::getInstance()->transmitChar(' ');
 
-    } else {
-        char c = UDR1; // empty the buffer, no one wants it!
+            }
+            Atmega324PBSerial0::getInstance()->transmitChar('\n');
+
+        } else { // read frame
+            buffer[counter] = c;
+            counter++;
+        }
+        break;
     }
+
+    if ( state == 0 && c == 0x7E ) {
+        state = 1;
+
+    } else {*/
+        if ( cbAtmega324PBSerial1 != NULL ) {
+            cbAtmega324PBSerial1->recievedCharacter(c);
+        }
+    //}
 }
 
 void Atmega324PBSerial1::setCallback( SerialRecievedCharacter* callback ) {
@@ -42,7 +80,7 @@ uint8_t Atmega324PBSerial1::setup() {
     UBRR1H = (unsigned char) (ubrr >> 8); // Configuration of the baudrate
     UBRR1L = (unsigned char) ubrr;
     UCSR1A = 0x00;
-    UCSR1B = (1<<RXEN)|(1<<TXEN);//|(1<<RXCIE); // Enable TX and RX and recieve interrupt
+    UCSR1B = (1<<RXEN)|(1<<TXEN)|(1<<RXCIE); // Enable TX and RX and recieve interrupt
     UCSR1C = (1<<UCPOL)|(1<<UCSZ0)|(1<<UCSZ1); // 8 data and 1 stop
 
     return 0;
