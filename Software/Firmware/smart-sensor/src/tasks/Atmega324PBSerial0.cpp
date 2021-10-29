@@ -11,8 +11,11 @@
 #include <avr/pgmspace.h>
 
 uint8_t Atmega324PBSerial0::setup() {
+    //uint32_t baudrate = 9600;
+    //uint16_t ubrr = ((F_CPU -((baudrate) * 8L)) / ((baudrate) * 16UL));
+
     uint32_t baudrate = 9600;
-    uint16_t ubrr = ((F_CPU -((baudrate) * 8L)) / ((baudrate) * 16UL));
+    uint32_t ubrr = 20000000 / 16 / 9600-1;//((20000000 -((baudrate) * 8L)) / ((baudrate) * 16UL));
 
     UBRR0H = (unsigned char) (ubrr >> 8); // Configuration of the baudrate
     UBRR0L = (unsigned char) ubrr;

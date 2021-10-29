@@ -245,7 +245,6 @@ uint8_t XBeeProS2C::loop(uint32_t millis) {
             this->state++;
         }
         break;
-
     
     case 32:
         Atmega324PBSerial1::getInstance()->printAsync_P(PSTR("ATCN\r")); // Exit command mode
@@ -293,14 +292,33 @@ uint8_t XBeeProS2C::loop(uint32_t millis) {
             }
 
             if ( this->stateReciever == XBeeProS2CStateReciever::PROCESSING_API ) {
-                for (uint8_t i=0; i <= this->apiLength; i++ ) {
-                    uint8_t h2 = (this->recieveBuffer[i] & 0b11110000) >>4;
-                    uint8_t h1 = this->recieveBuffer[i] & 0b00001111;
-                    Atmega324PBSerial0::getInstance()->transmitChar((h2 < 10 ? h2+'0' : h2-10+'A'));
-                    Atmega324PBSerial0::getInstance()->transmitChar((h1 < 10 ? h1+'0' : h1-10+'A'));
-                    Atmega324PBSerial0::getInstance()->transmitChar(' ');
+                char m[50] = "_GMT:                    :";
+                if ( (uint8_t) this->recieveBuffer[0] == 0x90 ) { // Recieve packet
+                    for (uint8_t i=0; i < 10; i++ ) { // Get address 64+16 bit
+                        uint8_t h2 = (this->recieveBuffer[i+1] & 0b11110000) >>4;
+                        uint8_t h1 = this->recieveBuffer[i+1] & 0b00001111;
+                        m[5+i*2] = (h2 < 10 ? h2+'0' : h2-10+'A');
+                        m[6+i*2] = (h1 < 10 ? h1+'0' : h1-10+'A');
+                    }
+
+                    for (uint8_t i=12; i < this->apiLength; i++ ) { // Get the Message
+                        m[26+i-12] = this->recieveBuffer[i];
+                    }
+
+                    Atmega324PBSerial0::getInstance()->print(m);
+                    Atmega324PBSerial0::getInstance()->print("\n");
+                    
+                } else { // Print the packet
+                    for (uint8_t i=0; i <= this->apiLength; i++ ) {
+                        uint8_t h2 = (this->recieveBuffer[i] & 0b11110000) >> 4;
+                        uint8_t h1 = this->recieveBuffer[i] & 0b00001111;
+                        Atmega324PBSerial0::getInstance()->transmitChar((h2 < 10 ? h2+'0' : h2-10+'A'));
+                        Atmega324PBSerial0::getInstance()->transmitChar((h1 < 10 ? h1+'0' : h1-10+'A'));
+                        Atmega324PBSerial0::getInstance()->transmitChar(' ');
+                    }
+                    Atmega324PBSerial0::getInstance()->transmitChar('\n');
                 }
-                Atmega324PBSerial0::getInstance()->transmitChar('\n');
+
                 this->stateReciever = XBeeProS2CStateReciever::IDLE;
             }
         }
