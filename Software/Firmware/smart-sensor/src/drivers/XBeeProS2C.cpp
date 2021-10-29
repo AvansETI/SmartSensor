@@ -293,7 +293,7 @@ uint8_t XBeeProS2C::loop(uint32_t millis) {
 
             if ( this->stateReciever == XBeeProS2CStateReciever::PROCESSING_API ) {
                 char m[50] = "_GMT:                    :";
-                if ( (uint8_t) this->recieveBuffer[0] == 0x90 ) { // Recieve packet
+                if ( (uint8_t) this->recieveBuffer[0] == 0x90 ) { // Recieve packet, check the checksum!!
                     for (uint8_t i=0; i < 10; i++ ) { // Get address 64+16 bit
                         uint8_t h2 = (this->recieveBuffer[i+1] & 0b11110000) >>4;
                         uint8_t h1 = this->recieveBuffer[i+1] & 0b00001111;
@@ -304,9 +304,14 @@ uint8_t XBeeProS2C::loop(uint32_t millis) {
                     for (uint8_t i=12; i < this->apiLength; i++ ) { // Get the Message
                         m[26+i-12] = this->recieveBuffer[i];
                     }
+                    m[26+this->apiLength-12] = '\n';
 
-                    Atmega324PBSerial0::getInstance()->print(m);
-                    Atmega324PBSerial0::getInstance()->print("\n");
+                    //Atmega324PBSerial0::getInstance()->print(m);
+                    //Atmega324PBSerial0::getInstance()->print("\n");
+                    if ( Atmega324PBSerial0::getInstance()->isBusy() ) {
+                        Atmega324PBSerial0::getInstance()->print("HELP: You should create a buffer here!!");
+                    }
+                    Atmega324PBSerial0::getInstance()->printAsync(m);
                     
                 } else { // Print the packet
                     for (uint8_t i=0; i <= this->apiLength; i++ ) {

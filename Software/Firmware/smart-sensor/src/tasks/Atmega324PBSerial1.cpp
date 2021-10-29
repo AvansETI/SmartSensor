@@ -15,10 +15,10 @@
 
 static SerialRecievedCharacter* cbAtmega324PBSerial1 = NULL;
 
-static char buffer[50];
-static uint16_t length;
-static uint8_t state = 0;
-static uint16_t counter = 0;
+//static char buffer[50];
+//static uint16_t length;
+//static uint8_t state = 0;
+//static uint16_t counter = 0;
 
 /* When a character is received on the serial bus, this interrupt is called. */
 ISR(USART1_RX_vect) {

@@ -33,7 +33,7 @@ private:
     uint8_t busy;
 
     /* The buffer that is used to copy the message to and send on the serial port. */
-    char buffer[30];
+    char buffer[50];
 
     /* The pointer points to the position of the character that needs to be send. */
     uint8_t pointer;
