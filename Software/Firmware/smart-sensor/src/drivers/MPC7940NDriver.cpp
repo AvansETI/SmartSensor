@@ -106,7 +106,7 @@ void MCP7940NDriver::i2cReadEvent(uint8_t data, uint8_t index) {
         RTCTime rtcTime(this->data);
         char m[30];
         rtcTime.getIso8601String(m);
-        board->debugf_P(PSTR("TIME LOOP: %s\n"), m);
+        //board->debugf_P(PSTR("TIME LOOP: %s\n"), m);
         this->rtcEvent->rtcReadTimestampEvent(rtcTime, RTCEventMode::TIME);
     }
 }

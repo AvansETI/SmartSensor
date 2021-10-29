@@ -61,8 +61,12 @@ void SmartSensorBoardV1_2::setup() {
     _delay_ms(100);
     this->ledDriver->led1Off();
 
-    this->ledDriver->led1Flash(5'000, 100);
-    
+    if ( this->isGateway() ) {
+        this->ledDriver->led1Flash(5'000, 2'500);
+    } else {
+        this->ledDriver->led1Flash(5'000, 100);
+    }
+
     sei(); // Enable the interrupts!
 }
 
@@ -87,14 +91,9 @@ void SmartSensorBoardV1_2::debug_P( const char* message) {
     this->serial0->print_P(message);
 }
 
-void SmartSensorBoardV1_2::addMeasurement(const char* measurement) {
-    this->debugf_P(PSTR("Measurement: %s\n"), measurement);
-    this->buffer.addMeasurement(measurement);
-}
-
 // TODO:!
 void SmartSensorBoardV1_2::addMessage(const char* message) {
-    this->debugf_P(PSTR("Message: %s\n"), message);
+    //this->debugf_P(PSTR("Message: %s\n"), message);
 }
 
 const char* SmartSensorBoardV1_2::getID() {

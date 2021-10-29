@@ -75,7 +75,6 @@ public:
     void debug( const char* message);
     void debug_P( const char* message);
 
-    void addMeasurement(const char* measurement);
     void addMessage(const char* measurement);
 
     void getActualTimestamp();

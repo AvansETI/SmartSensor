@@ -80,13 +80,13 @@ void SmartSensorBoard::rtcReadTimestampEvent(RTCTime& time, RTCEventMode mode) {
     //this->debugf("Buffer size: %d (overflow:%d)\n", this->buffer.getSize(), this->buffer.getBufferOverflow());
     char m[MESSAGE_TOTAL_CHARS];
     while ( this->buffer.popMeasurement(m) ) {
-        this->debugf("Popped: %s\n", m);
+        //this->debugf("Popped: %s\n", m);
     }
-    this->debugf("loopTime: %dms\n", this->loopTime);
+    //this->debugf("loopTime: %dms\n", this->loopTime);
 
     char mm[30];
     time.getIso8601String(mm);
-    this->debugf("%s\n", mm);
+    //this->debugf("%s\n", mm);
 
     // Note that if this is a gate wat 
 }
@@ -118,4 +118,8 @@ bool SmartSensorBoard::resetCauseWatchdog() {
 
 bool SmartSensorBoard::resetCauseExternalReset() {
     return (this->resetCause & ( 1 << EXTRF )) != 0;
+}
+
+void SmartSensorBoard::addMeasurement(const char* measurement) {
+    this->buffer.addMeasurement(measurement);
 }

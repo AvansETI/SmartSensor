@@ -90,7 +90,7 @@ uint8_t XBeeProS2C::loop(uint32_t millis) {
         } else { // Not processing yet!
             if ( millis - this->timestamp > XBEEPROS2C_TIMEOUT_TIME_S ) { 
                 SmartSensorBoard::getBoard()->debug_P(PSTR("XBeeProS2C: Not found\n"));
-                this->state = XBEEPROS2C_STATE_NOTFOUND;
+                this->state = XBEEPROS2C_STATE_NOTFOUND; // Misschien een aantal keer proberen ipv één keer?
             }
         }
         break;

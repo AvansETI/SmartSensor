@@ -101,7 +101,7 @@ public:
     /* Interface: SmartSensorMeasurement
      * Callback to provide measurement data from the sensors.
      */
-    virtual void addMeasurement(const char* measurment) = 0;
+    virtual void addMeasurement(const char* measurment);
 
     /* Interface: SmartSensorMeasurement
      * Callback to provide measurement data from the sensors.
