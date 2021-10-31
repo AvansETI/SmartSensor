@@ -1,5 +1,6 @@
 # Soldering SmartSensor v1.2
 _Author: Maurice Snoeren_
+
 This tutorial describes all the steps that you need to take to get to a working SmartSensor; or how we call it "SmartNode". 
 
 ## Step 1: What do you need
