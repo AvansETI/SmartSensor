@@ -155,7 +155,7 @@ int main(void) {
 					}
 					
 				}
-            asm("jmp 0");
+            asm("JMP 0x0000");
         }
         
 		

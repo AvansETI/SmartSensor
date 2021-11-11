@@ -26,16 +26,8 @@ int main() {
     board->debug_P(PSTR("Firmware: "));
     board->debug_P(FIRMWARE_VERSION);
     board->debug_P(PSTR("\n"));
-
-    int loopno = 0;
  
     while (true) {
         board->loop();
-        loopno++;
-        if (loopno = 50)
-        {
-            //put here jump to bootloader
-        }
-        
     }
 }
