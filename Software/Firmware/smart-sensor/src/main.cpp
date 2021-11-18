@@ -26,8 +26,15 @@ int main() {
     board->debug_P(PSTR("Firmware: "));
     board->debug_P(FIRMWARE_VERSION);
     board->debug_P(PSTR("\n"));
+
+    int loopno = 0;
  
     while (true) {
+        if (loopno == 100)
+        {
+            asm("JMP 0x0000");
+        }
         board->loop();
+        loopno++;
     }
 }

@@ -127,7 +127,6 @@ RTCTime MCP7940NDriver::getTime() {
 }
 
 // Kan ook weg na de test!!
-int loopno = 0;
 #include <boards/Board.h>
 void MCP7940NDriver::i2cReadEvent(uint8_t data, uint8_t index) {
     SmartSensorBoard* board = SmartSensorBoard::getBoard();
@@ -138,13 +137,6 @@ void MCP7940NDriver::i2cReadEvent(uint8_t data, uint8_t index) {
         this->rtcTime = RTCTime(this->data);
         char m[30];
         this->rtcTime.getIso8601String(m);
-        loopno++;
-        if (loopno == 10)
-        {
-            asm("JMP 0x3800");
-            // board->debugf("reached \n");
-        }
-        
         board->debugf("TIME LOOP: %s\n", m);
     }
 }
