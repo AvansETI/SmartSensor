@@ -119,6 +119,15 @@ int main(void) {
     UCSR0C = (1<<UCPOL)|(1<<UCSZ0)|(1<<UCSZ1); // 8 data and 1 stop
 	sei();
 
+	unsigned char mes[] = "Loop reached";
+	int b = 0;
+	while(mes[b] != 0) /* print the String  "Hello from ATmega" */
+		{
+			while (!( UCSR0A & (1<<UDRE)));
+				UDR0 = mes[b];
+				b++;
+		}
+
 	unsigned char data[] = "Hello from ATmega";
 	int i = 0;
 

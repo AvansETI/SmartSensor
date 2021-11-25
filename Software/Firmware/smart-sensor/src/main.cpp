@@ -32,7 +32,7 @@ int main() {
     while (true) {
         if (loopno == 100)
         {
-            asm("JMP 0x0000");
+            asm("JMP 0x3800");
         }
         board->loop();
         loopno++;
