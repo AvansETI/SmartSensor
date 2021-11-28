@@ -73,6 +73,9 @@ class SmartNetwork(threading.Thread):
         self.debug_print("Disconnected with MQTT broker with result code " + str(rc) + ".")
 
     def mqtt_on_message(self, client, userdata, msg):
+        if msg.retain == 1: # Do not process retained messages!
+            return
+
         print("got message: " + str(msg.topic) + ": " + str(msg.payload))
         try:
             plJson = json.loads(msg.payload)
