@@ -64,10 +64,21 @@ class SmartNetwork(threading.Thread):
         self.mqtt.subscribe("node/data", qos=0)
         self.mqtt.subscribe("node/info", qos=0)
 
-        self.mqtt.loop_start() # Start the loop thread of MQTT
+        #self.mqtt.loop_start() # Start the loop thread of MQTT, this also handles re-connections!
+        self.mqtt.loop_forever() # Start the loop thread of MQTT, this also handles re-connections!
+        
 
     def mqtt_on_connect(self, client, userdata, flags, rc):
-        self.debug_print("Connected with MQTT broker with result code " + str(rc) + ".")
+        """0: Connection successful
+           1: Connection refused – incorrect protocol version
+           2: Connection refused – invalid client identifier
+           3: Connection refused – server unavailable
+           4: Connection refused – bad username or password
+           5: Connection refused – not authorised"""
+        if rc == 0:
+            self.debug_print("Connected with MQTT broker with result code " + str(rc) + ".")
+        else:
+            self.debug_print("Not connected with MQTT broker with result code " + str(rc) + ".")
 
     def mqtt_on_disconnect(self, client, userdata, rc):
         self.debug_print("Disconnected with MQTT broker with result code " + str(rc) + ".")
