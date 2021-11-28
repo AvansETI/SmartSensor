@@ -118,6 +118,9 @@ def on_disconnect(client, userdata, rc):
 
 # The callback for when a PUBLISH message is received from the server.
 def on_message(client, userdata, msg):
+    if msg.retain == 1: # Do not process retained messages!
+        return
+
     if ( msg.topic == "smartmeter/data" ):
         try:
             data = json.loads(msg.payload)
