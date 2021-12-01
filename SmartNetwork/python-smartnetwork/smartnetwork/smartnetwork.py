@@ -92,7 +92,7 @@ class SmartNetwork(threading.Thread):
             print(str(e))
             return
             
-    def alert(level, type, id, message):
+    def alert(self, level, type, id, message):
         point = Point("alerts").tag("id", id).tag("level", level).tag("type", type)
         point.field("message", message)
         point.time(datetime.now(), WritePrecision.NS)
