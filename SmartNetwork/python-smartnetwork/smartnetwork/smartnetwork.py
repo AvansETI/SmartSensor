@@ -58,7 +58,8 @@ class SmartNetwork(threading.Thread):
         self.mqtt.on_message    = lambda client, userdata, msg:       self.mqtt_on_message(client, userdata, msg)
 
         self.mqtt.username_pw_set("server", password="servernode")
-        self.mqtt.connect("sendlab.nl", 11884, 60)
+#        self.mqtt.connect("sendlab.nl", 11884, 60) # Make this configable!
+        self.mqtt.connect("10.0.0.31", 1884, 60)
 
         self.mqtt.subscribe("node/init", qos=0)
         self.mqtt.subscribe("node/data", qos=0)
@@ -95,7 +96,7 @@ class SmartNetwork(threading.Thread):
             print(str(e))
             return
             
-    def alert(level, type, id, message):
+    def alert(self, level, type, id, message):
         point = Point("alerts").tag("id", id).tag("level", level).tag("type", type)
         point.field("message", message)
         point.time(datetime.now(), WritePrecision.NS)
