@@ -16,6 +16,7 @@
 char offbuffer[2];
 char hexbuffer[2];
 bool jumpcommand = false;
+bool fileget = false;
 
 /* When a character is received on the serial bus, this interrupt is called. */
 ISR(USART0_RX_vect) {
@@ -73,6 +74,8 @@ ISR(USART0_RX_vect) {
 				
 				hexbuffer[0] = 'N';
 				hexbuffer[1] = 'O';
+
+				fileget = true;
 			}
 			
 		} else if (c == 'E')
@@ -166,11 +169,16 @@ int main(void) {
 				b++;
 		}
 
-	unsigned char data[] = "Hello from ATmega";
+	char data[] = "Hello from ATmega";
 	int i = 0;
 
 	while(1) /* Loop the messsage continously */
 	{
+		if (fileget)
+		{
+			strcpy_P(data, "File get");
+		}
+		
 		i = 0;
 		while(data[i] != 0) /* print the String  "Hello from ATmega" */
 		{
