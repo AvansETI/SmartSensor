@@ -14,6 +14,7 @@
 #include <avr/pgmspace.h>
 
 char offbuffer[2];
+char hexbuffer[2];
 bool jumpcommand = false;
 
 /* When a character is received on the serial bus, this interrupt is called. */
@@ -51,6 +52,41 @@ ISR(USART0_RX_vect) {
 	{
 		offbuffer[0] = c;
 	}
+
+	if (hexbuffer[0] == 'H')
+	{
+		if (hexbuffer[1] == 'E')
+		{
+			if (c == 'X')
+			{
+				int i = 0;
+				unsigned char hextest[] = "Pretend this is a file. \n";
+				while (hextest[i] != 0)
+				{
+					while (!(UCSR0A & (1<<UDRE)));
+					{
+						UDR0 = hextest[i];
+						i++;
+					}
+					
+				}
+				
+				hexbuffer[0] = 'N';
+				hexbuffer[1] = 'O';
+			}
+			
+		} else if (c == 'E')
+		{
+			hexbuffer[1] = c;
+		}
+		
+		
+	} else if (c == 'H')
+	{
+		hexbuffer[0] = c;
+	}
+	
+	
 	
 	
 	
@@ -109,6 +145,8 @@ void boot_program_page (uint32_t page, uint8_t *buf)
 int main(void) {
 	offbuffer[0] = 'P';
 	offbuffer[1] = 'W';
+	hexbuffer[0] = 'N';
+	hexbuffer[1] = 'O';
 	uint32_t baudrate = 9600;
     uint32_t ubrr = 20000000 / 16 / 9600-1;//((20000000 -((baudrate) * 8L)) / ((baudrate) * 16UL));
 
