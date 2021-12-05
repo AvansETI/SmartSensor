@@ -1,5 +1,9 @@
 #!/usr/bin/python3
 
+# Maurice Snoeren, version 0.1, 01-12-2021
+# This softsensor reads the smartmeter MQTT and creates a smartnode data
+# source for each smartsensor.
+
 import json
 from json.encoder import JSONEncoder
 import random
@@ -56,6 +60,7 @@ def send_init_message(signature, name):
       }],
     }))
 
+# Process the smart meter data
 def process_smartmeter_data(data):
     print("Processing: " + data["signature"])
 
@@ -122,6 +127,9 @@ def on_disconnect(client, userdata, rc):
 
 # The callback for when a PUBLISH message is received from the server.
 def on_message(client, userdata, msg):
+    if msg.retain == 1: # Do not process retained messages!
+        return
+
     if ( msg.topic == "smartmeter/data" ):
         try:
             data = json.loads(msg.payload)
@@ -138,7 +146,8 @@ clientSmartMeter.on_disconnect = on_disconnect
 clientSmartMeter.on_message = on_message
 
 clientSmartMeter.username_pw_set("smartmeter_data", password="data")
-clientSmartMeter.connect("sendlab.nl", 11884, 60)
+#clientSmartMeter.connect("sendlab.nl", 11884, 60)
+clientSmartMeter.connect("10.0.0.31", 1884, 60)
 
 ### SmartNetwork MQTT
 clientSmartNetwork.on_connect = on_connect_smartnetwork
@@ -154,10 +163,11 @@ clientSmartNetwork.loop_start()
 time.sleep(5)
 
 while ( 1 ):
-    time.sleep(1)
+    time.sleep(10)
 
 clientSmartMeter.loop_stop()
 
+# Example message from MQTT
 """ {
   "signature": "2019-ETI-EMON-V01-695FA5-1640EF",
   "p1_decoded": {

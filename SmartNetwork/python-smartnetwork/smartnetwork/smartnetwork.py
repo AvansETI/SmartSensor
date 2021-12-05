@@ -58,7 +58,8 @@ class SmartNetwork(threading.Thread):
         self.mqtt.on_message    = lambda client, userdata, msg:       self.mqtt_on_message(client, userdata, msg)
 
         self.mqtt.username_pw_set("server", password="servernode")
-        self.mqtt.connect("sendlab.nl", 11884, 60)
+#        self.mqtt.connect("sendlab.nl", 11884, 60) # Make this configable!
+        self.mqtt.connect("10.0.0.31", 1884, 60)
 
         self.mqtt.loop_start() # Start the loop thread of MQTT
 
@@ -74,6 +75,9 @@ class SmartNetwork(threading.Thread):
         self.debug_print("Disconnected with MQTT broker with result code " + str(rc) + ".")
 
     def mqtt_on_message(self, client, userdata, msg):
+        if msg.retain == 1: # Do not process retained messages!
+            return
+
         print("got message: " + str(msg.topic) + ": " + str(msg.payload))
         try:
             plJson = json.loads(msg.payload)
@@ -93,7 +97,7 @@ class SmartNetwork(threading.Thread):
             print(str(e))
             return
             
-    def alert(level, type, id, message):
+    def alert(self, level, type, id, message):
         point = Point("alerts").tag("id", id).tag("level", level).tag("type", type)
         point.field("message", message)
         point.time(datetime.now(), WritePrecision.NS)
