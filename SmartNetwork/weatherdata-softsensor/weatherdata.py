@@ -23,17 +23,20 @@ cities = []
 # config
 config = {}
 
+#2747351,
+#        2747929,
+#        2750896
+
 # Send the init message to the smartnetwork
 def send_init_message(city):
-    #clientSmartNetwork.publish("node/init", 
-    print(json.dumps(
+    clientSmartNetwork.publish("node/init", json.dumps(
     { "type":  "internet",
       "mode": 0,
       "id":   sensor_id + re.sub(r'\W+', '', city.lower()),
       "name": city,
       "measurements": [{
         "name": "weather",
-        "description": "Weather type.",
+        "description": "Weather type for example 'Clouds'.",
         "unit": "-",
       },{
         "name": "weather_description",
@@ -41,51 +44,51 @@ def send_init_message(city):
         "unit": "-",
       },{
         "name": "weather_icon",
-        "description": "",
+        "description": "The icon belonging to the weather type, example: https://openweathermap.org/img/wn/02n@2x.png",
         "unit": "-",
       },{
         "name": "temp",
-        "description": "",
-        "unit": "-",
+        "description": "Temperature",
+        "unit": "Degree Celsius",
       },{
         "name": "temp_min",
-        "description": "",
-        "unit": "-",
+        "description": "Minimum temperature of the day.",
+        "unit": "Degree Celsius",
       },{
         "name": "temp_max",
-        "description": "",
-        "unit": "-",
+        "description": "Maximum temperature of the day",
+        "unit": "Degree Celsius",
       },{
         "name": "pressure",
-        "description": "",
-        "unit": "-",
+        "description": "Pressure at the given location.",
+        "unit": "hPa",
       },{
         "name": "humidity",
-        "description": "",
-        "unit": "-",
+        "description": "Humidity at the given location.",
+        "unit": "%",
       },{
         "name": "wind_speed",
-        "description": "",
-        "unit": "-",
+        "description": "Wind speed",
+        "unit": "m/s",
       },{
         "name": "wind_degree",
-        "description": "",
-        "unit": "-",
+        "description": "Wind direction at the given location.",
+        "unit": "Degree",
       },{
         "name": "rain",
-        "description": "",
-        "unit": "-",
+        "description": "Rain fall",
+        "unit": "?",
       },{
         "name": "clouds",
-        "description": "",
+        "description": "?",
         "unit": "-",
       },{
         "name": "sunrise",
-        "description": "",
+        "description": "Timestamp the sun starts to shine.",
         "unit": "-",
       },{
         "name": "sunset",
-        "description": "",
+        "description": "Timestampt tje sun is gone.",
         "unit": "-",
       }],
     "actuators": [{
@@ -110,23 +113,23 @@ def process_data(city_id):
     if "rain" in data:
       rain = data["rain"]["1h"]
 
-    #clientSmartNetwork.publish("node/data", 
-    print(json.dumps(
+    #  * 1.0 => create float value!
+    clientSmartNetwork.publish("node/data", json.dumps(
       { "id": sensor_id + re.sub(r'\W+', '', data["name"].lower()),
       "measurements": [{
           "timestamp": datetime.now(timezone.utc).isoformat(),
           "weather": data["weather"][0]["main"],
           "weather_description": data["weather"][0]["description"],
           "weather_icon": data["weather"][0]["icon"],
-          "temp": data["main"]["temp"],
-          "temp_min": data["main"]["temp_min"],
-          "temp_max": data["main"]["temp_max"],
-          "pressure": data["main"]["pressure"],
-          "humidity": data["main"]["humidity"],
-          "wind_speed": data["wind"]["speed"],
-          "wind_degree": data["wind"]["deg"],
-          "rain": rain,
-          "clouds": data["clouds"]["all"],
+          "temp": data["main"]["temp"] * 1.0,
+          "temp_min": data["main"]["temp_min"] * 1.0,
+          "temp_max": data["main"]["temp_max"] * 1.0,
+          "pressure": data["main"]["pressure"] * 1.0,
+          "humidity": data["main"]["humidity"] * 1.0,
+          "wind_speed": data["wind"]["speed"] * 1.0,
+          "wind_degree": data["wind"]["deg"] * 1.0,
+          "rain": rain * 1.0,
+          "clouds": data["clouds"]["all"] * 1.0,
           "sunrise": data["sys"]["sunrise"],
           "sunset": data["sys"]["sunset"]
       }]
