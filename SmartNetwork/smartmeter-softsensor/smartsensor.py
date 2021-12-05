@@ -104,12 +104,16 @@ def process_smartmeter_data(data):
         print(e)
 
 # The callback for when the client receives a CONNACK response from the server.
-def on_connect(client, userdata, flags, rc):
+def on_connect_smartnetwork(client, userdata, flags, rc):
     print("Connected with result code "+str(rc))
 
     # Subscribing in on_connect() means that if we lose the connection and
     # reconnect then subscriptions will be renewed.
-    client.subscribe("$SYS/#")
+
+# The callback for when the client receives a CONNACK response from the server.
+def on_connect_smartmeter(client, userdata, flags, rc):
+    print("Connected with result code "+str(rc))
+    clientSmartMeter.subscribe("smartmeter/data", qos=0)
 
 # The callback for when the client receives a CONNACK response from the server.
 def on_disconnect(client, userdata, rc):
@@ -129,7 +133,7 @@ def on_message(client, userdata, msg):
         print("topic: " + msg.topic + ": " + msg.payload)
 
 ### SmartMeter MQTT    
-clientSmartMeter.on_connect = on_connect
+clientSmartMeter.on_connect = on_connect_smartmeter
 clientSmartMeter.on_disconnect = on_disconnect
 clientSmartMeter.on_message = on_message
 
@@ -137,31 +141,22 @@ clientSmartMeter.username_pw_set("smartmeter_data", password="data")
 clientSmartMeter.connect("sendlab.nl", 11884, 60)
 
 ### SmartNetwork MQTT
-clientSmartNetwork.on_connect = on_connect
+clientSmartNetwork.on_connect = on_connect_smartnetwork
 clientSmartNetwork.on_disconnect = on_disconnect
 clientSmartNetwork.on_message = on_message
 
 clientSmartNetwork.username_pw_set("node", password="smartmeternode")
 clientSmartNetwork.connect("sendlab.nl", 11884, 60)
 
-
-#print("Sending init message...")
-#client.publish("node/init", json.dumps(sensor_init))
-
 clientSmartMeter.loop_start()
 clientSmartNetwork.loop_start()
 
 time.sleep(5)
 
-clientSmartMeter.subscribe("smartmeter/data", qos=0)
-
 while ( 1 ):
     time.sleep(1)
 
 clientSmartMeter.loop_stop()
-
-
-
 
 """ {
   "signature": "2019-ETI-EMON-V01-695FA5-1640EF",

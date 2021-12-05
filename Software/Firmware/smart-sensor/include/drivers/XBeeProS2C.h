@@ -24,7 +24,7 @@
 #define XBEEPROS2C_SLEEP_PORT PORTB
 
 #define XBEEPROS2C_RECIEVE_BUFFER_AMOUNT 50
-#define XBEEPROS2C_TIMEOUT_TIME_S 2000
+#define XBEEPROS2C_TIMEOUT_TIME_S 5000
 #define XBEEPROS2C_PAN_ID "2316"
 
 enum XBeeProS2CStateReciever {
@@ -37,6 +37,7 @@ enum XBeeProS2CStateReciever {
     PROCESSING // Processing the recieved data
 };
 
+#define XBEEPROS2C_STATE_RUNNING  199
 #define XBEEPROS2C_STATE_NOTFOUND 200
 
 /* The class LedDriver handles the two leds that are on the board. */
@@ -95,6 +96,8 @@ public:
     bool checkResultOk();
 
     bool isInstalled() { return (this->state != XBEEPROS2C_STATE_NOTFOUND); }
+
+    void sendToNode();
 
 private:
 

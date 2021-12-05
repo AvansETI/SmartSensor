@@ -20,8 +20,8 @@ query_api     = influx_client.query_api()
 
 def alert(level, type, id, message):
     point = Point("alerts").tag("id", id).tag("level", level).tag("type", type);
-    point.field("message", message);
-    point.time(datetime.now(), WritePrecision.NS);
+    point.field("message", message)
+    point.time(datetime.now(), WritePrecision.NS)
     write_api.write("nodedata", org, point)
 
 def mqtt_send_message(id, message):
@@ -85,9 +85,9 @@ def on_connect(client, userdata, flags, rc):
 def on_message(client, userdata, msg):
     if ( msg.topic == "node/data" ):
         try:
-            process_node_data(json.loads(msg.payload));
+            process_node_data(json.loads(msg.payload))
         except:
-            print("Error processing node data: " + msg.payload);
+            print("Error processing node data: " + msg.payload)
 
     if ( msg.topic == "node/init" ):
         try:

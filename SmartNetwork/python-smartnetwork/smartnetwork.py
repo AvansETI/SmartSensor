@@ -14,6 +14,8 @@ from influxdb_client.client.write_api import SYNCHRONOUS
 Author: Maurice Snoeren <mac.snoeren(at)avans.nl>
 Version: 0.1 beta (use at your own risk)
 Date: 7-4-2021
+TODO: Create a test environment where sensor can send the init and data to so they can check wheter it is good.
+      node/test/init, node/test/data, node/test/message, node/test/actuator, influx=>nodtest
 """
 
 class SmartNetwork(threading.Thread):

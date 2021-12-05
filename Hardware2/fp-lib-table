@@ -1,0 +1,7 @@
+(fp_lib_table
+  (lib (name SmartSensor)(type KiCad)(uri ${KIPRJMOD}/lib/SmartSensor.pretty)(options "")(descr "")(disabled))
+  (lib (name ATECC608B-SSHDA-B)(type Legacy)(uri ${KIPRJMOD}/lib/ATECC608B/ATECC608B-SSHDA-B.mod)(options "")(descr ""))
+  (lib (name XB24CZ7PIT-004)(type Legacy)(uri ${KIPRJMOD}/lib/XBee/XB24CZ7PIT-004.mod)(options "")(descr ""))
+  (lib (name LL3301AF065QJ)(type Legacy)(uri ${KIPRJMOD}/lib/Pushbutton/LL3301AF065QJ.mod)(options "")(descr ""))
+  (lib (name SamacSys_Parts)(type KiCad)(uri ${KIPRJMOD}/lib/SamacSys_Parts.pretty)(options "")(descr ""))
+)

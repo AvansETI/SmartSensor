@@ -1,0 +1,87 @@
+EESchema-DOCLIB  Version 2.0
+#
+$CMP NE555DR
+D Single Precision Timer
+K
+F http://www.ti.com/lit/ds/symlink/ne555.pdf
+$ENDCMP
+#
+$CMP VEML7700-TT
+D 16Bit Ambient Light Sensor I2C 6.8x2.3mm
+K
+F https://www.arrow.com/en/products/veml7700-tt/vishay
+$ENDCMP
+#
+$CMP LL3301FF065QJ
+D Pushbutton Switches 50mA 12VDC F065 7.0mm J-Lead
+K
+F http://spec_sheets.e-switch.com/specs/P010456.pdf
+$ENDCMP
+#
+$CMP 1473149-4
+D DIMM Connectors .6MM 200D R/SM 1.8V DIMMSO DDR
+K
+F https://www.te.com/commerce/DocumentDelivery/DDEController?Action=srchrtrv&DocNm=1473149&DocType=Customer+Drawing&DocLang=English&PartCntxt=1473149-4&DocFormat=pdf
+$ENDCMP
+#
+$CMP ESD224DQAR
+D 4-Channel Low Clamping ESD Protection Device for HDMI Interface
+K
+F http://www.ti.com/lit/gpn/esd224
+$ENDCMP
+#
+$CMP MEM2075-00-140-01-A
+D GCT (GLOBAL CONNECTOR TECHNOLOGY) - MEM2075-00-140-01-A - MICRO SD CARD CONN, PUSH-PUSH, 9POS, SMT
+K
+F 
+$ENDCMP
+#
+$CMP ESDS304DBVR
+D 3.6V Data-Line Surge and 30kV ESD Protection Diode Array
+K
+F http://www.ti.com/lit/gpn/esds304
+$ENDCMP
+#
+$CMP RJMG20162141BER
+D Modular Connectors / Ethernet Connectors R/A,DipType,ShortBod 1000 baseT,GY/GY
+K
+F https://componentsearchengine.com/Datasheets/1/RJMG20162141BER.pdf
+$ENDCMP
+#
+$CMP RJMG1BD3B8K1ANR
+D AMPHENOL ICC (COMMERCIAL PRODUCTS) - RJMG1BD3B8K1ANR - CONNECTOR, RJ45, JACK, 1PORT, 8P8C
+K
+F https://cdn.amphenol-icc.com/media/wysiwyg/files/drawing/rjmg1bd3b8k1anr.pdf
+$ENDCMP
+#
+$CMP PI3L110QE
+D 3.3V Quad, 2:1 Mux/DeMux Fast Ethernet LAN Switch w/ Single Enable
+K
+F https://static6.arrow.com/aropdfconversion/6a49bf1dc4947101fec9acb819cca870c4f05931/575787311340443pi3l110.pdf
+$ENDCMP
+#
+$CMP KSZ8567STXI-TR
+D IC ETHERNET SWITCH 7PORT 128TQFP
+K
+F http://www.microchip.com/mymicrochip/filehandler.aspx?ddocname=en594918
+$ENDCMP
+#
+$CMP 2920L200_24DR
+D PTC 24V POLYFUSE SURF MOUNT 2920 2A
+K
+F https://www.littelfuse.com/~/media/electronics/datasheets/resettable_ptcs/littelfuse_ptc_2920l_datasheet.pdf.pdf
+$ENDCMP
+#
+$CMP ABLS7M2-25.000MHZ-D2Y-T
+D Crystals M49S SMD Crystal, 18pf, 20ppm @ 25C, 30ppm -40+85C, 7.0 x 4.1 x 2.0mm
+K
+F https://abracon.com/Resonators/ABLS7M2.pdf
+$ENDCMP
+#
+$CMP NUF2221W1T2G
+D USB Upstream Terminator with ESD Protection
+K
+F http://www.onsemi.com/pub/Collateral/NUF2221W1T2-D.PDF
+$ENDCMP
+#
+#End Doc Library

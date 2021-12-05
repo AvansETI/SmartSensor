@@ -60,14 +60,15 @@ class SmartNetwork(threading.Thread):
         self.mqtt.username_pw_set("server", password="servernode")
         self.mqtt.connect("sendlab.nl", 11884, 60)
 
-        self.mqtt.subscribe("node/init", qos=0)
-        self.mqtt.subscribe("node/data", qos=0)
-        self.mqtt.subscribe("node/info", qos=0)
-
         self.mqtt.loop_start() # Start the loop thread of MQTT
 
     def mqtt_on_connect(self, client, userdata, flags, rc):
         self.debug_print("Connected with MQTT broker with result code " + str(rc) + ".")
+
+        # Moved the subscribes to on_connect, so when reconnected we will subscribe again!
+        self.mqtt.subscribe("node/init", qos=0)
+        self.mqtt.subscribe("node/data", qos=0)
+        self.mqtt.subscribe("node/info", qos=0)
 
     def mqtt_on_disconnect(self, client, userdata, rc):
         self.debug_print("Disconnected with MQTT broker with result code " + str(rc) + ".")
@@ -92,7 +93,7 @@ class SmartNetwork(threading.Thread):
             print(str(e))
             return
             
-    def alert(self, level, type, id, message):
+    def alert(level, type, id, message):
         point = Point("alerts").tag("id", id).tag("level", level).tag("type", type)
         point.field("message", message)
         point.time(datetime.now(), WritePrecision.NS)
@@ -123,6 +124,13 @@ class SmartNetwork(threading.Thread):
         records = self.query.query(org=self.org, query=query)
         if ( len(records) > 0 ): # This sensor ID exists!
             return self.get_influx_record(records)
+
+    def delete_smartnode(self, id):
+        # TODO: Check ID!
+        start = "1970-01-01T00:00:00Z"
+        stop = datetime.now(timezone.utc).isoformat()
+        self.delete.delete(start, stop, '_measurement="data" AND id="' + id + '"', bucket='nodedata', org=self.org)
+        self.delete.delete(start, stop, '_measurement="info" AND id="' + id + '"', bucket='nodeinfo', org=self.org)
 
     def delete_all_node_info(self):
         start = "1970-01-01T00:00:00Z"
