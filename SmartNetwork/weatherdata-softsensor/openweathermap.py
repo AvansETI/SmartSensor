@@ -165,7 +165,7 @@ clientSmartNetwork.loop_start()
 
 # Read the config file!
 try:
-  config_json = open("config.json", "r").read()
+  config_json = open("config-openweathermap.json", "r").read()
   config = json.loads(config_json)
 except Exception as e:
   print("Cannot read the config.json file, which is required for execution.")
