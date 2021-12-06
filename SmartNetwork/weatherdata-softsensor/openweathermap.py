@@ -88,7 +88,7 @@ def send_init_message(city):
         "unit": "-",
       },{
         "name": "sunset",
-        "description": "Timestampt tje sun is gone.",
+        "description": "Timestamp the sun is gone.",
         "unit": "-",
       }],
     "actuators": [{

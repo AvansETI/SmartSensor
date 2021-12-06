@@ -17,132 +17,59 @@ import paho.mqtt.client as mqtt # pip install paho-mqtt
 
 clientSmartNetwork = mqtt.Client()
 
-sensor_id = "openweathermap-"
+sensor_id = "forecastsolar-"
 
 # In order to send the init message once, this array is used
-cities = []
+places = []
 
 # config
 config = {}
 
-#2747351,
-#        2747929,
-#        2750896
-
 # Send the init message to the smartnetwork
-def send_init_message(city):
+def send_init_message(id, name):
     clientSmartNetwork.publish("node/init", json.dumps(
     { "type":  "internet",
       "mode": 0,
-      "id":   sensor_id + re.sub(r'\W+', '', city.lower()),
-      "name": city,
+      "id":   sensor_id + id,
+      "name": name,
       "measurements": [{
-        "name": "weather",
-        "description": "Weather type for example 'Clouds'.",
+        "name": "W",
+        "description": "Total estimates watt given the solar panel details.",
         "unit": "-",
       },{
-        "name": "weather_description",
-        "description": "Weather type description.",
-        "unit": "-",
-      },{
-        "name": "weather_icon",
-        "description": "The icon belonging to the weather type, example: https://openweathermap.org/img/wn/02n@2x.png",
-        "unit": "-",
-      },{
-        "name": "temp",
-        "description": "Temperature",
-        "unit": "Degree Celsius",
-      },{
-        "name": "temp_min",
-        "description": "Minimum temperature of the day.",
-        "unit": "Degree Celsius",
-      },{
-        "name": "temp_max",
-        "description": "Maximum temperature of the day",
-        "unit": "Degree Celsius",
-      },{
-        "name": "pressure",
-        "description": "Pressure at the given location.",
-        "unit": "hPa",
-      },{
-        "name": "humidity",
-        "description": "Humidity at the given location.",
-        "unit": "%",
-      },{
-        "name": "wind_speed",
-        "description": "Wind speed",
-        "unit": "m/s",
-      },{
-        "name": "wind_degree",
-        "description": "Wind direction at the given location.",
-        "unit": "Degree",
-      },{
-        "name": "rain",
-        "description": "Rain fall",
-        "unit": "?",
-      },{
-        "name": "clouds",
-        "description": "?",
-        "unit": "-",
-      },{
-        "name": "sunrise",
-        "description": "Timestamp the sun starts to shine.",
-        "unit": "-",
-      },{
-        "name": "sunset",
-        "description": "Timestampt tje sun is gone.",
+        "name": "Wh",
+        "description": "Total estimates watt hours given the solar panel details.",
         "unit": "-",
       }],
     "actuators": [{
       }],
     }))
-
-def process_data(city_id):
-  print("Processing the data...")
-
-  api_url = "https://api.forecast.solar/estimate/51.58586805578371/4.793202206697863/0/0/1000"# + str(city_id) + "&appid=" + config["token"]
+    
+def process_data(id, name, latitude, longitude, declination, azimuth, kwp):
+  api_url = "https://api.forecast.solar/estimate/" + str(latitude) + "/" + str(longitude) + "/" + str(declination) + "/" + str(azimuth) + "/" + str(kwp)
   print("API CALL: " + api_url)
   response = requests.get(api_url)
 
-
   try:
     data = response.json()
-    print(response.content)
-    quit()
+    print(data)
 
-    if data["name"] not in cities:
-      send_init_message(data["name"])
+    if id not in places:
+      send_init_message(id, name)
 
-    # When it is not raining, this is not in the data
-    rain = 0.0
-    if "rain" in data:
-      rain = data["rain"]["1h"]
-
-    #  * 1.0 => create float value!
-    clientSmartNetwork.publish("node/data", json.dumps(
-      { "id": sensor_id + re.sub(r'\W+', '', data["name"].lower()),
-      "measurements": [{
-          "timestamp": datetime.now(timezone.utc).isoformat(),
-          "weather": data["weather"][0]["main"],
-          "weather_description": data["weather"][0]["description"],
-          "weather_icon": data["weather"][0]["icon"],
-          "temp": data["main"]["temp"] * 1.0,
-          "temp_min": data["main"]["temp_min"] * 1.0,
-          "temp_max": data["main"]["temp_max"] * 1.0,
-          "pressure": data["main"]["pressure"] * 1.0,
-          "humidity": data["main"]["humidity"] * 1.0,
-          "wind_speed": data["wind"]["speed"] * 1.0,
-          "wind_degree": data["wind"]["deg"] * 1.0,
-          "rain": rain * 1.0,
-          "clouds": data["clouds"]["all"] * 1.0,
-          "sunrise": data["sys"]["sunrise"],
-          "sunset": data["sys"]["sunset"]
-      }]
-    }))
+    for timestamp in data["result"]["watts"]:
+      clientSmartNetwork.publish("node/data", json.dumps(
+        { "id": sensor_id + id,
+        "measurements": [{
+            "timestamp": datetime.strptime(timestamp, '%Y-%m-%d %H:%M:%S').isoformat(),
+            "W": data["result"]["watts"][timestamp] * 1.0,
+            "Wh": data["result"]["watt_hours"][timestamp] * 1.0
+        }]
+      }))
 
   except Exception as e:
       print("Could not process the data")
-      print("city_id: " + str(city_id))
+      print("place id: " + id)
       print(e)
 
 # The callback for when the client receives a CONNACK response from the server.
@@ -170,7 +97,7 @@ clientSmartNetwork.loop_start()
 
 # Read the config file!
 try:
-  config_json = open("config.json", "r").read()
+  config_json = open("config-forecastsolar.json", "r").read()
   config = json.loads(config_json)
 except Exception as e:
   print("Cannot read the config.json file, which is required for execution.")
@@ -179,11 +106,12 @@ except Exception as e:
   quit()
 
 while ( 1 ):
-    #for city_id in config["cities"]:
-    #  print("process city id: " + str(city_id))
-    process_data("test")
+    for place in config["places"]:
+      print("process place: " + place["name"])
+      print("- solar panel installation: " + str(place["installed_kwp"]))
+      process_data(place["id"], place["name"], place["latitude"], place["longitude"], place["declination"], place["azimuth"], place["installed_kwp"])
 
-    time.sleep(5*60) # total minutes to sample the api
+    time.sleep(24*60*60) # Every 24 hours
 
 clientSmartNetwork.loop_stop()
 
