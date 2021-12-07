@@ -3,8 +3,6 @@
 # Todo: Implement message subscription, so the sensor known when a init message have been received
 # Todo: Implement mode 1 for this sensor
 
-
-
 import json
 from json.encoder import JSONEncoder
 import random

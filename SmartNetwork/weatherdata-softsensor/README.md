@@ -141,9 +141,8 @@ This is both an open and a personal api. To get estimates on how much you solar 
 }
 ````
 
-
 ## NREL
-Another interesting data source can be found at https://www.nrel.gov/. Solar information can be found here as well. Not really actual information about solar radiation. Data for analysis is provided mostly, like total radiation or kW/m^2 per month. To get the API key and access to the API itself go to https://developer.nrel.gov/. To get the API key, you need to register yourself at this website. A link is shown "Get an API key" where you can click on. The following webservices are provided by the API:
+Another interesting data source can be found at https://www.nrel.gov/. Solar information can be found here as well. Not really actual information about solar radiation. Data for analysis is provided mostly, like total radiation or kW/m^2 per month. To get the API key and access to the API itself go to https://developer.nrel.gov/. To get the API key, you need to register yourself at this website. A link is shown "Get an API key" where you can click on. You get immediatly an API key. It is also send to your e-mail. The following webservices are provided by the API:
 1. Buildings
 2. Electricity
 3. Energy Optimization
@@ -155,5 +154,8 @@ Another interesting data source can be found at https://www.nrel.gov/. Solar inf
 
 For actual data this api is currently not used for the SmartNetwork.
 
+## EU Science HUB
+Another interesting web page is https://ec.europa.eu/jrc/en/pvgis from the EU. Solar data is on, but not yet found an actual API. It provides historical information on hourly radiation for example. A really good resource for research.
 
-
+## Overview of other API resources
+https://www.programmableweb.com/category/solar/api
