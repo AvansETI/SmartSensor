@@ -12,102 +12,193 @@
 #include <stdint.h>
 #include <avr/io.h>
 #include <avr/pgmspace.h>
-
+#include <stdio.h>
 char offbuffer[2];
 char hexbuffer[2];
+char messagebuffer[44];
+char filedone;
+int bufferpos;
+int page;
 bool jumpcommand = false;
 bool fileget = false;
 
 /* When a character is received on the serial bus, this interrupt is called. */
-ISR(USART0_RX_vect) {
-    char c = UDR0;
-	if (offbuffer[0] == 'O')
+ISR(USART0_RX_vect)
+{
+	char c = UDR0;
+	if (fileget)
 	{
-		if (c == 'F')
+		if (c == 'O')
 		{
-			if (offbuffer[1] == 'F')
-			{
-				int i = 0;
-				unsigned char shutdown[] = "Pretend this is a shutdown message. \n";
-				while (shutdown[i] != 0)
-				{
-					while (!(UCSR0A & (1<<UDRE)));
-					{
-						UDR0 = shutdown[i];
-						i++;
-					}
-					
-				}
-				
-				offbuffer[0] = 'P';
-				offbuffer[1] = 'W';
-
-                jumpcommand = true;
-			} else {
-				offbuffer[1] = c;
-			}
-			
+			filedone = 'O';
 		}
-		
-	} else if (c == 'O')
-	{
-		offbuffer[0] = c;
+		else if (messagebuffer[bufferpos] == 'H')
+		{
+			messagebuffer[bufferpos] = c;
+			bufferpos++;
+		}
+		if (messagebuffer[sizeof(messagebuffer) - 1] != 'H')
+		{
+			int b = 0;
+			unsigned char filemes[] = "Contents of page ";
+			while (filemes[b] != 0)
+			{
+				while (!(UCSR0A & (1 << UDRE)))
+					;
+				{
+					UDR0 = filemes[b];
+					b++;
+				}
+			}
+
+			char pageno[4];
+			snprintf(pageno, sizeof(pageno), "%d", page + 1);
+			int p = 0;
+			/* Send page number */
+			while (pageno[p] != 0)
+			{
+				while (!(UCSR0A & (1 << UDRE)))
+					;
+				{
+					UDR0 = pageno[p];
+					p++;
+				}
+			}
+			/* Send "space \n\r" Character */
+			while (!(UCSR0A & (1 << UDRE)))
+				;
+			UDR0 = ' \n\r';
+
+			for (int i = 0; i < sizeof(messagebuffer); i++)
+			{
+				while (!(UCSR0A & (1 << UDRE)))
+					;
+				{
+					UDR0 = messagebuffer[i];
+				}
+				messagebuffer[i] = 'H';
+			}
+			while (!(UCSR0A & (1 << UDRE)))
+				;
+			UDR0 = ' \n\r';
+			bufferpos = 0;
+			page++;
+		}
+		if (filedone == 'O')
+		{
+			int d = 0;
+			unsigned char endfilemes[] = "Final page content: ";
+			while (endfilemes[d] != 0)
+			{
+				while (!(UCSR0A & (1 << UDRE)))
+					;
+				{
+					UDR0 = endfilemes[d];
+					d++;
+				}
+			}
+			while (!(UCSR0A & (1 << UDRE)))
+				;
+			UDR0 = ' \n\r';
+			for (int i = 0; i < sizeof(messagebuffer); i++)
+			{
+				while (!(UCSR0A & (1 << UDRE)))
+					;
+				{
+					if (messagebuffer[i] != 'H')
+					{
+						UDR0 = messagebuffer[i];
+					}
+				}
+				messagebuffer[i] = 'H';
+			}
+			while (!(UCSR0A & (1 << UDRE)))
+				;
+			UDR0 = ' \n\r';
+			fileget = false;
+			page = 0;
+			bufferpos = 0;
+			filedone = 'N';
+		}
 	}
 
-	if (hexbuffer[0] == 'H')
+	if (!fileget)
 	{
-		if (hexbuffer[1] == 'E')
+		if (offbuffer[0] == 'O')
 		{
-			if (c == 'X')
+			if (c == 'F')
 			{
-				int i = 0;
-				unsigned char hextest[] = "Pretend this is a file. \n";
-				while (hextest[i] != 0)
+				if (offbuffer[1] == 'F')
 				{
-					while (!(UCSR0A & (1<<UDRE)));
+					int i = 0;
+					unsigned char shutdown[] = "Pretend this is a shutdown message. \n";
+					while (shutdown[i] != 0)
 					{
-						UDR0 = hextest[i];
-						i++;
+						while (!(UCSR0A & (1 << UDRE)))
+							;
+						{
+							UDR0 = shutdown[i];
+							i++;
+						}
 					}
-					
-				}
-				
-				hexbuffer[0] = 'N';
-				hexbuffer[1] = 'O';
 
-				fileget = true;
+					offbuffer[0] = 'P';
+					offbuffer[1] = 'W';
+
+					jumpcommand = true;
+				}
+				else
+				{
+					offbuffer[1] = c;
+				}
 			}
-			
-		} else if (c == 'E')
-		{
-			hexbuffer[1] = c;
 		}
-		
-		
-	} else if (c == 'H')
-	{
-		hexbuffer[0] = c;
+		else if (c == 'O')
+		{
+			offbuffer[0] = c;
+		}
+
+		if (hexbuffer[0] == 'H')
+		{
+			if (hexbuffer[1] == 'E')
+			{
+				if (c == 'X')
+				{
+					hexbuffer[0] = 'N';
+					hexbuffer[1] = 'O';
+
+					fileget = true;
+				}
+			}
+			else if (c == 'E')
+			{
+				hexbuffer[1] = c;
+			}
+		}
+		else if (c == 'H')
+		{
+			hexbuffer[0] = c;
+		}
+
+		unsigned char message[] = "Character recieved: ";
+		int i = 0;
+		while (message[i] != 0) /* print the String  "Character recieved: + The character" */
+		{
+			while (!(UCSR0A & (1 << UDRE)))
+				;
+			UDR0 = message[i];
+			i++;
+		}
+		while (!(UCSR0A & (1 << UDRE)))
+			;
+		UDR0 = c;
+		while (!(UCSR0A & (1 << UDRE)))
+			;
+		UDR0 = '\n\r';
 	}
-	
-	
-	
-	
-	
-	unsigned char message[] = "Character recieved: ";
-	int i = 0;
-		while(message[i] != 0) /* print the String  "Character recieved: + The character" */
-		{
-			while (!( UCSR0A & (1<<UDRE)));
-				UDR0 = message[i];
-				i++;
-		}
-		while (!( UCSR0A & (1<<UDRE)));
-				UDR0 = c;
-		while (!( UCSR0A & (1<<UDRE)));
-				UDR0 = '\n\r';
 }
 
-void boot_program_page (uint32_t page, uint8_t *buf)
+void boot_program_page(uint32_t page, uint8_t *buf)
 {
 	uint16_t i;
 	uint8_t sreg;
@@ -117,104 +208,111 @@ void boot_program_page (uint32_t page, uint8_t *buf)
 	sreg = SREG;
 	cli();
 
-	eeprom_busy_wait ();
+	eeprom_busy_wait();
 
-	boot_page_erase (page);
-	boot_spm_busy_wait ();      // Wait until the memory is erased.
+	boot_page_erase(page);
+	boot_spm_busy_wait(); // Wait until the memory is erased.
 
-	for (i=0; i<SPM_PAGESIZE; i+=2)
+	for (i = 0; i < SPM_PAGESIZE; i += 2)
 	{
 		// Set up little-endian word.
 
 		uint16_t w = *buf++;
 		w += (*buf++) << 8;
 
-		boot_page_fill (page + i, w);
+		boot_page_fill(page + i, w);
 	}
 
-	boot_page_write (page);     // Store buffer in flash page.
-	boot_spm_busy_wait();       // Wait until the memory is written.
+	boot_page_write(page); // Store buffer in flash page.
+	boot_spm_busy_wait();  // Wait until the memory is written.
 
 	// Reenable RWW-section again. We need this if we want to jump back
 	// to the application after bootloading.
 
-	boot_rww_enable ();
+	boot_rww_enable();
 
 	// Re-enable interrupts (if they were ever enabled).
 
 	SREG = sreg;
 }
 
-int main(void) {
+int main(void)
+{
 	offbuffer[0] = 'P';
 	offbuffer[1] = 'W';
 	hexbuffer[0] = 'N';
 	hexbuffer[1] = 'O';
 	uint32_t baudrate = 9600;
-    uint32_t ubrr = 20000000 / 16 / 9600-1;//((20000000 -((baudrate) * 8L)) / ((baudrate) * 16UL));
+	uint32_t ubrr = 20000000 / 16 / 9600 - 1; //((20000000 -((baudrate) * 8L)) / ((baudrate) * 16UL));
 
-    UBRR0H = (unsigned char) (ubrr >> 8); // Configuration of the baudrate
-    UBRR0L = (unsigned char) ubrr;
-    UCSR0A = 0x00;
-    UCSR0B = (1<<RXEN)|(1<<TXEN)|(1<<RXCIE); // Enable TX and RX and recieve interrupt
-    UCSR0C = (1<<UCPOL)|(1<<UCSZ0)|(1<<UCSZ1); // 8 data and 1 stop
+	UBRR0H = (unsigned char)(ubrr >> 8); // Configuration of the baudrate
+	UBRR0L = (unsigned char)ubrr;
+	UCSR0A = 0x00;
+	UCSR0B = (1 << RXEN) | (1 << TXEN) | (1 << RXCIE);	 // Enable TX and RX and recieve interrupt
+	UCSR0C = (1 << UCPOL) | (1 << UCSZ0) | (1 << UCSZ1); // 8 data and 1 stop
 	sei();
 
 	unsigned char mes[] = "Loop reached";
 	int b = 0;
-	while(mes[b] != 0) /* print the String  "Hello from ATmega" */
-		{
-			while (!( UCSR0A & (1<<UDRE)));
-				UDR0 = mes[b];
-				b++;
-		}
+	while (mes[b] != 0) /* print the String  "Hello from ATmega" */
+	{
+		while (!(UCSR0A & (1 << UDRE)))
+			;
+		UDR0 = mes[b];
+		b++;
+	}
 
 	char data[] = "Hello from ATmega";
 	int i = 0;
 
-	while(1) /* Loop the messsage continously */
+	for (int c = 0; c < sizeof(messagebuffer); c++)
 	{
-		if (fileget)
+		messagebuffer[c] = 'H';
+	}
+	bufferpos = 0;
+	page = 0;
+	filedone = 'N';
+
+	while (1) /* Loop the messsage continously */
+	{
+		if (!fileget)
 		{
-			strcpy_P(data, "File get");
-		}
-		
-		i = 0;
-		while(data[i] != 0) /* print the String  "Hello from ATmega" */
-		{
-			while (!( UCSR0A & (1<<UDRE)));
+			i = 0;
+			while (data[i] != 0) /* print the String  "Hello from ATmega" */
+			{
+				while (!(UCSR0A & (1 << UDRE)))
+					;
 				UDR0 = data[i];
 				i++;
-		}
-		
-		/* Send "\n" Character */
-		 while (!( UCSR0A & (1<<UDRE)));
+			}
+
+			/* Send "\n" Character */
+			while (!(UCSR0A & (1 << UDRE)))
+				;
 			UDR0 = '\n';
-		
-		/* Send "\r" Character */
-		 while (!( UCSR0A & (1<<UDRE)));
+
+			/* Send "\r" Character */
+			while (!(UCSR0A & (1 << UDRE)))
+				;
 			UDR0 = '\r';
 
-		_delay_ms(100);
-
-        if (jumpcommand)
-        {
-            int i = 0;
+			if (jumpcommand)
+			{
+				int i = 0;
 				unsigned char shutdown[] = "Jumping to other program. \n";
 				while (shutdown[i] != 0)
 				{
-					while (!(UCSR0A & (1<<UDRE)));
+					while (!(UCSR0A & (1 << UDRE)))
+						;
 					{
 						UDR0 = shutdown[i];
 						i++;
 					}
-					
 				}
-            asm("JMP 0x0000");
-        }
-        
-		
-		
-	}
+				asm("JMP 0x0000");
+			}
+		}
 
+		_delay_ms(100);
+	}
 }
