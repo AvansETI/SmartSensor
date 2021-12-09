@@ -25,6 +25,7 @@ bool fileget = false;
 ISR(USART0_RX_vect)
 {
 	char c = UDR0;
+	/*For proper use of recieving hex file a delay should be added after every sent character to prevent data loss*/
 	if (fileget)
 	{
 		if (c == 'O')
