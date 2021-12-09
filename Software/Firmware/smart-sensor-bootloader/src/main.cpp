@@ -15,13 +15,12 @@
 #include <stdio.h>
 char offbuffer[2];
 char hexbuffer[2];
-char messagebuffer[44];
+char messagebuffer[50];
 char filedone;
 int bufferpos;
 int page;
 bool jumpcommand = false;
 bool fileget = false;
-
 /* When a character is received on the serial bus, this interrupt is called. */
 ISR(USART0_RX_vect)
 {
@@ -32,12 +31,12 @@ ISR(USART0_RX_vect)
 		{
 			filedone = 'O';
 		}
-		else if (messagebuffer[bufferpos] == 'H')
+		else if (messagebuffer[bufferpos] == 'H' & c != ':')
 		{
 			messagebuffer[bufferpos] = c;
 			bufferpos++;
 		}
-		if (messagebuffer[sizeof(messagebuffer) - 1] != 'H')
+		if (c == ':')
 		{
 			int b = 0;
 			unsigned char filemes[] = "Contents of page ";
@@ -71,12 +70,15 @@ ISR(USART0_RX_vect)
 
 			for (int i = 0; i < sizeof(messagebuffer); i++)
 			{
-				while (!(UCSR0A & (1 << UDRE)))
-					;
+				if (messagebuffer[i] != 'H')
 				{
-					UDR0 = messagebuffer[i];
+					while (!(UCSR0A & (1 << UDRE)))
+						;
+					{
+						UDR0 = messagebuffer[i];
+					}
+					messagebuffer[i] = 'H';
 				}
-				messagebuffer[i] = 'H';
 			}
 			while (!(UCSR0A & (1 << UDRE)))
 				;
