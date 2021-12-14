@@ -1,18 +1,17 @@
-import time
-import re
+"""
+@author	    Maurice Snoeren
+@contact	macsnoeren@gmail.com
+@copyright	2021 (c) Avans Hogeschool
+@license	GNUv3
+@date	    14-12-2021
+@version	1.0
+"""
+
 import json
-import random
 from datetime import datetime, timezone
-import dateutil
 
 from influxdb_client import InfluxDBClient, Point, WritePrecision #pip install influxdb-client
 from influxdb_client.client.write_api import SYNCHRONOUS
-
-"""
-Author: Maurice Snoeren <mac.snoeren(at)avans.nl>
-Version: 0.1 beta (use at your own risk)
-Date: 7-4-2021
-"""
 
 class SmartNode:
     """Base class SmartNode. All base functionality that belongs to the SmartNode. """
@@ -23,6 +22,7 @@ class SmartNode:
         # Debugging on or off!
         self.debug = False
 
+        # The object to the smart network itself
         self.smartnetwork = smartnetwork
 
     def debug_print(self, message):

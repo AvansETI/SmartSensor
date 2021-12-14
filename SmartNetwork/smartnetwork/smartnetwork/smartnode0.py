@@ -1,22 +1,27 @@
-import time
-import re
+"""
+@author	    Maurice Snoeren
+@contact	macsnoeren@gmail.com
+@copyright	2021 (c) Avans Hogeschool
+@license	GNUv3
+@date	    14-12-2021
+@version	1.0
+"""
+
 import json
-import random
 from datetime import datetime, timezone
 import dateutil
 import pytz
 
 from influxdb_client import InfluxDBClient, Point, WritePrecision #pip install influxdb-client
 from influxdb_client.client.write_api import SYNCHRONOUS
+
 from smartnetwork.smartnode import SmartNode
 
-"""
-Author: Maurice Snoeren <mac.snoeren(at)avans.nl>
-Version: 0.1 beta (use at your own risk)
-Date: 7-4-2021
-"""
-
 class SmartNode0 (SmartNode):
+    """This SmartNode implements the functionality for mode 0. The node does not
+       implement any security measures. That makes the sensor vulnerable to spoofing
+       and impersonating attacks.
+    """
 
     def __init__(self, smartnetwork):
         """Create instance of a SmartNode0. A SmartNode that does not implement any security. """
