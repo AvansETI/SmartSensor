@@ -154,6 +154,11 @@ ISR(USART0_RX_vect)
 					offbuffer[1] = c;
 				}
 			}
+			else
+			{
+				offbuffer[0] = 'P';
+				offbuffer[1] = 'W';
+			}
 		}
 		else if (c == 'O')
 		{
@@ -166,15 +171,19 @@ ISR(USART0_RX_vect)
 			{
 				if (c == 'X')
 				{
-					hexbuffer[0] = 'N';
-					hexbuffer[1] = 'O';
-
 					state = 1;
 				}
+				hexbuffer[0] = 'N';
+				hexbuffer[1] = 'O';
 			}
 			else if (c == 'E')
 			{
 				hexbuffer[1] = c;
+			}
+			else
+			{
+				hexbuffer[0] = 'N';
+				hexbuffer[1] = 'O';
 			}
 		}
 		else if (c == 'H')
@@ -325,7 +334,6 @@ int main(void)
 			// page = 0;
 			bufferpos = 0;
 		}
-		
 
 		_delay_ms(100);
 	}
