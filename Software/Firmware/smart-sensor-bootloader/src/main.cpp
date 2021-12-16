@@ -15,22 +15,20 @@
 // #include <stdio.h>
 char offbuffer[2];
 char hexbuffer[2];
-char messagebuffer[50];
-char filedone;
+char messagebuffer[500];
 int bufferpos;
-int page;
-bool jumpcommand = false;
-bool fileget = false;
+int state;
 /* When a character is received on the serial bus, this interrupt is called. */
 ISR(USART0_RX_vect)
 {
 	char c = UDR0;
 	/*For proper use of recieving hex file a delay should be added after every sent character to prevent data loss*/
-	if (fileget)
+	if (state == 1)
 	{
+		bool endmes = false;
 		if (c == 'O')
 		{
-			filedone = 'O';
+			endmes = true;
 		}
 		else if (messagebuffer[bufferpos] == 'H' & c != ':')
 		{
@@ -87,22 +85,22 @@ ISR(USART0_RX_vect)
 			bufferpos = 0;
 			// page++;
 		}
-		if (filedone == 'O')
+		if (endmes == true)
 		{
-			int d = 0;
-			unsigned char endfilemes[] = "Final page content: ";
-			while (endfilemes[d] != 0)
-			{
-				while (!(UCSR0A & (1 << UDRE)))
-					;
-				{
-					UDR0 = endfilemes[d];
-					d++;
-				}
-			}
-			while (!(UCSR0A & (1 << UDRE)))
-				;
-			UDR0 = ' \n\r';
+			// int d = 0;
+			// unsigned char endfilemes[] = "Final page content: ";
+			// while (endfilemes[d] != 0)
+			// {
+			// 	while (!(UCSR0A & (1 << UDRE)))
+			// 		;
+			// 	{
+			// 		UDR0 = endfilemes[d];
+			// 		d++;
+			// 	}
+			// }
+			// while (!(UCSR0A & (1 << UDRE)))
+			// 	;
+			// UDR0 = ' \n\r';
 			for (int i = 0; i < sizeof(messagebuffer); i++)
 			{
 				while (!(UCSR0A & (1 << UDRE)))
@@ -118,14 +116,13 @@ ISR(USART0_RX_vect)
 			while (!(UCSR0A & (1 << UDRE)))
 				;
 			UDR0 = ' \n\r';
-			fileget = false;
-			page = 0;
+			state = 0;
+			// page = 0;
 			bufferpos = 0;
-			filedone = 'N';
 		}
 	}
 
-	if (!fileget)
+	if (state == 0)
 	{
 		if (offbuffer[0] == 'O')
 		{
@@ -148,7 +145,7 @@ ISR(USART0_RX_vect)
 					offbuffer[0] = 'P';
 					offbuffer[1] = 'W';
 
-					jumpcommand = true;
+					state = 2;
 				}
 				else
 				{
@@ -170,7 +167,7 @@ ISR(USART0_RX_vect)
 					hexbuffer[0] = 'N';
 					hexbuffer[1] = 'O';
 
-					fileget = true;
+					state = 1;
 				}
 			}
 			else if (c == 'E')
@@ -254,17 +251,6 @@ int main(void)
 	UCSR0B = (1 << RXEN) | (1 << TXEN) | (1 << RXCIE);	 // Enable TX and RX and recieve interrupt
 	UCSR0C = (1 << UCPOL) | (1 << UCSZ0) | (1 << UCSZ1); // 8 data and 1 stop
 	sei();
-
-	unsigned char mes[] = "Loop reached";
-	int b = 0;
-	while (mes[b] != 0) /* print the String  "Hello from ATmega" */
-	{
-		while (!(UCSR0A & (1 << UDRE)))
-			;
-		UDR0 = mes[b];
-		b++;
-	}
-
 	char data[] = "Hello from ATmega";
 	int i = 0;
 
@@ -273,12 +259,11 @@ int main(void)
 		messagebuffer[c] = 'H';
 	}
 	bufferpos = 0;
-	page = 0;
-	filedone = 'N';
+	state = 0;
 
 	while (1) /* Loop the messsage continously */
 	{
-		if (!fileget)
+		if (state == 0)
 		{
 			i = 0;
 			while (data[i] != 0) /* print the String  "Hello from ATmega" */
@@ -298,22 +283,21 @@ int main(void)
 			while (!(UCSR0A & (1 << UDRE)))
 				;
 			UDR0 = '\r';
-
-			if (jumpcommand)
+		}
+		else if (state == 2)
+		{
+			int i = 0;
+			unsigned char shutdown[] = "Jumping to other program. \n";
+			while (shutdown[i] != 0)
 			{
-				int i = 0;
-				unsigned char shutdown[] = "Jumping to other program. \n";
-				while (shutdown[i] != 0)
+				while (!(UCSR0A & (1 << UDRE)))
+					;
 				{
-					while (!(UCSR0A & (1 << UDRE)))
-						;
-					{
-						UDR0 = shutdown[i];
-						i++;
-					}
+					UDR0 = shutdown[i];
+					i++;
 				}
-				asm("JMP 0x0000");
 			}
+			asm("JMP 0x3800");
 		}
 
 		_delay_ms(100);
