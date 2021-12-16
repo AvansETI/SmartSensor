@@ -18,10 +18,12 @@ char hexbuffer[2];
 char messagebuffer[500];
 int bufferpos;
 int state;
+int timesincechar;
 /* When a character is received on the serial bus, this interrupt is called. */
 ISR(USART0_RX_vect)
 {
 	char c = UDR0;
+	timesincechar = 0;
 	/*For proper use of recieving hex file a delay should be added after every sent character to prevent data loss*/
 	if (state == 1)
 	{
@@ -242,6 +244,7 @@ int main(void)
 	offbuffer[1] = 'W';
 	hexbuffer[0] = 'N';
 	hexbuffer[1] = 'O';
+	timesincechar = 0;
 	uint32_t baudrate = 9600;
 	uint32_t ubrr = 20000000 / 16 / 9600 - 1; //((20000000 -((baudrate) * 8L)) / ((baudrate) * 16UL));
 
@@ -299,6 +302,30 @@ int main(void)
 			}
 			asm("JMP 0x3800");
 		}
+		//end if timed out
+		timesincechar++;
+		if (timesincechar >= 250 & state == 1)
+		{
+			for (int i = 0; i < sizeof(messagebuffer); i++)
+			{
+				while (!(UCSR0A & (1 << UDRE)))
+					;
+				{
+					if (messagebuffer[i] != 'H')
+					{
+						UDR0 = messagebuffer[i];
+					}
+				}
+				messagebuffer[i] = 'H';
+			}
+			while (!(UCSR0A & (1 << UDRE)))
+				;
+			UDR0 = ' \n\r';
+			state = 0;
+			// page = 0;
+			bufferpos = 0;
+		}
+		
 
 		_delay_ms(100);
 	}
