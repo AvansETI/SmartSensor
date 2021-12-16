@@ -12,7 +12,7 @@
 #include <stdint.h>
 #include <avr/io.h>
 #include <avr/pgmspace.h>
-#include <stdio.h>
+// #include <stdio.h>
 char offbuffer[2];
 char hexbuffer[2];
 char messagebuffer[50];
@@ -39,35 +39,35 @@ ISR(USART0_RX_vect)
 		}
 		if (c == ':')
 		{
-			int b = 0;
-			unsigned char filemes[] = "Contents of page ";
-			while (filemes[b] != 0)
-			{
-				while (!(UCSR0A & (1 << UDRE)))
-					;
-				{
-					UDR0 = filemes[b];
-					b++;
-				}
-			}
+			// int b = 0;
+			// unsigned char filemes[] = "Contents of page ";
+			// while (filemes[b] != 0)
+			// {
+			// 	while (!(UCSR0A & (1 << UDRE)))
+			// 		;
+			// 	{
+			// 		UDR0 = filemes[b];
+			// 		b++;
+			// 	}
+			// }
 
-			char pageno[4];
-			snprintf(pageno, sizeof(pageno), "%d", page + 1);
-			int p = 0;
-			/* Send page number */
-			while (pageno[p] != 0)
-			{
-				while (!(UCSR0A & (1 << UDRE)))
-					;
-				{
-					UDR0 = pageno[p];
-					p++;
-				}
-			}
-			/* Send "space \n\r" Character */
-			while (!(UCSR0A & (1 << UDRE)))
-				;
-			UDR0 = ' \n\r';
+			// char pageno[4];
+			// snprintf(pageno, sizeof(pageno), "%d", page + 1);
+			// int p = 0;
+			// /* Send page number */
+			// while (pageno[p] != 0)
+			// {
+			// 	while (!(UCSR0A & (1 << UDRE)))
+			// 		;
+			// 	{
+			// 		UDR0 = pageno[p];
+			// 		p++;
+			// 	}
+			// }
+			// /* Send "space \n\r" Character */
+			// while (!(UCSR0A & (1 << UDRE)))
+			// 	;
+			// UDR0 = ' \n\r';
 
 			for (int i = 0; i < sizeof(messagebuffer); i++)
 			{
@@ -85,7 +85,7 @@ ISR(USART0_RX_vect)
 				;
 			UDR0 = ' \n\r';
 			bufferpos = 0;
-			page++;
+			// page++;
 		}
 		if (filedone == 'O')
 		{
