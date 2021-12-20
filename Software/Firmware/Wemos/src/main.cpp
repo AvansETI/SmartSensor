@@ -12,6 +12,7 @@
 #include <ArduinoJson.h>
 
 #include <fsm.h>
+#include <Queue.h>
 
 // Create the wifi-client to connect to the Internet
 WiFiClient client;
@@ -63,27 +64,20 @@ constexpr char MQTT_SERVER[] = "sendlab.nl";
 constexpr int  MQTT_PORT     = 11883;
 
 // Timer method for timing purposes
+Queue<String, 40> mqttMessageQueue;
 unsigned long timer;
-String payload = "";
-StaticJsonDocument<256> jsondoc;
+StaticJsonDocument<4096> jsondoc;
 
-// External Events!
 void callbackMQTT(char* topic, byte* pl, unsigned int length) {
-  payload = "";
+  Serial.printf("MQTT message received: %s\n", topic);
+  
+  String payload = "";
   for (unsigned int i=0;i<length;i++) {
     payload += (char)pl[i];
   }
 
-  // Enable also a JSON interface
-  DeserializationError err = deserializeJson(jsondoc, payload.c_str());
-  if (err) {
-    Serial.println("No JSON: " + String(err.c_str()));
-
-  } else {
-    /* String event = jsondoc["event"];
-    Serial.println("JSON EVENT: " + event);
-    payload = event;*/
-  }
+  mqttMessageQueue.add(String(topic), false);
+  mqttMessageQueue.add(payload, false);
 }
 
 void setup() {
@@ -120,13 +114,19 @@ void setup() {
   fsm.addTransition(STATE_WAIT_ON_DATA, EVENT_ERROR, STATE_WIFI);
   fsm.addTransition(STATE_MQTT, EVENT_ERROR, STATE_WIFI);
 
+  // Some mqtt configuration
+  mqtt.setClient(client); // Setup the MQTT client
+  mqtt.setBufferSize(1024); // override MQTT_MAX_PACKET_SIZE
+  mqtt.setCallback(callbackMQTT);
+  mqtt.setServer(MQTT_SERVER, MQTT_PORT);
+
   fsm.setup(STATE_WIFI, EVENT_STATE_EXECUTED);
 }
 
 // Ardiuno loop
 void loop() {   
-  fsm.loop();
   mqtt.loop();
+  fsm.loop();
 }
 
 void preWifi() {
@@ -157,14 +157,6 @@ void postWifi() { }
 void preMqtt() {
   if ( WiFi.status() != WL_CONNECTED ) { // If we are not connected, raise an error
     fsm.raiseEvent(EVENT_ERROR);
-
-  } else {
-    if ( !mqtt.connected() ) {
-      mqtt.setClient(client); // Setup the MQTT client
-      mqtt.setBufferSize(256); // override MQTT_MAX_PACKET_SIZE
-      mqtt.setCallback(callbackMQTT);
-      mqtt.setServer(MQTT_SERVER, MQTT_PORT);
-    }
   }
 }
 
@@ -177,7 +169,9 @@ void loopMqtt() {
     sprintf_P(mqttClientId, PSTR("SNGW-%04X"), system_get_chip_id());
     Serial.printf_P(PSTR("mqtt ID: %s\n"), mqttClientId);
     if ( mqtt.connect(mqttClientId, "node", "smartmeternode") ) {
-      mqtt.subscribe("node/wemos/message");
+      if ( mqtt.subscribe("node/test/data") ) {//node/+/data") ) {
+        Serial.printf_P(PSTR("Subscribed to node/+/data!\n"));
+      }
       fsm.raiseEvent(EVENT_READY);
       Serial.printf_P(PSTR("MQTT CONNECTED!\n"));
 
@@ -205,7 +199,26 @@ void loopWaitOnData() {
   if ( millis() > (timer+5000) ) {
     digitalWrite(LED_BUILTIN, !digitalRead(LED_BUILTIN)); // toggle led each 5 seconds
     timer = millis();
+    Serial.printf("Total messages: %d\n", mqttMessageQueue.size());
   }
+
+  // Process the MQTT message queue
+  while ( mqttMessageQueue.size() > 0 ) {
+    String *topic   = mqttMessageQueue.pop();
+    String *message = mqttMessageQueue.pop();
+
+    Serial.printf("Topic: %s\n", topic->c_str());
+
+    DeserializationError err = deserializeJson(jsondoc, message->c_str());
+    if (err) {
+      Serial.println("No JSON: " + String(err.c_str()));
+    
+    } else {
+      String event = jsondoc["event"];
+      Serial.println("JSON EVENT: " + event);
+    }
+  }
+
 
 
 }
