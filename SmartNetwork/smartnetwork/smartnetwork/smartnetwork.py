@@ -110,21 +110,21 @@ class SmartNetwork(threading.Thread):
             print(e)
             return
 
-        try:
+        #try:
             # Process the information from the SmartNodes!
-            if   ( msg.topic == "node/init" ):
-                self.process_node_init(plJson)
-            elif ( msg.topic == "node/data" ):
-                self.process_node_data(plJson)
-            elif ( msg.topic == "node/info" ):
-                self.process_node_info(plJson)
-            else:
-                print("Unknown topic: " + msg.topic)
+        if   ( msg.topic == "node/init" ):
+            self.process_node_init(plJson)
+        elif ( msg.topic == "node/data" ):
+            self.process_node_data(plJson)
+        elif ( msg.topic == "node/info" ):
+            self.process_node_info(plJson)
+        else:
+            print("Unknown topic: " + msg.topic)
 
-        except Exception as e: # Here put it in Alert?
-            print("Error processing node data: " + str(msg.payload))
-            print(e)
-            return
+        #except Exception as e: # Here put it in Alert?
+        #    print("Error processing node data: " + str(msg.payload))
+        #    print(e)
+        #    return
 
     def alert(self, level, type, id, message):
         """Put an alert message into the database!"""

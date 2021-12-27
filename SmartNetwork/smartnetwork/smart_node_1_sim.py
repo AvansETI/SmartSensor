@@ -1,6 +1,7 @@
 #!/usr/bin/python3
 import os
 import json
+import base64
 import random
 from datetime import datetime, timezone
 
@@ -8,11 +9,11 @@ import paho.mqtt.client as mqtt # pip install paho-mqtt
 
 # pip install cryptography
 from cryptography.hazmat.backends import default_backend
-from cryptography.hazmat.primitives import hashes
+from cryptography.hazmat.primitives import hashes, serialization
 from cryptography.hazmat.primitives.kdf.pbkdf2 import PBKDF2HMAC
-from cryptography.hazmat.primitives import serialization
 from cryptography.hazmat.primitives.asymmetric import ec
-from cryptography.hazmat.primitives.kdf.hkdf import HKDF
+from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes
+from cryptography.hazmat.primitives import padding
 
 sensor_id = "_simulation_1"
 pubkey_server = {}
@@ -22,13 +23,33 @@ private_key_dh = ec.generate_private_key(
     ec.SECP256R1()
 )
 
+def aes256_encrypt(key, message):
+    message = bytes(message, 'utf-8')
+    iv = os.urandom(16)
+    backend = default_backend()
+    cipher = Cipher(algorithms.AES(key), modes.CBC(iv), backend=backend)
+    encryptor = cipher.encryptor()
+    padder = padding.PKCS7(128).padder()
+    padded_data = padder.update(message) + padder.finalize()
+    enc_content = encryptor.update(padded_data) + encryptor.finalize()
+    return base64.b64encode(iv + enc_content).decode('utf-8')
+
+def aes256_decrypt(key, ciphertext):
+    ciphertext = base64.b64decode(ciphertext)
+    iv = ciphertext[:16]
+    enc_content = ciphertext[16:]
+    backend = default_backend()
+    cipher = Cipher(algorithms.AES(key), modes.CBC(iv), backend=backend)
+    unpadder = padding.PKCS7(128).unpadder()
+    decryptor = cipher.decryptor()
+    dec_content = decryptor.update(enc_content) + decryptor.finalize()
+    real_content = unpadder.update(dec_content) + unpadder.finalize()
+    return real_content.decode('utf-8')
+
 # The callback for when the client receives a CONNACK response from the server.
 def on_connect(client, userdata, flags, rc):
     print("Connected with result code "+str(rc))
-
-    # Subscribing in on_connect() means that if we lose the connection and
-    # reconnect then subscriptions will be renewed.
-    client.subscribe("$SYS/#")
+    client.subscribe("node/" + sensor_id + "/message", qos=0)
 
 # The callback for when a PUBLISH message is received from the server.
 def on_message(client, userdata, msg):
@@ -55,6 +76,9 @@ def on_message(client, userdata, msg):
         salt = os.urandom(16)
         kdf = PBKDF2HMAC(algorithm=hashes.SHA256(), length=32, salt=b'0123456789012345', iterations=100000)
         shared_key_main = kdf.derive(shared_value)
+
+        print("session")
+        print(aes256_decrypt(shared_key_main, data["session"]) )
 
         print(shared_key_main.hex())
 
@@ -90,8 +114,6 @@ client.on_message = on_message
 client.username_pw_set("node", password="smartmeternode")
 #client.connect("10.0.0.31", 1884, 60)
 client.connect("sendlab.nl", 11885, 60)
-
-client.subscribe("node/" + sensor_id + "/message", qos=0)
 
 print("Sending init message...")
 client.publish("node/init", json.dumps(sensor_init))

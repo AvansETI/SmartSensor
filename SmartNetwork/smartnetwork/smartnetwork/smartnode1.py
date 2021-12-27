@@ -1,5 +1,6 @@
 import os
 import json
+import base64
 from datetime import datetime, timezone
 import dateutil
 
@@ -8,11 +9,11 @@ from influxdb_client.client.write_api import SYNCHRONOUS
 
 # pip install cryptography
 from cryptography.hazmat.backends import default_backend
-from cryptography.hazmat.primitives import serialization
-from cryptography.hazmat.primitives import hashes
+from cryptography.hazmat.primitives import hashes, serialization
 from cryptography.hazmat.primitives.kdf.pbkdf2 import PBKDF2HMAC
 from cryptography.hazmat.primitives.asymmetric import ec
-from cryptography.hazmat.primitives.kdf.hkdf import HKDF
+from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes
+from cryptography.hazmat.primitives import padding
 
 """
 Author: Maurice Snoeren <mac.snoeren(at)avans.nl>
@@ -54,6 +55,29 @@ class SmartNode1:
     def send_event_to_node(self, id, event):
         self.smartnetwork.mqtt.publish("node/" + str(id) + "/event", json.dumps(event))
 
+    def aes256_encrypt(self, key, message):
+        message = bytes(message, 'utf-8')
+        iv = os.urandom(16)
+        backend = default_backend()
+        cipher = Cipher(algorithms.AES(key), modes.CBC(iv), backend=backend)
+        encryptor = cipher.encryptor()
+        padder = padding.PKCS7(128).padder()
+        padded_data = padder.update(message) + padder.finalize()
+        enc_content = encryptor.update(padded_data) + encryptor.finalize()
+        return base64.b64encode(iv + enc_content).decode('utf-8')
+
+    def aes256_decrypt(self, key, ciphertext):
+        ciphertext = base64.b64decode(ciphertext)
+        iv = ciphertext[:16]
+        enc_content = ciphertext[16:]
+        backend = default_backend()
+        cipher = Cipher(algorithms.AES(key), modes.CBC(iv), backend=backend)
+        unpadder = padding.PKCS7(128).unpadder()
+        decryptor = cipher.decryptor()
+        dec_content = decryptor.update(enc_content) + decryptor.finalize()
+        real_content = unpadder.update(dec_content) + unpadder.finalize()
+        return str(real_content)
+
     def add_node_to_network(self, data):
         required_fields = ("id", "type", "name", "mode", "measurements", "actuators", "pubkey") # Check required fields
         for required_field in required_fields:
@@ -75,23 +99,30 @@ class SmartNode1:
         shared_value         = self.private_key_dh.exchange(ec.ECDH(), public_key_from_text)
 
         # Derive the shared key
-        salt = os.urandom(16)
-
         kdf = PBKDF2HMAC(algorithm=hashes.SHA256(), length=32, salt=b'0123456789012345', iterations=100000)
         shared_key_main = kdf.derive(shared_value)
 
-        print(shared_key_main.hex())
+        kdf = PBKDF2HMAC(algorithm=hashes.SHA256(), length=32, salt=os.urandom(16), iterations=100000)
+        shared_key_session = kdf.derive(shared_value)
 
         self.shared_keys[data["id"]] = {
-            "public_key": data["pubkey"],
-            "shared_key": shared_value,
-            "shared_key_main": shared_key_main
+            "public_key"        : data["pubkey"],
+            "shared_key"        : shared_value,
+            "shared_key_main"   : shared_key_main,
+            "shared_key_session": shared_key_session
         }
 
         # When the SmartNode does not has the public key, it can request the public key from the server
         # Note that this is not secure, while an active man-in-the-middle attacker, can compromise the communication
         if "pubserver" in data and data["pubserver"] == True:
-            self.send_message_to_node(data["id"], {"status": 1, "time": datetime.now(timezone.utc).isoformat(), "message": "Welcome, you have been added to the network!", "pubkey_dh": self.get_public_key_dh(), "pubkey_sign": self.get_public_key_sign() })
+            self.send_message_to_node(data["id"], {
+                "status": 1, 
+                "time": datetime.now(timezone.utc).isoformat(), 
+                "message": "Welcome, you have been added to the network!", 
+                "pubkey_dh": self.get_public_key_dh(), 
+                "pubkey_sign": self.get_public_key_sign(),
+                "session": self.aes256_encrypt(shared_key_main, shared_key_session.hex()),
+            })
         else:
             self.send_message_to_node(data["id"], {"status": 1, "time": datetime.now(timezone.utc).isoformat(), "message": "Welcome, you have been added to the network!", })
 
