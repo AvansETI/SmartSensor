@@ -1,0 +1,23 @@
+{
+    "influxdb": {
+        "host" : "http://localhost:8086",
+        "org"  : "smartsensor",
+        "token": "xxxxxxxxxxxxxxxxx"
+    },
+    "mqtt": {
+        "host"    : "10.0.0.31",
+        "port"    : 1884,
+        "username": "xxxxxxxxxxxxxxxxx",
+        "password": "xxxxxxxxxxxxxxxxx"
+    },
+    "ecc": {
+        "dh": {
+            "private": "5c18f28357ac660ca8ecff38d8e0376e7db072d63c22268794c36e2025f553c5",
+            "public": "04aaf2af3cf62df30b0045d73df35f0c7257edbc8a53b659d3b1e795fb5f7a9a22c65c04ce661f78eaf3f8e5effbc8f596e63fe651cf8d25710fdb08d81a2986af" 
+        },
+        "sign": {
+            "private": "9b76d1297c6054a017f658c474fe02fa75ebbbde52946da54f59718ee4b71dbe",
+            "public": "04f82f85387836c52428fb7c778a250548265d014a7d00c3d1f0c6e389e7604149be5ce8e2f20b8caa431462c794c95865fdcc2d874dbbf843fdee4aea720a26c7" 
+        }
+    }
+}

@@ -35,12 +35,14 @@ class SmartNode0 (SmartNode):
                 print("add_node_to_network: required field '" + required_field + " missing.")
                 return
 
+        # Add the SmartNode to the info bucket
         point = Point("info").tag("id", data["id"]).tag("type", data["type"]).tag("name", data["name"])
         point.tag("location", "none").tag("reference", "none").tag("mode", data["mode"])
         point.field("measurements", json.dumps(data["measurements"]))
         point.field("actuators", json.dumps(data["actuators"]))
         point.field("validated", 0)
-        self.smartnetwork.write.write("nodeinfo", self.smartnetwork.org, point)
+        if not self.smartnetwork.test:
+            self.smartnetwork.write.write("nodeinfo", self.smartnetwork.org, point)
         self.send_message_to_node(data["id"], {"status": 1, "time": datetime.now(timezone.utc).isoformat(), "message": "Welcome, you have been added to the network!"})
 
     def welcome_node_to_network(self, data):
@@ -78,7 +80,8 @@ class SmartNode0 (SmartNode):
                     if ( item != "timestamp" ):
                         point.field(item, measurement[item])
                         point.time(point_timestamp, WritePrecision.NS)
-                self.smartnetwork.write.write("nodedata", self.smartnetwork.org, point)
+                if not self.smartnetwork.test:
+                    self.smartnetwork.write.write("nodedata", self.smartnetwork.org, point)
                 self.smartnetwork.mqtt.publish("node/" + str(data["id"]) + "/data", json.dumps(data)) # relay it further!
            
             else:

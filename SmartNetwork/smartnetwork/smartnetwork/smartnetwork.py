@@ -29,7 +29,7 @@ class SmartNetwork(threading.Thread):
        TODO: Make hardcoded configuration configurable using a config.json file for example!
     """
 
-    def __init__(self, host, org, token):
+    def __init__(self, config_file="smartnetwork.json"):
         """Create instance of the SmartNetwork class."""
         super(SmartNetwork, self).__init__()
 
@@ -39,18 +39,32 @@ class SmartNetwork(threading.Thread):
         # Debugging on or off!
         self.debug = False
 
+        # When testing is True, it will not push any data to the InfluxDB
+        self.test = False
+
+        # Read the config file
+        try:
+            config_json = open(config_file, "r").read()
+            self.config = json.loads(config_json)
+
+        except Exception as e:
+            print("Cannot read the config.json file, which is required for execution.")
+            quit()
+
         # MQTT client
         self.mqtt = mqtt.Client()
 
         # InfluxDB client variables
-        self.host = host
-        self.org = org
-        self.influx = InfluxDBClient(url=host, token=token)
+        print("Connecting with influxdb...")
+        self.host = self.config["influxdb"]["host"]
+        self.org = self.config["influxdb"]["org"]
+        self.influx = InfluxDBClient(url=self.host, token=self.config["influxdb"]["token"])
         self.write  = self.influx.write_api(write_options=SYNCHRONOUS)
         self.query  = self.influx.query_api()
         self.delete = self.influx.delete_api()
 
         # Initialize the smart network
+        print("Connecting with MQTT...")
         self.init_server()
 
     def debug_print(self, message):
@@ -64,10 +78,8 @@ class SmartNetwork(threading.Thread):
         self.mqtt.on_disconnect = lambda client, userdata, rc:        self.mqtt_on_disconnect(client, userdata, rc)
         self.mqtt.on_message    = lambda client, userdata, msg:       self.mqtt_on_message(client, userdata, msg)
 
-        self.mqtt.username_pw_set("server", password="servernode")
-#        self.mqtt.connect("sendlab.nl", 11884, 60) # Make this configable!
-        self.mqtt.connect("10.0.0.31", 1884, 60)
-
+        self.mqtt.username_pw_set(self.config["mqtt"]["username"], password=self.config["mqtt"]["password"])
+        self.mqtt.connect(self.config["mqtt"]["host"], self.config["mqtt"]["port"], 60)
         self.mqtt.loop_start() # Start the loop thread of MQTT
 
     def mqtt_on_connect(self, client, userdata, flags, rc):
@@ -93,6 +105,12 @@ class SmartNetwork(threading.Thread):
         try:
             plJson = json.loads(msg.payload)
 
+        except Exception as e: # work on python 2.x
+            print("Error processing json: " + str(msg.payload))
+            print(e)
+            return
+
+        try:
             # Process the information from the SmartNodes!
             if   ( msg.topic == "node/init" ):
                 self.process_node_init(plJson)
@@ -103,17 +121,18 @@ class SmartNetwork(threading.Thread):
             else:
                 print("Unknown topic: " + msg.topic)
 
-        except Exception as e: # work on python 2.x
+        except Exception as e: # Here put it in Alert?
             print("Error processing node data: " + str(msg.payload))
-            print(str(e))
+            print(e)
             return
-            
+
     def alert(self, level, type, id, message):
         """Put an alert message into the database!"""
         point = Point("alerts").tag("id", id).tag("level", level).tag("type", type)
         point.field("message", message)
         point.time(datetime.now(), WritePrecision.NS)
-        self.write.write("nodedata", self.org, point)
+        if not self.smartnetwork.test:
+            self.write.write("nodedata", self.org, point)
 
     def get_influx_record(self, records):
         """Convert the influxdb records to a usable result."""

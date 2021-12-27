@@ -24,12 +24,12 @@ private_key_sign = ec.generate_private_key(
 
 config = {
     "dh": {
-        "private": "0x%x" % private_key_dh.private_numbers().private_value,
-        "public" : "0x%s" % private_key_dh.public_key().public_bytes(serialization.Encoding.X962, serialization.PublicFormat.UncompressedPoint).hex()
+        "private": "%x" % private_key_dh.private_numbers().private_value,
+        "public" : "%s" % private_key_dh.public_key().public_bytes(serialization.Encoding.X962, serialization.PublicFormat.CompressedPoint).hex()
     },
     "sign": {
-        "private": "0x%x" % private_key_sign.private_numbers().private_value,
-        "public" : "0x%s" % private_key_sign.public_key().public_bytes(serialization.Encoding.X962, serialization.PublicFormat.UncompressedPoint).hex()
+        "private": "%x" % private_key_sign.private_numbers().private_value,
+        "public" : "%s" % private_key_sign.public_key().public_bytes(serialization.Encoding.X962, serialization.PublicFormat.CompressedPoint).hex()
     }
 }
 

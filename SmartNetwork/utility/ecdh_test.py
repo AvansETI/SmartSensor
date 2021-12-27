@@ -26,17 +26,17 @@ print(config["ecc"]["dh"]["private"])
 print(config["ecc"]["sign"]["private"])
 
 # Generate a private key for use in the exchange.
-private_key_dh   = ec.derive_private_key(int(config["ecc"]["dh"]["private"], 0), ec.SECP256R1(), default_backend())
-private_key_sign = ec.derive_private_key(int(config["ecc"]["sign"]["private"], 0), ec.SECP256R1(), default_backend())
+private_key_dh   = ec.derive_private_key(int(config["ecc"]["dh"]["private"], 16), ec.SECP256R1(), default_backend())
+private_key_sign = ec.derive_private_key(int(config["ecc"]["sign"]["private"], 16), ec.SECP256R1(), default_backend())
 
 test = {
     "dh": {
-        "private": "0x%x" % private_key_dh.private_numbers().private_value,
-        "public" : "0x%s" % private_key_dh.public_key().public_bytes(serialization.Encoding.X962, serialization.PublicFormat.UncompressedPoint).hex()
+        "private": "%x" % private_key_dh.private_numbers().private_value,
+        "public" : "%s" % private_key_dh.public_key().public_bytes(serialization.Encoding.X962, serialization.PublicFormat.CompressedPoint).hex()
     },
     "sign": {
-        "private": "0x%x" % private_key_sign.private_numbers().private_value,
-        "public" : "0x%s" % private_key_sign.public_key().public_bytes(serialization.Encoding.X962, serialization.PublicFormat.UncompressedPoint).hex()
+        "private": "%x" % private_key_sign.private_numbers().private_value,
+        "public" : "%s" % private_key_sign.public_key().public_bytes(serialization.Encoding.X962, serialization.PublicFormat.CompressedPoint).hex()
     }
 }
 
@@ -49,3 +49,8 @@ print( test["dh"]["public"] == config["ecc"]["dh"]["public"] )
 print( test["sign"]["public"] == config["ecc"]["sign"]["public"] )
 print( test["dh"]["private"] == config["ecc"]["dh"]["private"] )
 print( test["sign"]["private"] == config["ecc"]["sign"]["private"] )
+
+# Get a public key
+public_key_from_text = ec.EllipticCurvePublicKey.from_encoded_point(ec.SECP256R1(), bytes.fromhex(test["dh"]["public"]))
+
+print( "public from text: 0x%s" % public_key_from_text.public_bytes(serialization.Encoding.X962, serialization.PublicFormat.CompressedPoint).hex())
