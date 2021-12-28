@@ -26,7 +26,6 @@ class SmartNetwork(threading.Thread):
        It is the main controller of the network that controls the smart nodes and the 
        controllers in the network using the MQTT protocol.
        TODO: Detect whether another SmartNetwork is active, while only one can be active!
-       TODO: Make hardcoded configuration configurable using a config.json file for example!
     """
 
     def __init__(self, config_file="smartnetwork.json"):
@@ -111,7 +110,7 @@ class SmartNetwork(threading.Thread):
             return
 
         #try:
-            # Process the information from the SmartNodes!
+        # Process the information from the SmartNodes!
         if   ( msg.topic == "node/init" ):
             self.process_node_init(plJson)
         elif ( msg.topic == "node/data" ):
@@ -255,7 +254,9 @@ class SmartNetwork(threading.Thread):
         print("Smart network stopped")
 
     def __str__(self):
-        return 'SmartNetwork' #: {}:{}'.format(self.host, self.port)
+        """Default Python method to convert the class to a string represntation"""
+        return 'SmartNetwork'
 
     def __repr__(self):
-        return '<SmartNetwork>' # {}:{} id: {}>'.format(self.host, self.port, self.id)
+        """Default Python method to convert the class to a string represntation"""
+        return 'SmartNetwork'

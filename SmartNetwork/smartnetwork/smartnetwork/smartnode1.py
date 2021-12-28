@@ -1,3 +1,13 @@
+"""
+@author	     Maurice Snoeren
+@contact	 macsnoeren@gmail.com
+@copyright	 2021 (c) Avans Hogeschool
+@license	 GNUv3
+@date	     14-12-2021
+@version	 0.1
+@description Under construction, initialization correctly implemented, receiving data not yet, should be signed or so
+"""
+
 import os
 import json
 import base64
@@ -9,29 +19,20 @@ from influxdb_client.client.write_api import SYNCHRONOUS
 
 # pip install cryptography
 from cryptography.hazmat.backends import default_backend
-from cryptography.hazmat.primitives import hashes, serialization
-from cryptography.hazmat.primitives.kdf.pbkdf2 import PBKDF2HMAC
+from cryptography.hazmat.primitives import serialization
 from cryptography.hazmat.primitives.asymmetric import ec
 from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes
 from cryptography.hazmat.primitives import padding
 
-"""
-Author: Maurice Snoeren <mac.snoeren(at)avans.nl>
-Version: 0.1 beta (use at your own risk)
-Date: 7-4-2021
-"""
+from smartnetwork.smartnode import SmartNode
 
-class SmartNode1:
+class SmartNode1 (SmartNode):
+    """This class implements how the SmartNode using mode 1 is processed by the SmartNetwork."""
 
     def __init__(self, smartnetwork):
         """Create instance of a SmartNode1. This SmartNode uses ECDH algoritm to exchange a secret key with each
            other. For this class the SECP256R1 curve is used."""
-        super(SmartNode1, self).__init__()
-
-        # Debugging on or off!
-        self.debug = False
-
-        self.smartnetwork = smartnetwork
+        super().__init__(smartnetwork)
 
         # Generate a private key for use in the exchange using stored keys in the configuration
         self.private_key_dh   = ec.derive_private_key(int(smartnetwork.config["ecc"]["dh"]["private"], 16), ec.SECP256R1(), default_backend())
@@ -39,23 +40,17 @@ class SmartNode1:
         self.shared_keys      = {}
 
     def get_public_key_dh(self):
+        """Returns the public key that is stored in the configuration of the server. This is an ECC
+           based public key. This key is used for the key exchange Diffie-Hellman: ECDH."""
         return "%s" % self.private_key_dh.public_key().public_bytes(serialization.Encoding.X962, serialization.PublicFormat.CompressedPoint).hex()
 
     def get_public_key_sign(self):
+        """Returns the public key that is stored in the configuration of the server. This is an ECC
+           based public key. This key is used for signing purposes: ECDSA."""
         return "%s" % self.private_key_sign.public_key().public_bytes(serialization.Encoding.X962, serialization.PublicFormat.CompressedPoint).hex()
 
-    def debug_print(self, message):
-        """When the debug flag is set to True, all debug messages are printed in the console."""
-        if self.debug:
-            print("DEBUG: " + message)
-
-    def send_message_to_node(self, id, message):
-        self.smartnetwork.mqtt.publish("node/" + str(id) + "/message", json.dumps(message))
-
-    def send_event_to_node(self, id, event):
-        self.smartnetwork.mqtt.publish("node/" + str(id) + "/event", json.dumps(event))
-
     def aes256_encrypt(self, key, message):
+        """Encrypt the message with the given key using the AES 256 algorithm"""
         message = bytes(message, 'utf-8')
         iv = os.urandom(16)
         backend = default_backend()
@@ -67,6 +62,7 @@ class SmartNode1:
         return base64.b64encode(iv + enc_content).decode('utf-8')
 
     def aes256_decrypt(self, key, ciphertext):
+        """Decrypt the message with the given key using the AES 256 algorithm"""
         ciphertext = base64.b64decode(ciphertext)
         iv = ciphertext[:16]
         enc_content = ciphertext[16:]
@@ -79,6 +75,9 @@ class SmartNode1:
         return real_content.decode('utf-8')
 
     def add_node_to_network(self, data):
+        """Add the node to the network when the required security details have been exchanged.
+           TODO: Store the information of the SmartNode, so next time it used the already exchanged
+                 credentials."""
         required_fields = ("id", "type", "name", "mode", "measurements", "actuators", "pubkey") # Check required fields
         for required_field in required_fields:
             if ( not required_field in data ):
@@ -117,10 +116,9 @@ class SmartNode1:
         else:
             self.send_message_to_node(data["id"], {"status": 1, "time": datetime.now(timezone.utc).isoformat(), "message": "Welcome, you have been added to the network!", })
 
-    def welcome_node_to_network(self, data):
-        self.send_message_to_node(data["id"], {"status": 1, "time": datetime.now(timezone.utc).isoformat(), "message": "Welcome back to the network!"})
-
     def process_node_data(self, data):
+        """Process the data that has been received by the SmartNode.
+           TODO: Work in progress..."""
         required_fields = ("id", "measurements") # Check required fields
         for required_field in required_fields:
             if ( not required_field in data ):
@@ -137,11 +135,11 @@ class SmartNode1:
             self.smartnetwork.write.write("nodedata", self.smartnetwork.org, point)
         self.smartnetwork.mqtt.publish("node/" + str(data["id"]) + "/data", json.dumps(data)) # relay it further!
 
-    def process_node_info(self, data):
-        self.smartnetwork.mqtt.publish("node/" + str(data["id"]) + "/info", json.dumps(data)) # relay it further!
-
     def __str__(self):
-        return 'SmartNode' #: {}:{}'.format(self.host, self.port)
+        """Default Python method to convert the class to a string represntation"""
+        return 'SmartNode (mode:{})' % 1
 
     def __repr__(self):
-        return '<SmartNode>' # {}:{} id: {}>'.format(self.host, self.port, self.id)
+        """Default Python method to convert the class to a string represntation"""
+        return 'SmartNode (mode:{})' % 1
+        

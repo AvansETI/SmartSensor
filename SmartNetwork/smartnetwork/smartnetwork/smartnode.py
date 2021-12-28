@@ -19,16 +19,12 @@ class SmartNode:
     def __init__(self, smartnetwork):
         """Create instance of a SmartNode. """
 
-        # Debugging on or off!
-        self.debug = False
-
         # The object to the smart network itself
         self.smartnetwork = smartnetwork
 
     def debug_print(self, message):
         """When the debug flag is set to True, all debug messages are printed in the console."""
-        if self.debug:
-            print("DEBUG: " + message)
+        self.smartnetwork.debug_print(message)
 
     def send_message_to_node(self, id, message):
         """Send a message to a node based on their ID"""
@@ -49,11 +45,13 @@ class SmartNode:
         self.send_message_to_node(data["id"], {"status": 0, "time": datetime.now(timezone.utc).isoformat(), "message": "Sorry the request could not be processed.!"})
 
     def process_node_info(self, data):
-        self.debug_print("process_node_info: Base class SmartNode is used! Please make sure concrete classes are used.")
-        self.send_message_to_node(data["id"], {"status": 0, "time": datetime.now(timezone.utc).isoformat(), "message": "Sorry the request could not be processed.!"})
-
+        """Process the info that the node has send. No security checks, just relay it further."""
+        self.smartnetwork.mqtt.publish("node/" + str(data["id"]) + "/info", json.dumps(data)) # relay it further!
+        
     def __str__(self):
-        return 'SmartNode' #: {}:{}'.format(self.host, self.port)
+        """Default Python method to represent the class as a string"""
+        return 'SmartNode (Base Class)'
 
     def __repr__(self):
-        return '<SmartNode>' # {}:{} id: {}>'.format(self.host, self.port, self.id)
+        """Default Python method to represent the class as a string"""
+        return 'SmartNode (Base Class)'

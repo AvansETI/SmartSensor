@@ -1,4 +1,14 @@
 #!/usr/bin/python3
+"""
+@author	    Maurice Snoeren
+@contact	macsnoeren@gmail.com
+@copyright	2021 (c) Avans Hogeschool
+@license	GNUv3
+@date	    28-12-2021
+@version	1.0
+@desciprion This script implements a SmartNode connection with the SmartNetwork.
+"""
+
 import os
 import json
 import base64
@@ -24,6 +34,7 @@ private_key_dh = ec.generate_private_key(
 )
 
 def aes256_encrypt(key, message):
+    """Encrypt the message with the given key using the AES 256 algorithm"""
     message = bytes(message, 'utf-8')
     iv = os.urandom(16)
     backend = default_backend()
@@ -35,6 +46,7 @@ def aes256_encrypt(key, message):
     return base64.b64encode(iv + enc_content).decode('utf-8')
 
 def aes256_decrypt(key, ciphertext):
+    """Decrypt the message with the given key using the AES 256 algorithm"""
     ciphertext = base64.b64decode(ciphertext)
     iv = ciphertext[:16]
     enc_content = ciphertext[16:]
@@ -46,13 +58,17 @@ def aes256_decrypt(key, ciphertext):
     real_content = unpadder.update(dec_content) + unpadder.finalize()
     return real_content.decode('utf-8')
 
-# The callback for when the client receives a CONNACK response from the server.
 def on_connect(client, userdata, flags, rc):
+    """MQTT callback method when a connection is made with the MQTT server. Note that
+       it is wise to also subscribe to the topics in this method. When a reconnection
+       occurs, you also subscribe to the topics."""
     print("Connected with result code "+str(rc))
     client.subscribe("node/" + sensor_id + "/message", qos=0)
 
 # The callback for when a PUBLISH message is received from the server.
 def on_message(client, userdata, msg):
+    """MQTT callback method when a message is received of the topics that have been
+       subscribed to."""
     print(msg.topic+" "+str(msg.payload))
     try:
         data = json.loads(msg.payload)
@@ -75,7 +91,7 @@ def on_message(client, userdata, msg):
         print("session")
         print(aes256_decrypt(shared_value, data["session"]) )
 
-# Init message
+# SmartNode init message to initialize a SmartNode of mode 1
 sensor_init = {
     "type":  "simulation",
     "mode": 1,
@@ -98,19 +114,22 @@ sensor_init = {
         "unit": "degree of Celsius",
     }],
 }
-    
+
+# MQTT
 client = mqtt.Client()
 client.on_connect = on_connect
 client.on_message = on_message
 
-#client.username_pw_set("server", password="servernode")
 client.username_pw_set("node", password="smartmeternode")
-#client.connect("10.0.0.31", 1884, 60)
-client.connect("sendlab.nl", 11885, 60)
+client.connect("sendlab.nl", 11885, 60) # 11883/4 production, 11885 test
 
+# Send the initialization message. If correctly processed by the server, the server
+# sends back a message on node/<sensor-id>message
 print("Sending init message...")
 client.publish("node/init", json.dumps(sensor_init))
 
+# Simulation of sampling temperature and humidity to simulate an active sensor
+# TODO: This is not correctly implemented yet!
 timestamp = datetime.now()
 temp = 21.4
 humidity = 56.5

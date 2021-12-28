@@ -64,13 +64,19 @@ class SmartNode0 (SmartNode):
             if timestamp_node.tzinfo is None or timestamp_node.tzinfo.utcoffset(timestamp_node) is None:
                 timestamp_node = pytz.utc.localize(timestamp_node) # Make timestamp aware of timezone when this is not given
                 print("timestamp was naive!!")
-            disrupted_timestamp_diff = datetime.now(timezone.utc) - timestamp_node;
+            disrupted_timestamp_diff = datetime.now(timezone.utc) - timestamp_node
 
         # Process the measurements!
         for measurement in data["measurements"]:
-            if "timestamp" in measurement: # timestamp is required!
+            # If timestamp is not available and only one measurement is sent, the actual timestamp is inserted!
+            if "timestamp" not in measurement and len(data["measurements"]) == 1:
+                measurement["timestamp"] = datetime.now(timezone.utc).isoformat()
+
+            # If the timestamp is available, process the timestamp given by the device
+            if "timestamp" in measurement:
                 point_timestamp = dateutil.parser.parse(measurement["timestamp"])
 
+                # When the device has given a timestamp prior, calculate the difference for each measurement
                 if disrupted_timestamp_diff != None:
                     print("Fixed timestamp: " + str(point_timestamp) + " +> " + str(point_timestamp + disrupted_timestamp_diff))
                     point_timestamp = point_timestamp + disrupted_timestamp_diff
@@ -87,12 +93,10 @@ class SmartNode0 (SmartNode):
             else:
                 print("process_node_data: Measurement does not contain a timestamp!")
 
-    def process_node_info(self, data):
-        """Process the info that the node has send. No security checks, just relay it further."""
-        self.smartnetwork.mqtt.publish("node/" + str(data["id"]) + "/info", json.dumps(data)) # relay it further!
-
     def __str__(self):
-        return 'SmartNode' #: {}:{}'.format(self.host, self.port)
+        """Default Python method to convert the class to a string represntation"""
+        return 'SmartNode (mode:{})' % 0
 
     def __repr__(self):
-        return '<SmartNode>' # {}:{} id: {}>'.format(self.host, self.port, self.id)
+        """Default Python method to convert the class to a string represntation"""
+        return 'SmartNode (mode:{})' % 0
