@@ -87,9 +87,7 @@ def on_message(client, userdata, msg):
 
         shared_value = private_key_dh.exchange(ec.ECDH(), public_key_from_text)
         print(shared_value.hex())
-
-        print("session")
-        print(aes256_decrypt(shared_value, data["session"]) )
+        print(aes256_decrypt(shared_value, data["test"]))
 
 # SmartNode init message to initialize a SmartNode of mode 1
 sensor_init = {

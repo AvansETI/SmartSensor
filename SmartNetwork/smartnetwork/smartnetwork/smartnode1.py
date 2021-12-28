@@ -13,6 +13,7 @@ import json
 import base64
 from datetime import datetime, timezone
 import dateutil
+import sqlite3
 
 from influxdb_client import InfluxDBClient, Point, WritePrecision #pip install influxdb-client
 from influxdb_client.client.write_api import SYNCHRONOUS
@@ -38,6 +39,43 @@ class SmartNode1 (SmartNode):
         self.private_key_dh   = ec.derive_private_key(int(smartnetwork.config["ecc"]["dh"]["private"], 16), ec.SECP256R1(), default_backend())
         self.private_key_sign = ec.derive_private_key(int(smartnetwork.config["ecc"]["sign"]["private"], 16), ec.SECP256R1(), default_backend())
         self.shared_keys      = {}
+
+        # Create the database connection
+        self.sqlite = sqlite3.connect(smartnetwork.config["sqlitedb"]["smartnodes"])
+        self.initialize_db()
+
+    def initialize_db(self):
+        """Initialize the database and create the tables if they do not exist."""
+        sql = """CREATE TABLE IF NOT EXISTS smartnodes (
+	             id TEXT PRIMARY KEY,
+	             public_key TEXT NOT NULL,
+	             shared_key TEXT NOT NULL,
+	             public_server TEXT NOT NULL,
+                 created_at TEXT DEFAULT CURRENT_TIMESTAMP
+            );"""
+        self.sqlite.cursor().execute(sql)
+        self.sqlite.commit()
+
+    def add_smartnode_secrets(self, id, public_key, shared_key, public_server):
+        """Add the SmartNode secrets to the database only if only the SmartNode does not exist in the table!"""
+        if self.get_smartnode_key(id) == None:
+            sql = "INSERT INTO smartnodes (id, public_key, shared_key, public_server) VALUES (?, ?, ?, ?)"
+            self.sqlite.cursor().execute(sql, (id, public_key, shared_key.encode('utf-8'), public_server))
+            self.sqlite.commit()
+            print("Adding new secrets for: " + id)
+            print(self.sqlite.cursor().lastrowid)
+
+    def get_smartnode_key(self, id):
+        """Return the shared key of the node. If not known, the method returns None."""
+        sql = "SELECT shared_key FROM smartnodes WHERE id=?"
+        cursor = self.sqlite.cursor()
+        cursor.execute(sql, (id,))
+        record = cursor.fetchone()
+
+        if record != None:
+            return bytes(record[0], 'utf-8')
+
+        return None
 
     def get_public_key_dh(self):
         """Returns the public key that is stored in the configuration of the server. This is an ECC
@@ -97,10 +135,8 @@ class SmartNode1 (SmartNode):
         public_key_from_text = ec.EllipticCurvePublicKey.from_encoded_point(ec.SECP256R1(), bytes.fromhex(data["pubkey"]))
         shared_value         = self.private_key_dh.exchange(ec.ECDH(), public_key_from_text)
 
-        self.shared_keys[data["id"]] = {
-            "public_key"        : data["pubkey"],
-            "shared_key"        : shared_value,
-        }
+        self.add_smartnode_secrets(data["id"], data["pubkey"], shared_value, self.get_public_key_dh())
+        print(self.get_smartnode_key(data["id"]))
 
         # When the SmartNode does not has the public key, it can request the public key from the server
         # Note that this is not secure, while an active man-in-the-middle attacker, can compromise the communication
@@ -111,7 +147,7 @@ class SmartNode1 (SmartNode):
                 "message": "Welcome, you have been added to the network!", 
                 "pubkey_dh": self.get_public_key_dh(), 
                 "pubkey_sign": self.get_public_key_sign(),
-                "session": self.aes256_encrypt(shared_value, "Dit is een test!"),
+                "test": self.aes256_encrypt(self.get_smartnode_key(data["id"]), "Dit is een test!")
             })
         else:
             self.send_message_to_node(data["id"], {"status": 1, "time": datetime.now(timezone.utc).isoformat(), "message": "Welcome, you have been added to the network!", })
