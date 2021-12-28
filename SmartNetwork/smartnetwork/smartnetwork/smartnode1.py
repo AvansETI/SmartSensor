@@ -76,7 +76,7 @@ class SmartNode1:
         decryptor = cipher.decryptor()
         dec_content = decryptor.update(enc_content) + decryptor.finalize()
         real_content = unpadder.update(dec_content) + unpadder.finalize()
-        return str(real_content)
+        return real_content.decode('utf-8')
 
     def add_node_to_network(self, data):
         required_fields = ("id", "type", "name", "mode", "measurements", "actuators", "pubkey") # Check required fields
@@ -98,18 +98,9 @@ class SmartNode1:
         public_key_from_text = ec.EllipticCurvePublicKey.from_encoded_point(ec.SECP256R1(), bytes.fromhex(data["pubkey"]))
         shared_value         = self.private_key_dh.exchange(ec.ECDH(), public_key_from_text)
 
-        # Derive the shared key
-        kdf = PBKDF2HMAC(algorithm=hashes.SHA256(), length=32, salt=b'0123456789012345', iterations=100000)
-        shared_key_main = kdf.derive(shared_value)
-
-        kdf = PBKDF2HMAC(algorithm=hashes.SHA256(), length=32, salt=os.urandom(16), iterations=100000)
-        shared_key_session = kdf.derive(shared_value)
-
         self.shared_keys[data["id"]] = {
             "public_key"        : data["pubkey"],
             "shared_key"        : shared_value,
-            "shared_key_main"   : shared_key_main,
-            "shared_key_session": shared_key_session
         }
 
         # When the SmartNode does not has the public key, it can request the public key from the server
@@ -121,7 +112,7 @@ class SmartNode1:
                 "message": "Welcome, you have been added to the network!", 
                 "pubkey_dh": self.get_public_key_dh(), 
                 "pubkey_sign": self.get_public_key_sign(),
-                "session": self.aes256_encrypt(shared_key_main, shared_key_session.hex()),
+                "session": self.aes256_encrypt(shared_value, "Dit is een test!"),
             })
         else:
             self.send_message_to_node(data["id"], {"status": 1, "time": datetime.now(timezone.utc).isoformat(), "message": "Welcome, you have been added to the network!", })

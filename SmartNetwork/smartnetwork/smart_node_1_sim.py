@@ -72,15 +72,8 @@ def on_message(client, userdata, msg):
         shared_value = private_key_dh.exchange(ec.ECDH(), public_key_from_text)
         print(shared_value.hex())
 
-        # Derive the shared key
-        salt = os.urandom(16)
-        kdf = PBKDF2HMAC(algorithm=hashes.SHA256(), length=32, salt=b'0123456789012345', iterations=100000)
-        shared_key_main = kdf.derive(shared_value)
-
         print("session")
-        print(aes256_decrypt(shared_key_main, data["session"]) )
-
-        print(shared_key_main.hex())
+        print(aes256_decrypt(shared_value, data["session"]) )
 
 # Init message
 sensor_init = {
