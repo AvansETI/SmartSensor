@@ -89,28 +89,38 @@ class SmartNode1 (SmartNode):
 
     def aes256_encrypt(self, key, message):
         """Encrypt the message with the given key using the AES 256 algorithm"""
-        message = bytes(message, 'utf-8')
-        iv = os.urandom(16)
-        backend = default_backend()
-        cipher = Cipher(algorithms.AES(key), modes.CBC(iv), backend=backend)
-        encryptor = cipher.encryptor()
-        padder = padding.PKCS7(128).padder()
-        padded_data = padder.update(message) + padder.finalize()
-        enc_content = encryptor.update(padded_data) + encryptor.finalize()
-        return base64.b64encode(iv + enc_content).decode('utf-8')
+        try:
+            message = bytes(message, 'utf-8')
+            iv = os.urandom(16)
+            backend = default_backend()
+            cipher = Cipher(algorithms.AES(key), modes.CBC(iv), backend=backend)
+            encryptor = cipher.encryptor()
+            padder = padding.PKCS7(128).padder()
+            padded_data = padder.update(message) + padder.finalize()
+            enc_content = encryptor.update(padded_data) + encryptor.finalize()
+            return base64.b64encode(iv + enc_content).decode('utf-8')
+
+        except Exception as e:
+            self.debug_print("aes256_encrypt error: %s" % str(e))
+            return None
 
     def aes256_decrypt(self, key, ciphertext):
         """Decrypt the message with the given key using the AES 256 algorithm"""
-        ciphertext = base64.b64decode(ciphertext)
-        iv = ciphertext[:16]
-        enc_content = ciphertext[16:]
-        backend = default_backend()
-        cipher = Cipher(algorithms.AES(key), modes.CBC(iv), backend=backend)
-        unpadder = padding.PKCS7(128).unpadder()
-        decryptor = cipher.decryptor()
-        dec_content = decryptor.update(enc_content) + decryptor.finalize()
-        real_content = unpadder.update(dec_content) + unpadder.finalize()
-        return real_content.decode('utf-8')
+        try:
+            ciphertext = base64.b64decode(ciphertext)
+            iv = ciphertext[:16]
+            enc_content = ciphertext[16:]
+            backend = default_backend()
+            cipher = Cipher(algorithms.AES(key), modes.CBC(iv), backend=backend)
+            unpadder = padding.PKCS7(128).unpadder()
+            decryptor = cipher.decryptor()
+            dec_content = decryptor.update(enc_content) + decryptor.finalize()
+            real_content = unpadder.update(dec_content) + unpadder.finalize()
+            return real_content.decode('utf-8')
+
+        except Exception as e:
+            self.debug_print("aes256_decrypt error: %s" % str(e))
+            return None
 
     def add_node_to_network(self, data):
         """Add the node to the network when the required security details have been exchanged.
@@ -146,7 +156,7 @@ class SmartNode1 (SmartNode):
                 "message": "Welcome, you have been added to the network!", 
                 "pubkey_dh": self.get_public_key_dh(), 
                 "pubkey_sign": self.get_public_key_sign(),
-                "test": self.aes256_encrypt(self.get_smartnode_shared_key(data["id"]), "Dit is een test!")
+                "check": self.aes256_encrypt(self.get_smartnode_shared_key(data["id"]), "SmartNetwork")
             })
         else:
             self.send_message_to_node(data["id"], {"status": 1, "time": datetime.now(timezone.utc).isoformat(), "message": "Welcome, you have been added to the network!", })
@@ -166,7 +176,11 @@ class SmartNode1 (SmartNode):
                 if ( item != "timestamp" ):
                     point.field(item, measurement[item])
                     point.time(dateutil.parser.parse(measurement["timestamp"]), WritePrecision.NS)
-        if not self.smartnetwork.test:
+
+        # TODO: How to check the signature of the message!
+        signature_correct = False
+
+        if not self.smartnetwork.test and signature_correct:
             self.smartnetwork.write.write("nodedata", self.smartnetwork.org, point)
         self.smartnetwork.mqtt.publish("node/" + str(data["id"]) + "/data", json.dumps(data)) # relay it further!
 

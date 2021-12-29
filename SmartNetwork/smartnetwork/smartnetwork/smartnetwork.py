@@ -38,7 +38,8 @@ class SmartNetwork(threading.Thread):
         # Debugging on or off!
         self.debug = False
 
-        # When testing is True, it will not push any data to the InfluxDB
+        # When testing is True, it will not push any data to the InfluxDB and
+        # all SmartNodes are recognized as existing
         self.test = False
 
         # Read the config file
@@ -228,11 +229,18 @@ class SmartNetwork(threading.Thread):
 
         data["id"] = str(data["id"]) # Make sure the id is a string!
         node = self.get_node_from_id(data["id"])
-        if ( node != None ):
+        if node != None:
             smart_node = self.get_smart_node(node["mode"])
             smart_node.process_node_data(data)
         else:
             print("process_node_data: no sensor found!")
+
+        if self.test and "mode" in data:
+            smart_node = self.get_smart_node(data["mode"])
+            smart_node.process_node_data(data)
+
+        else:
+            print("TEST: Simulating the sensor based on data, please provide mode for testing!")
 
     def process_node_info(self, data):
         """Process the node/info message that has been received by the MQTT server."""

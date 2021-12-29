@@ -27,6 +27,7 @@ from cryptography.hazmat.primitives import padding
 
 sensor_id = "_simulation_1"
 pubkey_server = {}
+shared_value: bytes = ""
 
 # Generate a private key for use in the exchange.
 private_key_dh = ec.generate_private_key(
@@ -35,28 +36,37 @@ private_key_dh = ec.generate_private_key(
 
 def aes256_encrypt(key, message):
     """Encrypt the message with the given key using the AES 256 algorithm"""
-    message = bytes(message, 'utf-8')
-    iv = os.urandom(16)
-    backend = default_backend()
-    cipher = Cipher(algorithms.AES(key), modes.CBC(iv), backend=backend)
-    encryptor = cipher.encryptor()
-    padder = padding.PKCS7(128).padder()
-    padded_data = padder.update(message) + padder.finalize()
-    enc_content = encryptor.update(padded_data) + encryptor.finalize()
-    return base64.b64encode(iv + enc_content).decode('utf-8')
+    try:
+        message = bytes(message, 'utf-8')
+        iv = os.urandom(16)
+        backend = default_backend()
+        cipher = Cipher(algorithms.AES(key), modes.CBC(iv), backend=backend)
+        encryptor = cipher.encryptor()
+        padder = padding.PKCS7(128).padder()
+        padded_data = padder.update(message) + padder.finalize()
+        enc_content = encryptor.update(padded_data) + encryptor.finalize()
+        return base64.b64encode(iv + enc_content).decode('utf-8')
+    except Exception as e:
+        print("aes256_encrypt error: %s" % str(e))
+        return None
 
 def aes256_decrypt(key, ciphertext):
     """Decrypt the message with the given key using the AES 256 algorithm"""
-    ciphertext = base64.b64decode(ciphertext)
-    iv = ciphertext[:16]
-    enc_content = ciphertext[16:]
-    backend = default_backend()
-    cipher = Cipher(algorithms.AES(key), modes.CBC(iv), backend=backend)
-    unpadder = padding.PKCS7(128).unpadder()
-    decryptor = cipher.decryptor()
-    dec_content = decryptor.update(enc_content) + decryptor.finalize()
-    real_content = unpadder.update(dec_content) + unpadder.finalize()
-    return real_content.decode('utf-8')
+    try:
+        ciphertext = base64.b64decode(ciphertext)
+        iv = ciphertext[:16]
+        enc_content = ciphertext[16:]
+        backend = default_backend()
+        cipher = Cipher(algorithms.AES(key), modes.CBC(iv), backend=backend)
+        unpadder = padding.PKCS7(128).unpadder()
+        decryptor = cipher.decryptor()
+        dec_content = decryptor.update(enc_content) + decryptor.finalize()
+        real_content = unpadder.update(dec_content) + unpadder.finalize()
+        return real_content.decode('utf-8')
+
+    except Exception as e:
+        print("aes256_encrypt error: %s" % str(e))
+        return None
 
 def on_connect(client, userdata, flags, rc):
     """MQTT callback method when a connection is made with the MQTT server. Note that
@@ -85,9 +95,15 @@ def on_message(client, userdata, msg):
 
         public_key_from_text = ec.EllipticCurvePublicKey.from_encoded_point(ec.SECP256R1(), bytes.fromhex(pubkey_server["public_key_dh"]))
 
+        global shared_value
         shared_value = private_key_dh.exchange(ec.ECDH(), public_key_from_text)
-        print(shared_value.hex())
-        print(aes256_decrypt(shared_value, data["test"]))
+
+        # The server sends a check message that contains SmartNetwork
+        check = aes256_decrypt(shared_value, data["check"])
+        if check != None and check == "SmartNetwork":
+            print("Shared keys are the same ... yes!")
+        else:
+            print("Shared keys are NOT the same ... bummer!")
 
 # SmartNode init message to initialize a SmartNode of mode 1
 sensor_init = {
@@ -133,16 +149,18 @@ temp = 21.4
 humidity = 56.5
 while ( 1 ):
     timediff = datetime.now() - timestamp
-    if ( timediff.seconds > 1 ):
+    if ( timediff.seconds > 30 ): # Every 30 seconds
         data = {
             "id": sensor_id,
+            "test": aes256_encrypt(shared_value, "Bericht van SmartNode!"),
+            "mode": 1, # for testing
             "measurements": [{
                 "timestamp": datetime.now(timezone.utc).isoformat(),
                 "temperature": temp,
                 "humidity": humidity,
             }],
         }
-        #client.publish("node/data", json.dumps(data))
+        client.publish("node/data", json.dumps(data))
         temp = temp + random.random()*1 - 0.5
         humidity = humidity + random.random()*1 - 0.5
         timestamp = datetime.now()
