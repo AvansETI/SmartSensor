@@ -48,6 +48,10 @@ class SmartNode:
         """Process the info that the node has send. No security checks, just relay it further."""
         self.smartnetwork.mqtt.publish("node/" + str(data["id"]) + "/info", json.dumps(data)) # relay it further!
         
+    def welcome_node_to_network(self, data):
+        """When the node is already added to the database, we wish the node a welcome back."""
+        self.send_message_to_node(data["id"], {"status": 1, "time": datetime.now(timezone.utc).isoformat(), "message": "Welcome back to the network!"})
+
     def __str__(self):
         """Default Python method to represent the class as a string"""
         return 'SmartNode (Base Class)'

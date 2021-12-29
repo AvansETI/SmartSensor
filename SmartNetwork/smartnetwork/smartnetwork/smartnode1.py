@@ -37,7 +37,6 @@ class SmartNode1 (SmartNode):
 
         # Generate a private key for use in the exchange using stored keys in the configuration
         self.private_key_dh   = ec.derive_private_key(int(smartnetwork.config["ecc"]["dh"]["private"], 16), ec.SECP256R1(), default_backend())
-        self.private_key_sign = ec.derive_private_key(int(smartnetwork.config["ecc"]["sign"]["private"], 16), ec.SECP256R1(), default_backend())
         
         # Create the database connection
         self.sqlite = sqlite3.connect(smartnetwork.config["sqlitedb"]["smartnodes"])
@@ -63,6 +62,8 @@ class SmartNode1 (SmartNode):
             self.sqlite.commit()
             print("Adding new secrets for: " + id)
             print(self.sqlite.cursor().lastrowid)
+        else:
+            self.debug_print("add_smartnode_secrets: Secrets already stored for " + str(id))
 
     def get_smartnode_shared_key(self, id):
         """Return the shared key of the node. If not known, the method returns None."""
@@ -81,11 +82,6 @@ class SmartNode1 (SmartNode):
         """Returns the public key that is stored in the configuration of the server. This is an ECC
            based public key. This key is used for the key exchange Diffie-Hellman: ECDH."""
         return "%s" % self.private_key_dh.public_key().public_bytes(serialization.Encoding.X962, serialization.PublicFormat.CompressedPoint).hex()
-
-    def get_public_key_sign(self):
-        """Returns the public key that is stored in the configuration of the server. This is an ECC
-           based public key. This key is used for signing purposes: ECDSA."""
-        return "%s" % self.private_key_sign.public_key().public_bytes(serialization.Encoding.X962, serialization.PublicFormat.CompressedPoint).hex()
 
     def aes256_encrypt(self, key, message):
         """Encrypt the message with the given key using the AES 256 algorithm"""
@@ -132,34 +128,33 @@ class SmartNode1 (SmartNode):
                 print("add_node_to_network: required field '" + required_field + " missing.")
                 return
 
-        # Add the SmartNode to the info bucket
-        point = Point("info").tag("id", data["id"]).tag("type", data["type"]).tag("name", data["name"])
-        point.tag("location", "none").tag("reference", "none").tag("mode", data["mode"]) # Values filled in later
-        point.field("measurements", json.dumps(data["measurements"]))
-        point.field("actuators", json.dumps(data["measurements"]))
-        point.field("validated", 0)
-        if not self.smartnetwork.test:
-            self.smartnetwork.write.write("nodeinfo", self.smartnetwork.org, point)
+        try:
+            # Calculate the shared key that can be used to define the signing keys
+            public_key_from_text = ec.EllipticCurvePublicKey.from_encoded_point(ec.SECP256R1(), bytes.fromhex(data["pubkey"]))
+            shared_value         = self.private_key_dh.exchange(ec.ECDH(), public_key_from_text)
 
-        # Calculate the shared key that can be used to define the signing keys
-        public_key_from_text = ec.EllipticCurvePublicKey.from_encoded_point(ec.SECP256R1(), bytes.fromhex(data["pubkey"]))
-        shared_value         = self.private_key_dh.exchange(ec.ECDH(), public_key_from_text)
+            self.add_smartnode_secrets(data["id"], data["pubkey"], shared_value.hex(), self.get_public_key_dh())
 
-        self.add_smartnode_secrets(data["id"], data["pubkey"], shared_value.hex(), self.get_public_key_dh())
-        
-        # When the SmartNode does not has the public key, it can request the public key from the server
-        # Note that this is not secure, while an active man-in-the-middle attacker, can compromise the communication
-        if "pubserver" in data and data["pubserver"] == True:
+            # Add the SmartNode to the info bucket
+            point = Point("info").tag("id", data["id"]).tag("type", data["type"]).tag("name", data["name"])
+            point.tag("location", "none").tag("reference", "none").tag("mode", data["mode"]) # Values filled in later
+            point.field("measurements", json.dumps(data["measurements"]))
+            point.field("actuators", json.dumps(data["measurements"]))
+            point.field("validated", 0)
+            if not self.smartnetwork.test:
+                self.smartnetwork.write.write("nodeinfo", self.smartnetwork.org, point)
+            
+            # When the SmartNode does not has the public key, it can request the public key from the server
+            # Note that this is not secure, while an active man-in-the-middle attacker, can compromise the communication
             self.send_message_to_node(data["id"], {
                 "status": 1, 
                 "time": datetime.now(timezone.utc).isoformat(), 
                 "message": "Welcome, you have been added to the network!", 
-                "pubkey_dh": self.get_public_key_dh(), 
-                "pubkey_sign": self.get_public_key_sign(),
+                "pubkey_dh": self.get_public_key_dh(),
                 "check": self.aes256_encrypt(self.get_smartnode_shared_key(data["id"]), "SmartNetwork")
             })
-        else:
-            self.send_message_to_node(data["id"], {"status": 1, "time": datetime.now(timezone.utc).isoformat(), "message": "Welcome, you have been added to the network!", })
+        except Exception as e:
+            self.debug_print("add_node_to_network: Could not create the secrets: %s!" % str(e))
 
     def process_node_data(self, data):
         """Process the data that has been received by the SmartNode.
@@ -169,6 +164,9 @@ class SmartNode1 (SmartNode):
             if ( not required_field in data ):
                 print("process_node_data: required field '" + required_field + " missing.")
                 return
+
+        shared_key = self.get_smartnode_shared_key(data["id"])
+        print(self.aes256_decrypt(shared_key, data["test"]))
 
         for measurement in data["measurements"]:
             point = Point("data").tag("id", data["id"])
@@ -182,7 +180,9 @@ class SmartNode1 (SmartNode):
 
         if not self.smartnetwork.test and signature_correct:
             self.smartnetwork.write.write("nodedata", self.smartnetwork.org, point)
-        self.smartnetwork.mqtt.publish("node/" + str(data["id"]) + "/data", json.dumps(data)) # relay it further!
+            self.smartnetwork.mqtt.publish("node/" + str(data["id"]) + "/data", json.dumps(data)) # relay it further!
+        else:
+            self.debug_print("process_node_data: signature incorrect!")
 
     def __str__(self):
         """Default Python method to convert the class to a string represntation"""

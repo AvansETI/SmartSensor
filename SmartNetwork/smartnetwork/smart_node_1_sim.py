@@ -29,10 +29,11 @@ sensor_id = "_simulation_1"
 pubkey_server = {}
 shared_value: bytes = ""
 
-# Generate a private key for use in the exchange.
-private_key_dh = ec.generate_private_key(
-    ec.SECP256R1()
-)
+# When the SmartNode has exchanged keys, this will be the key!!
+private_key_ecc = "2ec2ebcc055d67427442e7083dabf6e77f345c0adcb909c9f8d5340634786705"
+private_key_dh  = ec.derive_private_key(int(private_key_ecc, 16), ec.SECP256R1(), default_backend())
+shared_value    = "443d3767d6ebf7c77b7e8d527cfb438f28a250d3dc66f287731ac4385b36fa25" # This should be stored when found!
+shared_key      = bytes.fromhex(shared_value)
 
 def aes256_encrypt(key, message):
     """Encrypt the message with the given key using the AES 256 algorithm"""
@@ -87,30 +88,24 @@ def on_message(client, userdata, msg):
         print("Could not load the json: " + str(msg.payload))
 
     if msg.topic == "node/" + sensor_id + "/message":
-        if "pubkey_dh" in data and "pubkey_sign" in data:
-            pubkey_server = { 
-                "public_key_dh": data["pubkey_dh"],
-                "public_key_sign": data["pubkey_sign"]
-            }
+        if "pubkey_dh" in data:
+            public_key_from_text = ec.EllipticCurvePublicKey.from_encoded_point(ec.SECP256R1(), bytes.fromhex(data["pubkey_dh"]))
 
-        public_key_from_text = ec.EllipticCurvePublicKey.from_encoded_point(ec.SECP256R1(), bytes.fromhex(pubkey_server["public_key_dh"]))
+            global shared_value
+            shared_value = private_key_dh.exchange(ec.ECDH(), public_key_from_text)
 
-        global shared_value
-        shared_value = private_key_dh.exchange(ec.ECDH(), public_key_from_text)
-
-        # The server sends a check message that contains SmartNetwork
-        check = aes256_decrypt(shared_value, data["check"])
-        if check != None and check == "SmartNetwork":
-            print("Shared keys are the same ... yes!")
-        else:
-            print("Shared keys are NOT the same ... bummer!")
+            # The server sends a check message that contains SmartNetwork
+            check = aes256_decrypt(shared_value, data["check"])
+            if check != None and check == "SmartNetwork":
+                print("Shared keys are the same ... yes!")
+            else:
+                print("Shared keys are NOT the same ... bummer!")
 
 # SmartNode init message to initialize a SmartNode of mode 1
 sensor_init = {
     "type":  "simulation",
     "mode": 1,
     "pubkey": "%s" % private_key_dh.public_key().public_bytes(serialization.Encoding.X962, serialization.PublicFormat.CompressedPoint).hex(),
-    "pubserver": True,
     "id":    sensor_id,
     "name":  "test 1",
     "measurements": [{
@@ -152,8 +147,7 @@ while ( 1 ):
     if ( timediff.seconds > 30 ): # Every 30 seconds
         data = {
             "id": sensor_id,
-            "test": aes256_encrypt(shared_value, "Bericht van SmartNode!"),
-            "mode": 1, # for testing
+            "test": aes256_encrypt(shared_key, "Bericht van SmartNode!"),
             "measurements": [{
                 "timestamp": datetime.now(timezone.utc).isoformat(),
                 "temperature": temp,

@@ -45,10 +45,6 @@ class SmartNode0 (SmartNode):
             self.smartnetwork.write.write("nodeinfo", self.smartnetwork.org, point)
         self.send_message_to_node(data["id"], {"status": 1, "time": datetime.now(timezone.utc).isoformat(), "message": "Welcome, you have been added to the network!"})
 
-    def welcome_node_to_network(self, data):
-        """When the node is already added to the database, we wish the node a welcome back."""
-        self.send_message_to_node(data["id"], {"status": 1, "time": datetime.now(timezone.utc).isoformat(), "message": "Welcome back to the network!"})
-
     def process_node_data(self, data):
         """Process the node data that has been send."""
         required_fields = ("id", "measurements") # Check required fields

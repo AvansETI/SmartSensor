@@ -5,7 +5,7 @@ from smartnetwork.smartnetwork import SmartNetwork
 smartnetwork = SmartNetwork()
 
 smartnetwork.debug = True
-smartnetwork.test  = True
+#smartnetwork.test  = True
 
 smartnetwork.start()
 

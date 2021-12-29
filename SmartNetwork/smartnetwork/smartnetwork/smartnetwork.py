@@ -202,7 +202,7 @@ class SmartNetwork(threading.Thread):
         """Get the correct smart node object based on the given mode. The mode determines
            how the smart node has been implemented.
         """
-        if ( mode == 1 ):
+        if ( int(mode) == 1 ):
             return SmartNode1(self)
         else:
             return SmartNode0(self)
@@ -235,12 +235,12 @@ class SmartNetwork(threading.Thread):
         else:
             print("process_node_data: no sensor found!")
 
-        if self.test and "mode" in data:
-            smart_node = self.get_smart_node(data["mode"])
-            smart_node.process_node_data(data)
-
-        else:
-            print("TEST: Simulating the sensor based on data, please provide mode for testing!")
+        if self.test:
+            if "mode" in data:
+                smart_node = self.get_smart_node(data["mode"])
+                smart_node.process_node_data(data)
+            else:
+                print("TEST: Simulating the sensor based on data, please provide mode for testing!")
 
     def process_node_info(self, data):
         """Process the node/info message that has been received by the MQTT server."""
