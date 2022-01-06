@@ -1,11 +1,12 @@
 #!/usr/bin/python3
 
-# Maurice Snoeren, version 0.1, 01-12-2021
-# This softsensor reads the smartmeter MQTT and creates a smartnode data
-# source for each smartsensor.
-
-# https://www.netbeheernederland.nl/_upload/Files/Slimme_meter_15_32ffe3cc38.pdf
-# OBIS: https://www.promotic.eu/en/pmdoc/Subsystems/Comm/PmDrivers/IEC62056_OBIS.htm
+# Maurice Snoeren, version 1.0, 06-01-2022
+# This softsensor reads the smartmeter MQTT raw messages and parses the
+# P1 datagram itself rather than depending on the SmartMeter infrastructure.
+# This parser also extract the gas meter value is available.
+# Documentation:
+# - https://www.netbeheernederland.nl/_upload/Files/Slimme_meter_15_32ffe3cc38.pdf
+# - OBIS: https://www.promotic.eu/en/pmdoc/Subsystems/Comm/PmDrivers/IEC62056_OBIS.htm
 
 import json
 from json.encoder import JSONEncoder
@@ -239,133 +240,3 @@ while ( 1 ):
 
 clientSmartMeter.loop_stop()
 
-# Example message from MQTT
-""" {
-  "signature": "2019-ETI-EMON-V01-695FA5-1640EF",
-  "p1_decoded": {
-    "manufacturer": "FLU5\\\\253769484",
-    "version": "30",
-    "equipment_id": "3153414733313030303639333837",
-    "tariff": 2,
-    "power": [
-      {
-        "delivered": {
-          "value": 1.549,
-          "unit": "kW"
-        }
-      },
-      {
-        "received": {
-          "value": 0,
-          "unit": "kW"
-        }
-      }
-    ],
-    "energy": [
-      {
-        "tariff": 1,
-        "delivered": {
-          "value": 34713.971,
-          "unit": "kWh"
-        },
-        "received": {
-          "value": 920.523,
-          "unit": "kWh"
-        }
-      },
-      {
-        "tariff": 2,
-        "delivered": {
-          "value": 19120.549,
-          "unit": "kWh"
-        },
-        "received": {
-          "value": 1291.557,
-          "unit": "kWh"
-        }
-      }
-    ],
-    "phases": {
-      "failures": "NAN",
-      "long failures": "NAN",
-      "phases": [
-        {
-          "phase": "L1",
-          "sags": "NAN",
-          "swells": "NAN",
-          "instantaneous voltage": {
-            "value": "NAN",
-            "unit": "NAN"
-          },
-          "instantaneous current": {
-            "value": "NAN",
-            "unit": "NAN"
-          },
-          "instantaneous power +P": {
-            "value": "NAN",
-            "unit": "NAN"
-          },
-          "instantaneous power -P": {
-            "value": "NAN",
-            "unit": "NAN"
-          }
-        },
-        {
-          "phase": "L2",
-          "sags": "NAN",
-          "swells": "NAN",
-          "instantaneous voltage": {
-            "value": "NAN",
-            "unit": "NAN"
-          },
-          "instantaneous current": {
-            "value": "NAN",
-            "unit": "NAN"
-          },
-          "instantaneous power +P": {
-            "value": "NAN",
-            "unit": "NAN"
-          },
-          "instantaneous power -P": {
-            "value": "NAN",
-            "unit": "NAN"
-          }
-        },
-        {
-          "phase": "L3",
-          "sags": "NAN",
-          "swells": "NAN",
-          "instantaneous voltage": {
-            "value": "NAN",
-            "unit": "NAN"
-          },
-          "instantaneous current": {
-            "value": "NAN",
-            "unit": "NAN"
-          },
-          "instantaneous power +P": {
-            "value": "NAN",
-            "unit": "NAN"
-          },
-          "instantaneous power -P": {
-            "value": "NAN",
-            "unit": "NAN"
-          }
-        }
-      ]
-    }
-  },
-  "s0": {
-    "unit": "W",
-    "label": "e-car charger",
-    "value": 0
-  },
-  "s1": {
-    "unit": "W",
-    "label": "solar panels",
-    "value": 0
-  },
-  "createdAt": {
-    "$date": 1637316824170
-  }
-} """
