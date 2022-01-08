@@ -129,6 +129,12 @@ uint8_t SmartSensorBoardV1_2::sendDataStringAvailable() {
     return !this->serial0->isBusy();
 }
 
+uint8_t SmartSensorBoardV1_2::processCommand(const char* data) {
+    // Process the command!
+    return 0;
+}
+
+
 void SmartSensorBoardV1_2::recievedCharacter(char c) {
     if ( c != '\n' ) {
         this->serialBuffer.add(c);

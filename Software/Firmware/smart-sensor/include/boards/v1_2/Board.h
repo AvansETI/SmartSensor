@@ -87,5 +87,8 @@ public:
     uint8_t sendDataString(const char* data);
     uint8_t sendDataStringAvailable();
 
+    uint8_t processCommand(const char* data);
+
+
     void recievedCharacter(char c);
 };

@@ -82,17 +82,14 @@ void SmartSensorBoard::loop() {
             
             
         } else if ( message->getType() == MessageType::COMMAND ) {
-            if ( this->sendDataStringAvailable() ) {
-                sprintf(data, "%s:%s\n", this->getID(), this->queueMessages.pop()->getMessage());
-                this->sendDataString(data);
-            }
+            this->processCommand(this->queueMessages.pop()->getMessage());            
 
         } else {
             this->queueMessages.pop();
         }
     }
 
-    // When no measurements pop in, request the timestamp
+    // When no measurements pop in after 500ms, request the timestamp
     if ( this->measurementReceivedTimestamp != 0 && (this->millis()/100) - this->measurementReceivedTimestamp > 5 ) {
         this->getActualTimestamp();
         this->measurementReceivedTimestamp = 0;
