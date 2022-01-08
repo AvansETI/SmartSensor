@@ -34,3 +34,5 @@ Plot/
 .pioenvs/
 .sconsign.dblite
 ipch/
+
+__pycache__

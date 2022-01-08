@@ -96,7 +96,6 @@ uint16_t SHTC3Driver::getID() {
         return this->id;
     }
 
-    // TODO: handle result of the wait functions. Convert to Async methods?
     Atmega324PBI2C0* i2c = Atmega324PBI2C0::getInstance();
     i2c->start(); i2c->wait(TW_START);
     i2c->select(SHTC3_I2C_ADDRESS, TW_WRITE); i2c->wait(TW_MT_SLA_ACK);
@@ -122,20 +121,14 @@ uint16_t SHTC3Driver::getID() {
 void SHTC3Driver::i2cReadEvent(uint8_t data, uint8_t index) {
     this->data[index] = data;
 
-    if ( index == 5 ) { // last one!
+    if ( index == 5 ) { // All the measurements have been received.
         char m[30];
 
-        //sprintf_P(m, PSTR("humidity:%.1f"), (double)this->getHumidity());
-        //this->getMeasurementCallback()->addMeasurement(m);
-        
-        //sprintf_P(m, PSTR("temperature:%.1f"), (double)this->getTemperature());
-        //this->getMeasurementCallback()->addMeasurement(m);
-
         sprintf_P(m, PSTR("mh:%.1f"), (double)this->getHumidity());
-        this->getMeasurementCallback()->addMeasurement(m);
+        this->getMessageInterface()->addMessage(Message(MessageType::MEASUREMENT, m));
         
         sprintf_P(m, PSTR("mt:%.1f"), (double)this->getTemperature());
-        this->getMeasurementCallback()->addMeasurement(m);
+        this->getMessageInterface()->addMessage(Message(MessageType::MEASUREMENT, m));
     }
 }
 

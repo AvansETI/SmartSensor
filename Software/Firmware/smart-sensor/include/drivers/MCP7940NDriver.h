@@ -20,6 +20,7 @@
 #include <avr/pgmspace.h>
 
 #include <util/RTC.h>
+#include <util/Util.h>
 #include <tasks/Atmega324PBI2C0.h>
 #include <drivers/Driver.h>
 
@@ -39,7 +40,12 @@ enum MCP7940NData {
     WEEKDAY,
     DAY,
     MONTH,
-    YEAR
+    YEAR,
+};
+
+enum MCP7940NFlags {
+    TIME_GET_REQUESTED,
+    TIME_SET_REQUESTED,
 };
 
 /* This class implements the driver for the MCP7940 RTC (real-time) chip. It implements the
@@ -53,14 +59,20 @@ private:
     /* Holds the data that has been retrieved from the I2C bus. */ 
     uint8_t data[7];
 
+    /* The flags hold boolean information that is used by the class, see MCP7940NFlags. */
+    uint8_t flags;
+
+    /* Set the time. */
+    void setTime();
+
 protected:
     /* Protected constructor to create a singleton. */
-    MCP7940NDriver(RTCReadTimestampEvent* rtcReadTimestampEvent): rtcEvent(rtcReadTimestampEvent) { }
+    MCP7940NDriver(MessageInterface* messageInterface): Driver(messageInterface) { }
 
 public:
     /* Returns the singleton instance. */
-    static MCP7940NDriver* getInstance(RTCReadTimestampEvent* rtcReadTimestampEvent) {
-        static MCP7940NDriver _mcp7940NDriver(rtcReadTimestampEvent);
+    static MCP7940NDriver* getInstance(MessageInterface* messageInterface) {
+        static MCP7940NDriver _mcp7940NDriver(messageInterface);
         return &_mcp7940NDriver;
     }
 

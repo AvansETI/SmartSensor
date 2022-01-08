@@ -55,15 +55,15 @@ private:
 
 protected:
     /* Protected constructor to create a singleton. */
-    SHTC3Driver(SmartSensorMeasurement* cbMeasurement): Driver(cbMeasurement), id(0), waitingOnI2C(false) {};
+    SHTC3Driver(MessageInterface* messageInterface): Driver(messageInterface), id(0), waitingOnI2C(false) {};
 
     /* Check whether the SHTC3 is connected to the I2C bus on the specific address. */
     bool isConnected();
 
 public:
     /* Get the instance of the singleton. */
-    static SHTC3Driver* getInstance(SmartSensorMeasurement* cbMeasurement) {
-        static SHTC3Driver _shtc3Driver(cbMeasurement);
+    static SHTC3Driver* getInstance(MessageInterface* messageInterface) {
+        static SHTC3Driver _shtc3Driver(messageInterface);
         return &_shtc3Driver;
     }
 

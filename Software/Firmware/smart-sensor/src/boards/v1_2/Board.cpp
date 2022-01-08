@@ -37,7 +37,7 @@ void SmartSensorBoardV1_2::setup() {
     this->mcp7940nDriver = MCP7940NDriver::getInstance(this);
     this->addTask(this->mcp7940nDriver, PSTR("MCP7940NDriver"));
 
-    this->xbeeProS2CDriver = XBeeProS2C::getInstance();
+    this->xbeeProS2CDriver = XBeeProS2C::getInstance(this);
     if ( !this->adapterInUse() ) { // The test has the node at the power and the coordinator to the computer.
         this->xbeeProS2CDriver->enableCoordinator(); // TODO: Must be switched on when adapter is in use and wemos is connected. Print it to the serial
     }
@@ -70,6 +70,8 @@ void SmartSensorBoardV1_2::setup() {
     }
 
     sei(); // Enable the interrupts!
+
+    this->serial0->setCallback(this);
 }
 
 bool SmartSensorBoardV1_2::adapterInUse() {
@@ -93,11 +95,6 @@ void SmartSensorBoardV1_2::debug_P( const char* message) {
     this->serial0->print_P(message);
 }
 
-// TODO:!
-void SmartSensorBoardV1_2::addMessage(const char* message) {
-    //this->debugf_P(PSTR("Message: %s\n"), message);
-}
-
 const char* SmartSensorBoardV1_2::getID() {
     // Get the Atmege unique serial number
     for ( uint8_t i=0; i < 20; i=i+2 ) {
@@ -119,4 +116,27 @@ const char* SmartSensorBoardV1_2::getID() {
 void SmartSensorBoardV1_2::getActualTimestamp() {
     this->mcp7940nDriver->requestTime();
 }
+
+void SmartSensorBoardV1_2::setActualTimestamp(const RTCTime &time) {
+    this->mcp7940nDriver->setTime(time);
+}
+
+uint8_t SmartSensorBoardV1_2::sendDataString(const char* data) {
+    return this->serial0->printAsync(data);
+}
+
+uint8_t SmartSensorBoardV1_2::sendDataStringAvailable() {
+    return !this->serial0->isBusy();
+}
+
+void SmartSensorBoardV1_2::recievedCharacter(char c) {
+    if ( c != '\n' ) {
+        this->serialBuffer.add(c);
+    } else {
+        this->addMessage(Message(MessageType::COMMAND, this->serialBuffer.get()));
+        this->serialBuffer.reset();
+    }
+}
+
+
 

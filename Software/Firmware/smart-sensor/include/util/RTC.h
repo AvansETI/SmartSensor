@@ -44,6 +44,8 @@ public:
     /* Convert the RTCTime to an ISO8601 string. */
     void getIso8601String(char iso8601[20]);
 
+    void getShortString(char str[20]);
+
     /* Getters to retrieve the time components. */
     uint8_t getYear() const;
     uint8_t getMonth() const;
@@ -53,7 +55,8 @@ public:
     uint8_t getMinutes() const;
     uint8_t getSeconds() const;
 
-    /* Set the current time values to the given iso8601 string. */
+    /* Set the current time values to the given iso8601 string. If successfull
+       it returns zeor, otherwise 1. */
     uint8_t setFromIso8601String(const char* iso8601);
 
     /* Helper function to convert bcd numbers to int. A BCD is a four bits number that represent

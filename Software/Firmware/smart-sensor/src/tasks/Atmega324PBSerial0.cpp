@@ -9,6 +9,20 @@
 
 #include <avr/io.h>
 #include <avr/pgmspace.h>
+#include <avr/interrupt.h>
+
+static SerialRecievedCharacter* cbAtmega324PBSerial0 = NULL;
+
+ISR(USART0_RX_vect) {
+    char c = UDR0;
+    if ( cbAtmega324PBSerial0 != NULL ) {
+        cbAtmega324PBSerial0->recievedCharacter(c);
+    }
+}
+
+void Atmega324PBSerial0::setCallback( SerialRecievedCharacter* callback ) {
+    cbAtmega324PBSerial0 = callback;
+}
 
 uint8_t Atmega324PBSerial0::setup() {
     //uint32_t baudrate = 9600;
@@ -20,7 +34,7 @@ uint8_t Atmega324PBSerial0::setup() {
     UBRR0H = (unsigned char) (ubrr >> 8); // Configuration of the baudrate
     UBRR0L = (unsigned char) ubrr;
     UCSR0A = 0x00;
-    UCSR0B = (1<<RXEN)|(1<<TXEN); // Enable TX and RX
+    UCSR0B = (1<<RXEN)|(1<<TXEN)|(1<<RXCIE); // Enable TX and RX and recieve interrupt
     UCSR0C = (1<<UCPOL)|(1<<UCSZ0)|(1<<UCSZ1); // 8 data and 1 stop
 
     return 0;
@@ -113,4 +127,12 @@ void Atmega324PBSerial0::transmitChar(char data) {
 
 uint8_t Atmega324PBSerial0::isBusy() {
     return this->busy;
+}
+
+bool Atmega324PBSerial0::isCharacterReceieved() {
+    return UCSR1A & (1<<RXC);
+}
+
+char Atmega324PBSerial0::readCharacter() {
+    return UDR1;
 }

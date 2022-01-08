@@ -12,6 +12,8 @@
 #include <util/twi.h>
 #include <util/delay.h>
 
+#include <boards/Board.h>
+
 uint8_t Atmega324PBI2C0::setup() {
     TWSR0 = 0x00;
     TWBR0 = ((F_CPU/I2C0_SCL_CLOCK)-16)/2;
@@ -23,6 +25,9 @@ uint8_t Atmega324PBI2C0::setup() {
 }
 
 uint8_t Atmega324PBI2C0::loop(uint32_t millis) { // TODO: Use millis to check when the I2C is stuck.
+    SmartSensorBoard *b = SmartSensorBoard::getBoard();
+    //b->debugf("Total commands: %d, data: %d\n", this->commands.size(), this->data.size());
+
     switch (this->state) {
     case I2CState::WAITING:
         if ( this->commands.size() > 0 ) {
@@ -58,9 +63,10 @@ uint8_t Atmega324PBI2C0::loop(uint32_t millis) { // TODO: Use millis to check wh
                     }
 
                 } else { // The status is not correct, empty the queue
-                    this->commands.empty();
-                    this->data.empty();
-                    this->cbReadEvents.empty();
+                    b->debugf_P(PSTR("I2C0 Error: command: %d, status: %d, got: %d\n"), *command, status, (int) (TWSR0 & 0xF8));
+                    //this->commands.empty();
+                    //this->data.empty();
+                    //this->cbReadEvents.empty();
                 }
 
             }

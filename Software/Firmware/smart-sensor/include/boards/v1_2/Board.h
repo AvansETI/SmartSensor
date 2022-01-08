@@ -22,7 +22,8 @@
 #include <boards/Board.h>
 #include <boards/v1_2/Timing.h>
 
-#include <util/MessageBuffer.h>
+#include <util/Serial.h>
+#include <util/Message.h>
 
 #include <drivers/LedDriver.h>
 #include <drivers/SHTC3Driver.h>
@@ -34,7 +35,7 @@
 #include <tasks/Atmega324PBI2C0.h>
 
 /* Class SmartSensorBoardV1_2 implements the specific hardware for the board version 1.2. */ 
-class SmartSensorBoardV1_2: public SmartSensorBoard {
+class SmartSensorBoardV1_2: public SmartSensorBoard, public SerialRecievedCharacter {
 private:
     /* The timing class that implements millis(). */
     Timing* timing;
@@ -59,6 +60,8 @@ private:
 
     /* The class that handles the XBeeProS2C communication and configuration. */
     XBeeProS2C* xbeeProS2CDriver;
+
+    SerialBuffer<MESSAGE_LENGTH> serialBuffer;
         
 public:
     SmartSensorBoardV1_2() { }
@@ -75,10 +78,14 @@ public:
     void debug( const char* message);
     void debug_P( const char* message);
 
-    void addMessage(const char* measurement);
-
     void getActualTimestamp();
+    void setActualTimestamp(const RTCTime &time);
     
     /* Get the serial number that is stored in the Atmega324PB. */
     const char* getID();
+
+    uint8_t sendDataString(const char* data);
+    uint8_t sendDataStringAvailable();
+
+    void recievedCharacter(char c);
 };

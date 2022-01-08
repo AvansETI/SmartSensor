@@ -44,7 +44,7 @@ public:
    the full queue is removed until the stop command. When the queue is not empty the state becomes
    COMMAND otherwise WAITING.
  */
-enum I2CState {
+enum class I2CState {
     WAITING, // Nothing to do
     COMMAND, // A command recieved, so it can be executed.
     CHECK,   // Command has been executed, checking if the I2C has been done

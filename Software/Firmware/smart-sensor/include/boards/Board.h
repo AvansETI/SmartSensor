@@ -19,8 +19,10 @@
 #include <avr/pgmspace.h>
 
 #include <tasks/Task.h>
-#include <util/MessageBuffer.h>
+#include <util/Util.h>
+#include <util/Queue.h>
 #include <util/RTC.h>
+#include <util/Message.h>
 
 /* Define the maximum tasks the board is able to run. */
 #define SMARTSENSOR_MAX_TASKS 20
@@ -28,13 +30,15 @@
 /* Define the amount of running average samples of the main loop timing calculation. */
 #define SMARTSENSOR_RUNNING_AVERAGE_LOOP_TIME 5
 
+#define SMARTSENSOR_MESSAGE_QUEUE_LENGTH 10
+
 /* The class SmartSensorBoard is the base class that is extended by the actual board class.
  * Within the main.c application, this base class is used, so no board specific aspects are
  * required by any main application functionality. It implements two interfaces. The first
  * interface is the SmartSensorMeasurement that is used to get measurement results from the
  * sensors. The RTCReadTimestampEvent is used to get the timestamp from the RTC chip.
  */
-class SmartSensorBoard: public SmartSensorMeasurement, public RTCReadTimestampEvent {
+class SmartSensorBoard: public MessageInterface {
 
 protected:
     /* The id of the board that is used for identification with the back-end */
@@ -49,8 +53,7 @@ protected:
     /* Drivers that have been added to the board. 20 drivers maximum */
     ITask* drivers[SMARTSENSOR_MAX_TASKS]; // Maybe later having a split in resources? Or a resources class that can.
 
-    /* Holds the measurements that come back from the sensors. */
-    MeasurementBuffer buffer;
+    Queue<Message, SMARTSENSOR_MESSAGE_QUEUE_LENGTH> queueMessages;
 
     /* Holds the timestampe of the loop, so the total loop time can be calculated. */
     uint32_t loopTimstamp;
@@ -58,13 +61,11 @@ protected:
     /* Holds the total loop time in milliseconds. It shows how long the loop is taking. */
     uint16_t loopTime;
 
-    /* Interface: RTCReadTimestampEvent
-     * When the time has been read, this method is used to get the real time.
-     */
-    void rtcReadTimestampEvent(RTCTime& time, RTCEventMode mode);
-
     /* Protected constructor in order to create an singleton. */
     SmartSensorBoard(): totalDrivers(0) {}
+
+    /* Hold the timestamp in seconds where we have got a measurement. */
+    uint16_t measurementReceivedTimestamp;
 
 public:
     /* Returns the board that has been compiled. It returns the single instance of this class. */
@@ -98,16 +99,6 @@ public:
     virtual void debug_P( const char* message) = 0;
     virtual void debugf_P( const char* message, ...);
 
-    /* Interface: SmartSensorMeasurement
-     * Callback to provide measurement data from the sensors.
-     */
-    virtual void addMeasurement(const char* measurment);
-
-    /* Interface: SmartSensorMeasurement
-     * Callback to provide measurement data from the sensors.
-     */
-    virtual void addMessage(const char* measurement) = 0;
-
     /* Returns the pointer to the char id of the SmartSensor. */
     virtual const char* getID() { return this->id; };
 
@@ -115,10 +106,19 @@ public:
        the timestamp is retrieved the callback rtcReadTimestampEvent is called. */
     virtual void getActualTimestamp() = 0;
 
+    /* Set the actual timestamp from the RTC. This method will be implemented by the concrete board. */
+    virtual void setActualTimestamp(const RTCTime &time) = 0;
+
     /* Returns true when the reset cause is due a watch dog timeout. */
     bool resetCauseWatchdog ();
     
     /* Returns true when the reset cause is due an external reset. */
     bool resetCauseExternalReset ();
+
+    virtual uint8_t sendDataString(const char* data) = 0;
+    virtual uint8_t sendDataStringAvailable() = 0;
+
+    // MessageInterface: addMessage
+    virtual void addMessage(Message  message);
     
 };

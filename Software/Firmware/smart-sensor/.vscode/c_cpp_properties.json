@@ -24,7 +24,7 @@
             },
             "defines": [
                 "F_CPU=20000000L",
-                "PLATFORMIO=50203",
+                "PLATFORMIO=50204",
                 "ARDUINO_AVR_ATmega324",
                 "SMARTSENSOR_BOARD_1_2",
                 "__AVR_ATmega324PB__",

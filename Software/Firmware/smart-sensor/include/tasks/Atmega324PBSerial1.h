@@ -15,6 +15,7 @@
 
 #include <avr/pgmspace.h>
 
+#include <util/Serial.h>
 #include <tasks/Task.h>
 
 /* Set the BAUD rate of the serial communicatio port.
@@ -24,12 +25,6 @@
 
 /* Calculate the UBRR to set it to the correct BAUD rate. */
 #define SERIAL1_UBRR F_CPU/16/SERIAL1_BAUD-1
-
-/* Interface: SerialRecievedCharacter */
-class SerialRecievedCharacter {
-public:
-    virtual void recievedCharacter(char c) = 0;
-};
 
 /* Class: Atmega324PBSerial0
    This class implements the task to write data to the serial port.

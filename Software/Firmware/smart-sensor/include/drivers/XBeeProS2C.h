@@ -58,12 +58,12 @@ private:
     
 protected:
     /* Protected constructor in order to create a singleton class. */
-    XBeeProS2C(): state(0), stateReciever(XBeeProS2CStateReciever::IDLE), recieveBufferPointer(0), isCoordinator(false), timestamp(0) {}
+    XBeeProS2C(MessageInterface* messageInterface): Driver(messageInterface), state(0), stateReciever(XBeeProS2CStateReciever::IDLE), recieveBufferPointer(0), isCoordinator(false), timestamp(0) {}
 
 public:
     /* Returns the singleton instance to this class. */
-    static XBeeProS2C* getInstance() {
-        static XBeeProS2C _xbeeProS2CDriver;
+    static XBeeProS2C* getInstance(MessageInterface* messageInterface) {
+        static XBeeProS2C _xbeeProS2CDriver(messageInterface);
         return &_xbeeProS2CDriver;
     }
 

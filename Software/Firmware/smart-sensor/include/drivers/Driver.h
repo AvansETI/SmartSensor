@@ -17,7 +17,7 @@
 
 #include <avr/pgmspace.h>
 
-#include <util/MessageBuffer.h>
+#include <util/Message.h>
 #include <tasks/Task.h>
 
 /* Driver
@@ -26,14 +26,16 @@
 class Driver: public Task {
 private:
     /* When a measurement becomes available, this information can be given to the responsible class. */
-    SmartSensorMeasurement* cbMeasurement;
+    MessageInterface* messageInterface;
 
 public:
-    /* For drivers that do not contain any measurements this driver can be used. */
-    Driver(): cbMeasurement(NULL) {};
+    /* For drivers that do not contain any message this driver can be used. */
+    Driver(): messageInterface(NULL) {};
 
     /* For drivers that generate measurement, this constructor can be used. */
-    Driver(SmartSensorMeasurement* cbMeasurement): cbMeasurement(cbMeasurement) {};
+    Driver(MessageInterface* messageInterface): messageInterface(messageInterface) {};
 
-    SmartSensorMeasurement* getMeasurementCallback();
+    MessageInterface* getMessageInterface() {
+        return messageInterface;
+    }
 };

@@ -54,41 +54,57 @@ void SmartSensorBoard::setup() {
     this->loopTimstamp = this->millis();
     this->resetCause = MCUSR; // Read the reset cause
     MCUSR = 0x00; // Reset the flags
+    this->measurementReceivedTimestamp = 0;
 }
 
 void SmartSensorBoard::loop() {
+    char data[MESSAGE_LENGTH + 20];
+
     for ( uint8_t i=0; i < this->totalDrivers; ++i ) { // Loop through all the drivers
         this->drivers[i]->loop(this->millis());
     }
 
-    if ( this->buffer.getSize() > 0 ) { // We have measurements!
+    if ( this->queueMessages.size() > 0 ) { // Handle all the message
+        Message *message = this->queueMessages.peek();
+
+        if ( message->getType() == MessageType::MEASUREMENT ) {
+            if ( this->sendDataStringAvailable() ) {
+                this->measurementReceivedTimestamp = this->millis()/100;
+                sprintf(data, "%s:%s\n", this->getID(), this->queueMessages.pop()->getMessage());
+                this->sendDataString(data);
+            }
+
+        } else if ( message->getType() == MessageType::TIMESTAMP ) {
+            if ( this->sendDataStringAvailable() ) {
+                sprintf(data, "%s:%s\n", this->getID(), this->queueMessages.pop()->getMessage());
+                this->sendDataString(data);
+            }
+            
+            
+        } else if ( message->getType() == MessageType::COMMAND ) {
+            if ( this->sendDataStringAvailable() ) {
+                sprintf(data, "%s:%s\n", this->getID(), this->queueMessages.pop()->getMessage());
+                this->sendDataString(data);
+            }
+
+        } else {
+            this->queueMessages.pop();
+        }
+    }
+
+    // When no measurements pop in, request the timestamp
+    if ( this->measurementReceivedTimestamp != 0 && (this->millis()/100) - this->measurementReceivedTimestamp > 5 ) {
         this->getActualTimestamp();
+        this->measurementReceivedTimestamp = 0;
+        if ( this->sendDataStringAvailable() ) {
+            sprintf(data, "%s:lt:%d\n", this->getID(), this->loopTime); // Send also the loop time.
+            this->sendDataString(data);
+        }
     }
 
     this->loopTime = ( (SMARTSENSOR_RUNNING_AVERAGE_LOOP_TIME-1)*this->loopTime + (this->millis() - this->loopTimstamp) )/SMARTSENSOR_RUNNING_AVERAGE_LOOP_TIME; // Running average of 10 loops
     //this->debugf_P(PSTR("Loop time %d ms\n"), this->loopTime); // Show the actual loop timing in the serial
     this->loopTimstamp = this->millis();
-}
-
-// TODO: 
-void SmartSensorBoard::rtcReadTimestampEvent(RTCTime& time, RTCEventMode mode) { // Of toch niet hier doen? Als de timestamp er is, dan in de loop de buffer leeg maken.
-    if ( this->buffer.getSize() > 0 ) { // TODO: handle the buffer! => IDEA to handle this buffer when a new timestemp arrived (callback RTC)
-        // When an overflow has been detected, what to do?
-        
-    }
-    // Check the measurement buffer and sent the messages to the broker. (BELOW some test code)
-    //this->debugf("Buffer size: %d (overflow:%d)\n", this->buffer.getSize(), this->buffer.getBufferOverflow());
-    char m[MESSAGE_TOTAL_CHARS];
-    while ( this->buffer.popMeasurement(m) ) {
-        //this->debugf("Popped: %s\n", m);
-    }
-    //this->debugf("loopTime: %dms\n", this->loopTime);
-
-    char mm[30];
-    time.getIso8601String(mm);
-    //this->debugf("%s\n", mm);
-
-    // Note that if this is a gate wat 
 }
 
 // Documentation: http://www.cplusplus.com/reference/cstdio/vsprintf/
@@ -120,6 +136,8 @@ bool SmartSensorBoard::resetCauseExternalReset() {
     return (this->resetCause & ( 1 << EXTRF )) != 0;
 }
 
-void SmartSensorBoard::addMeasurement(const char* measurement) {
-    this->buffer.addMeasurement(measurement);
+void SmartSensorBoard::addMessage(Message  message) {
+    this->queueMessages.add(message);
 }
+
+

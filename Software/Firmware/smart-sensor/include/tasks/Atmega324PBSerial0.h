@@ -15,6 +15,7 @@
 
 #include <avr/pgmspace.h>
 
+#include <util/Serial.h>
 #include <tasks/Task.h>
 
 /* Set the BAUD rate of the serial communicatio port.
@@ -52,6 +53,8 @@ public:
         return &_serial0;
     }
 
+    void setCallback( SerialRecievedCharacter* callback );
+
     /* Task method overrides.
     */
     uint8_t setup();
@@ -69,6 +72,9 @@ public:
     */
     uint8_t printAsync(const char* message);
     uint8_t printAsync_P(const char* message);
+
+    bool isCharacterReceieved();
+    char readCharacter();
 
     /* Check wheter the serial port is busy.
     */
