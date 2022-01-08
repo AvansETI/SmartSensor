@@ -144,5 +144,9 @@ void SmartSensorBoardV1_2::recievedCharacter(char c) {
     }
 }
 
+void SmartSensorBoardV1_2::sendInitMessage() {
+    // TODO: Do here the initMessage sending.
+}
+
 
 

@@ -55,6 +55,7 @@ void SmartSensorBoard::setup() {
     this->resetCause = MCUSR; // Read the reset cause
     MCUSR = 0x00; // Reset the flags
     this->measurementReceivedTimestamp = 0;
+    this->sendInitMessage();
 }
 
 void SmartSensorBoard::loop() {

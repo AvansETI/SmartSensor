@@ -89,6 +89,8 @@ public:
 
     uint8_t processCommand(const char* data);
 
-
     void recievedCharacter(char c);
+
+    void sendInitMessage();
+
 };

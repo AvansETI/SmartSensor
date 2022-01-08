@@ -122,5 +122,7 @@ public:
 
     // MessageInterface: addMessage
     virtual void addMessage(Message  message);
+
+    virtual void sendInitMessage() = 0;
     
 };
