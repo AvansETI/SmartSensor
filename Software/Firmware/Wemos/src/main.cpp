@@ -200,6 +200,7 @@ void loopWaitOnData() {
     digitalWrite(LED_BUILTIN, !digitalRead(LED_BUILTIN)); // toggle led each 5 seconds
     timer = millis();
     Serial.printf("Total messages: %d\n", mqttMessageQueue.size());
+    fsm.raiseEvent(EVENT_ERROR);
   }
 
   // Process the MQTT message queue
