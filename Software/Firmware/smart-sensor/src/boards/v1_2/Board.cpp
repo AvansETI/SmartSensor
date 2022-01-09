@@ -125,6 +125,10 @@ uint8_t SmartSensorBoardV1_2::sendDataString(const char* data) {
     return this->serial0->printAsync(data);
 }
 
+uint8_t SmartSensorBoardV1_2::sendDataString_P(const char* data) {
+    return this->serial0->printAsync_P(data);
+}
+
 uint8_t SmartSensorBoardV1_2::sendDataStringAvailable() {
     return !this->serial0->isBusy();
 }
@@ -145,7 +149,32 @@ void SmartSensorBoardV1_2::recievedCharacter(char c) {
 }
 
 void SmartSensorBoardV1_2::sendInitMessage() {
-    // TODO: Do here the initMessage sending.
+    /* This board is capable of the following:
+    - Mode 0, but capable of mode 1 (development)
+    - Measurements: Temperature, Humidity, Light, CO2, GPIO_STATUS, ANALOG_INPUT, RS232_RECEIVED
+    - Actuators: BOOT_MODE, GPIO_SETUP, GPIO_OUTPUT, RS232_SEND
+
+    Init message looks like:
+    - INIT:<ID>:<NAME>\n
+    - MEASUREMENTS:loop_time (lt), temperature (te), humidity (hu), ligth (li), co2 (c2), GPIO_STATUS (gi), ANALOG_INPUT (ai), RS232_REC (rs)\n
+    - ACTUATORS:BOOT_MODE(bm), GPIO_SETUP (gs), GPIO_OUTPUT (go), RS232_SEND (rs)
+
+    Note: Select the correct channel to send the data!
+    */
+
+    char message[MESSAGE_LENGTH + 20];
+
+    sprintf_P(message, PSTR("INIT:%s:smartnode-v1-2\n"), this->getID());
+    this->serial0->print(message);
+
+    sprintf_P(message, PSTR("MEA:%s:lt:te:hu:li:c2:gi:ai:rs\n"), this->getID());
+    this->serial0->print(message);
+
+    sprintf_P(message, PSTR("ACT:%s:bm:gs:go:rs\n"), this->getID());
+    this->serial0->print(message);
+
+    sprintf_P(message, PSTR("END:%s\n"), this->getID());
+    this->serial0->print(message);
 }
 
 

@@ -138,4 +138,7 @@ void SmartSensorBoard::addMessage(Message  message) {
     this->queueMessages.add(message);
 }
 
+void SmartSensorBoard::waitOnSendDataStringAvailable() {
+    while ( !this->sendDataStringAvailable() ) {}
+}
 

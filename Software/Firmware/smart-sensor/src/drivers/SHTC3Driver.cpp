@@ -124,10 +124,10 @@ void SHTC3Driver::i2cReadEvent(uint8_t data, uint8_t index) {
     if ( index == 5 ) { // All the measurements have been received.
         char m[30];
 
-        sprintf_P(m, PSTR("mh:%.1f"), (double)this->getHumidity());
+        sprintf_P(m, PSTR("hu:%.1f"), (double)this->getHumidity());
         this->getMessageInterface()->addMessage(Message(MessageType::MEASUREMENT, m));
         
-        sprintf_P(m, PSTR("mt:%.1f"), (double)this->getTemperature());
+        sprintf_P(m, PSTR("te:%.1f"), (double)this->getTemperature());
         this->getMessageInterface()->addMessage(Message(MessageType::MEASUREMENT, m));
     }
 }

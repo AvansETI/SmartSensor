@@ -85,6 +85,7 @@ public:
     const char* getID();
 
     uint8_t sendDataString(const char* data);
+    uint8_t sendDataString_P(const char* data);
     uint8_t sendDataStringAvailable();
 
     uint8_t processCommand(const char* data);
@@ -92,5 +93,4 @@ public:
     void recievedCharacter(char c);
 
     void sendInitMessage();
-
 };

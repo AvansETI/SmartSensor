@@ -117,6 +117,7 @@ public:
 
     virtual uint8_t sendDataString(const char* data) = 0;
     virtual uint8_t sendDataStringAvailable() = 0;
+    virtual void waitOnSendDataStringAvailable();
 
     virtual uint8_t processCommand(const char* data) = 0;
 
@@ -124,5 +125,4 @@ public:
     virtual void addMessage(Message  message);
 
     virtual void sendInitMessage() = 0;
-    
 };

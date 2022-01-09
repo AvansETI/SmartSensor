@@ -38,4 +38,5 @@ public:
     MessageInterface* getMessageInterface() {
         return messageInterface;
     }
+
 };

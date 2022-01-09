@@ -83,4 +83,5 @@ private:
 
     /* Reset the state of led 2. */
     void resetLed2Flash();
+
 };
