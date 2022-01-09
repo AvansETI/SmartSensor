@@ -49,7 +49,7 @@ public:
       newest element are in the queue.
    */
    uint8_t add(V element, uint8_t overwrite = false) {
-      if ( this->space() > 0 ) {
+     if ( this->space() > 1 ) { // If 0, the size becomes 0 because start==pointer
          this->list[this->pointer] = element;
          this->pointer = (this->pointer + 1) % T;
          return true;
@@ -108,6 +108,6 @@ public:
    /* Returns how much elements could be added to the queue.
    */
    uint8_t space() {
-      return T - this->size();
+      return T - this->size() - 1;
    } 
 };

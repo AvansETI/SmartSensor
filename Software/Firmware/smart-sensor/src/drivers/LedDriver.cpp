@@ -1,4 +1,10 @@
+/*
+ * @file       : boards/Board.cpp
+ * @author     : Maurice Snoeren (MS)
+ * @license    : GNU version 3.0
+ */
 #include "drivers/LedDriver.h"
+
 #include "avr/io.h"
 #include <util/delay.h>
 
@@ -6,8 +12,8 @@ uint8_t LedDriver::setup() {
     LED_1_DDR = LED_1_DDR | (1 << LED_1_PIN); // Set the led pins as output!
     LED_2_DDR = LED_2_DDR | (1 << LED_2_PIN);
 
-    this->resetLed1Flash();
-    this->resetLed2Flash();
+    this->led1Off();
+    this->led2Off();
 
     return 0;
 }

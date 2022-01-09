@@ -4,11 +4,11 @@
  * @description: The abstract base class for tasks runned by the SmartSensor board. All tasks should use this class. This file
  *               uses the design approach that starts with interfaces that will be implemented by abstract and concrete classes.
  *               This method provides the interface ITask and the base class Task.
- * @date       : 03-10-2021
+ * @date       : 24-10-2021
  * @author     : Maurice Snoeren (MS)
- * @version    : 0.1
- * @updates
- * 
+ * @version    : 1.0
+ * @license    : GNU version 3.0
+ * @changes
  */
 #include <stddef.h>
 #include <avr/pgmspace.h>

@@ -1,8 +1,15 @@
+/*
+ * @file       : boards/Board.cpp
+ * @author     : Maurice Snoeren (MS)
+ * @license    : GNU version 3.0
+ */
 #include <util/RTC.h>
 
 #include <stdio.h>
 
 #include <avr/pgmspace.h>
+
+#include <util/Util.h>
 
 RTCTime::RTCTime(uint8_t data[7]) {
     this->year    = RTCTime::bcd2int( data[6] ); // Year
@@ -33,9 +40,30 @@ void RTCTime::getIso8601String(char iso8601[20]) {
                 this->hours, this->minutes, this->seconds);
 }
 
+void RTCTime::getShortString(char str[20]) {
+    sprintf(str, "20%02d%02d%02d%02d%02d%02d",
+                this->year, this->month, this->day,
+                this->hours, this->minutes, this->seconds);
+}
+
 uint8_t RTCTime::setFromIso8601String(const char* iso8601) {
-    // TODO: Set the attributes based on tiso8601 string
-    return 0;
+    if ( Generic::strlen(iso8601) >= 19 ) {
+        this->year     = Generic::char2int(iso8601[3]);
+        this->year    += 10*Generic::char2int(iso8601[2]);
+        this->month    = Generic::char2int(iso8601[6]);
+        this->month   += 10*Generic::char2int(iso8601[5]);
+        this->day      = Generic::char2int(iso8601[9]);
+        this->day     += 10*Generic::char2int(iso8601[8]);
+        this->hours    = Generic::char2int(iso8601[12]);
+        this->hours   += 10*Generic::char2int(iso8601[11]);
+        this->minutes  = Generic::char2int(iso8601[15]);
+        this->minutes += 10*Generic::char2int(iso8601[14]);
+        this->seconds  = Generic::char2int(iso8601[18]);
+        this->seconds += 10*Generic::char2int(iso8601[17]);     
+        return 0;   
+    }
+ 
+    return 1;
 }
 
 uint8_t RTCTime::getYear() const {

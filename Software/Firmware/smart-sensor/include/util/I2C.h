@@ -2,14 +2,17 @@
 /**
  * @file       : I2C.h
  * @description: This file contains all generic classes for I2C functions.
- * @date       : 16-10-2021
+ * @date       : 24-10-2021
  * @author     : Maurice Snoeren (MS)
- * @version    : 0.1
+ * @version    : 1.0
+ * @license    : GNU version 3.0
  * @todo       : -
- * @updates
- * 
+ * @changes
+ *  24-10-2021: MS: Improved memory to bring I2CCommandResultStatus to PROGMEM, make sure your read with pgm_read_byte.
  */
 #include <stdint.h>
+
+#include <avr/pgmspace.h>
 #include <util/twi.h>
 
 /* Interface: I2CInterruptEvent
@@ -41,15 +44,14 @@ public:
    the full queue is removed until the stop command. When the queue is not empty the state becomes
    COMMAND otherwise WAITING.
  */
-enum I2CState {
+enum class I2CState {
     WAITING, // Nothing to do
     COMMAND, // A command recieved, so it can be executed.
     CHECK,   // Command has been executed, checking if the I2C has been done
     STATUS,  // Command has been executed and the check was okay, check for the correct status.
 };
 
-/* The I2C commands are configured with this enumeration type.
- */
+/* The I2C commands are configured with this enumeration type. */
 enum I2CCommand {
     START,
     REPEATED_START,
@@ -61,7 +63,11 @@ enum I2CCommand {
     STOP
 };
 
-static const uint8_t I2CCommandResultStatus[] {
+/* An array that contains the result statuses of the I2CCommand enumeration. It
+ * is stored in flash, so you need to get it using the progmem interface.
+ * Example: pgm_read_byte(&I2CCommandResultStatus[4]);
+ */
+static const uint8_t I2CCommandResultStatus[] PROGMEM = {
     TW_START,
     TW_REP_START,
     TW_MT_SLA_ACK,

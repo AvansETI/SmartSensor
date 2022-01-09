@@ -1,318 +1,232 @@
+// Avans University of Applied Sciences (Avans Hogeschool)
+// Lectoraat Smart Energy
+// Project: Smart Sensor
+// Author: Maurice Snoeren
+// Date  : 19-12-2021
+//
+// Add Wi-Fi gateway functionality to the SmartSensor as a pants module!
+//
 #include <Arduino.h>
-#include <Wire.h>
 #include <ESP8266WiFi.h>
 #include <PubSubClient.h>
-#include <SoftwareSerial.h>
-#include "ArduinoJson-v6.18.0.h"
+#include <ArduinoJson.h>
 
-//Sendlab netwerk ww: SENDLAB / SEnDLab@LA121
-// MS: No comments at all and very difficult written code!
-// MS: No feedback implemented?
-// MS: No friendly interface for the user implemented :(.
-WiFiClient espClient;
-PubSubClient client(espClient);
+#include <fsm.h>
+#include <Queue.h>
 
-constexpr uint8_t max_id_length = 32;
+// Create the wifi-client to connect to the Internet
+WiFiClient client;
 
-char callback_id[max_id_length];
-char callback_buffer[255];
-uint8_t callback_buffer_length = 0;
+// Create the MQTT client to connect to a MQTT Broker (server)
+PubSubClient mqtt;
 
-void callback(char* topic, byte* payload, unsigned int length) {
-
-
-  /*Serial.println("Got callback: ");
-  while (length--) Serial.print(*payload); ++payload;
-  Serial.println();
-  Serial.println("Payload done");*/
-  callback_buffer_length = length > 255 ? 255 : length;
-  memcpy(callback_buffer, payload, callback_buffer_length);
-  char * write_head = callback_id;
-  char * read_head = topic + 5; // skip "node/"
-  while (*read_head != '/' && *read_head != '\0') {
-    *(write_head++) = *(read_head++);
-  }
-  write_head = '\0';
+// Finite state machine
+enum FSM_STATES {
+  STATE_WIFI,
+  STATE_MQTT,
+  STATE_WAIT_ON_DATA,
+  STATE_PROCESS_MQTT_DATA,
+  STATE_PROCESS_SENSOR_DATA,
+  STATES_TOTAL // Add this one always!
 };
 
+// Finite state machine events
+enum FSM_EVENTS {
+  EVENT_MQTT_DATA_RECEIVED,
+  EVENT_SENSOR_DATA_RECEIVED,
+  EVENT_READY,
+  EVENT_ERROR,
+  EVENT_STATE_EXECUTED, // Add this one always!
+  EVENTS_TOTAL          // Add this one always!
+};
+
+// Finite state machine callback methods forward declarations
+void preWifi();
+void loopWifi();
+void postWifi();
+void preMqtt();
+void loopMqtt();
+void postMqtt();
+void preWaitOnData();
+void loopWaitOnData();
+void postWaitOnData();
+void preMqttData();
+void loopMqttData();
+void postMqttData();
+void preSensorData();
+void loopSensorData();
+void postSensorData();
+
+//FSM
+FSM fsm(STATES_TOTAL, EVENTS_TOTAL, false);
+
+constexpr char MQTT_SERVER[] = "sendlab.nl";
+constexpr int  MQTT_PORT     = 11883;
+
+// Timer method for timing purposes
+Queue<String, 40> mqttMessageQueue;
+unsigned long timer;
+StaticJsonDocument<4096> jsondoc;
+
+void callbackMQTT(char* topic, byte* pl, unsigned int length) {
+  Serial.printf("MQTT message received: %s\n", topic);
+  
+  String payload = "";
+  for (unsigned int i=0;i<length;i++) {
+    payload += (char)pl[i];
+  }
+
+  mqttMessageQueue.add(String(topic), false);
+  mqttMessageQueue.add(payload, false);
+}
+
 void setup() {
-  pinMode(BUILTIN_LED, OUTPUT);
-  digitalWrite(BUILTIN_LED, HIGH);
-  delay(1000);
-  digitalWrite(BUILTIN_LED, LOW);
-  delay(1000);
+  pinMode(LED_BUILTIN, OUTPUT);
 
+  // Switch on and off the led!
+  digitalWrite(LED_BUILTIN, LOW);
+  delay(1000);
+  digitalWrite(LED_BUILTIN, HIGH);
 
-  // put your setup code here, to run once:
-  // HELP: How is the setup?
+  // For debugging purposes
   Serial.begin(9600);
-  Serial1.begin(9600);
+  Serial.printf_P(PSTR("\n\nSdk version: %s\n"),   ESP.getSdkVersion());
+  Serial.printf_P(PSTR("Core Version: %s\n"),      ESP.getCoreVersion().c_str());
+  Serial.printf_P(PSTR("Boot Version: %u\n"),      ESP.getBootVersion());
+  Serial.printf_P(PSTR("Boot Mode: %u\n"),         ESP.getBootMode());
+  Serial.printf_P(PSTR("CPU Frequency: %u MHz\n"), ESP.getCpuFreqMHz());
+  Serial.printf_P(PSTR("Reset reason: %s\n"),      ESP.getResetReason().c_str());
 
-  Serial.print("attempting WIFI connection...");
-  WiFi.hostname("SmartSensor-Controller");
-  WiFi.begin("SENDLAB", "SEnDLab@LA121");
-  while (!WiFi.isConnected())
-    delay(1);
-  Serial.print("connected\n");
-  
-  client.setBufferSize(1024);
-  client.setServer("sendlab.nl", 11884);
-  client.setCallback(callback);
+  // Add the state method to the FSM
+  fsm.addState(STATE_WIFI,                preWifi, loopWifi, postWifi);
+  fsm.addState(STATE_MQTT,                preMqtt, loopMqtt, postMqtt);
+  fsm.addState(STATE_WAIT_ON_DATA,        preWaitOnData, loopWaitOnData, postWaitOnData);
+  fsm.addState(STATE_PROCESS_MQTT_DATA,   preMqttData, loopMqttData, postMqttData);
+  fsm.addState(STATE_PROCESS_SENSOR_DATA, preSensorData, loopSensorData, postSensorData);
+
+  // Add the events to the FSM
+  fsm.addTransition(STATE_WIFI, EVENT_READY, STATE_MQTT);
+  fsm.addTransition(STATE_MQTT, EVENT_READY, STATE_WAIT_ON_DATA);
+  fsm.addTransition(STATE_WAIT_ON_DATA, EVENT_MQTT_DATA_RECEIVED, STATE_PROCESS_MQTT_DATA);
+  fsm.addTransition(STATE_PROCESS_MQTT_DATA, EVENT_READY, STATE_WAIT_ON_DATA);  
+  fsm.addTransition(STATE_WAIT_ON_DATA, EVENT_SENSOR_DATA_RECEIVED, STATE_PROCESS_SENSOR_DATA);
+  fsm.addTransition(STATE_PROCESS_SENSOR_DATA, EVENT_READY, STATE_WAIT_ON_DATA);
+  fsm.addTransition(STATE_WAIT_ON_DATA, EVENT_ERROR, STATE_WIFI);
+  fsm.addTransition(STATE_MQTT, EVENT_ERROR, STATE_WIFI);
+
+  // Some mqtt configuration
+  mqtt.setClient(client); // Setup the MQTT client
+  mqtt.setBufferSize(1024); // override MQTT_MAX_PACKET_SIZE
+  mqtt.setCallback(callbackMQTT);
+  mqtt.setServer(MQTT_SERVER, MQTT_PORT);
+
+  fsm.setup(STATE_WIFI, EVENT_STATE_EXECUTED);
 }
 
-void reconnect() {
-  while (!client.connected()) {
-    Serial.print("attempting MQTT connection...");
+// Ardiuno loop
+void loop() {   
+  mqtt.loop();
+  fsm.loop();
+}
 
-    if (client.connect("SmartSensor-Controller", "node", "smartmeternode")) {
-      Serial.println("connected");
+void preWifi() {
+  if ( !WiFi.isConnected() ) { 
+    WiFi.begin("MaCMaN_GUEST", "GUEST@MACMAN"); // Connect to the Wi-Fi (if not known use WifiManager from tzapu!)
+    Serial.printf_P(PSTR("Setup Wi-Fi:"));
+    while ( WiFi.status() != WL_CONNECTED ) {
+        delay(500);
+        Serial.printf_P(PSTR("."));
+    }
+    WiFi.setAutoReconnect(true);
+    WiFi.persistent(true);
+  }
+}
+
+void loopWifi() {
+  if ( WiFi.isConnected() ) {
+    Serial.println();
+    Serial.printf_P(PSTR("Connected:"));
+    Serial.println(WiFi.localIP());
+
+    fsm.raiseEvent(EVENT_READY);
+  }
+}
+
+void postWifi() { }
+
+void preMqtt() {
+  if ( WiFi.status() != WL_CONNECTED ) { // If we are not connected, raise an error
+    fsm.raiseEvent(EVENT_ERROR);
+  }
+}
+
+void loopMqtt() {
+  if ( WiFi.status() != WL_CONNECTED ) { // If we are not connected, raise an error
+    fsm.raiseEvent(EVENT_ERROR);
+
+  } else {
+    char mqttClientId[15] = "";
+    sprintf_P(mqttClientId, PSTR("SNGW-%04X"), system_get_chip_id());
+    Serial.printf_P(PSTR("mqtt ID: %s\n"), mqttClientId);
+    if ( mqtt.connect(mqttClientId, "node", "smartmeternode") ) {
+      if ( mqtt.subscribe("node/test/data") ) {//node/+/data") ) {
+        Serial.printf_P(PSTR("Subscribed to node/+/data!\n"));
+      }
+      fsm.raiseEvent(EVENT_READY);
+      Serial.printf_P(PSTR("MQTT CONNECTED!\n"));
+
     } else {
-      Serial.println("failed to connect");
-      delay(1000);
-    }
-  }
-}
-
-bool b;
-
-long last = millis();
-
-char message_buffer[512];
-
-bool is_valid_message(const char* msg) {
-  bool is_valid = true;
-  uint8_t index = 0;
-
-  do {
-    const auto c = msg[index];
-
-    if (c >= 'a' && c <= 'z') continue;
-    if (c >= 'A' && c <= 'Z') continue;
-    if (c >= '0' && c <= '9') continue;
-    if (c == '{' || c == '}') continue;
-    if (c == '[' || c == ']') continue;
-    if (c == ' ' || c == '.') continue;
-    if (c == '\n' || c == '\t') continue;
-    if (c == ':' || c == '-') continue;
-    if (c == '"' || c == ',') continue;
-    if (c == '!') continue;
-
-    Serial.printf("\tinvalid char := %c (0x%X) at %d\n", c, c, index);
-    is_valid = false;
-
-  } while (msg[++index] != '\0');
-  return is_valid;
-}
-
-constexpr uint8_t id_to_adress_size = 32;
-
-struct {
-  char id[max_id_length];
-  uint64_t xbee_adress;
-} id_to_adress_table[id_to_adress_size];
-uint8_t id_to_adress_index = 0;
-
-bool register_SmartSensor(const char* id, uint64_t xbee_adress) {
-  if (strlen(id) > max_id_length) {
-    Serial.printf("unable to register := id is too long (%s)\n", id);
-    return false;
-  } else if (id_to_adress_index >= id_to_adress_size) {
-    Serial.print("unable to register := no space in table\n");
-    return false;
-  }
-
-  strcpy(id_to_adress_table[id_to_adress_index].id, id);
-  id_to_adress_table[id_to_adress_index].xbee_adress = xbee_adress;
-
-  Serial.printf("registered id %s at adress 0x%016llX and index %hhu\n", id, xbee_adress, id_to_adress_index);
-
-  ++id_to_adress_index;
-  
-  return true;
-}
-
-uint64_t get_xbee_adress(const char* id) {
-  for (uint8_t i = 0; i < id_to_adress_index; ++i) {
-    if (strcmp(id, id_to_adress_table[i].id) == 0) return id_to_adress_table[i].xbee_adress;
-  }
-  return 0;
-}
-
-void output_xbee_frame(uint64_t destination, const char*msg) {
-  //Serial1.printf("0x%016llX -> %s\n", destination, msg);
-  constexpr auto header_size = 14;
-
-  const auto msg_length = strlen(msg);
-  if (msg_length > (255-header_size)) {
-    Serial.printf("XBEE: message to long (%d)\n", msg_length);
-    return;
-  }
-
-  const auto length = msg_length + header_size;
-
-  uint64_t checksum = 0;
-  auto send_byte = [&](uint8_t byte) { checksum += byte; Serial1.write(byte); };
-
-  Serial1.write(0x7E);
-  Serial1.write(0x00);
-  Serial1.write(length & 0xFF);
-
-  send_byte(0x10);
-  send_byte(1);
-  for (uint8_t i = 0; i < 8; ++i) 
-    send_byte((destination >> ((7-i)*8)) & 0xFF);
-  
-  send_byte(0xFF);
-  send_byte(0xFE);
-  send_byte(0);
-  send_byte(0);
-  
-  for (uint8_t i = 0; i < msg_length; ++i)
-    send_byte(msg[i]);
-
-  send_byte(0xFF - (checksum & 0xFF));
-}
-
-void loop() {
-  //Serial.println("Hello!");
-  //delay(250);
-  digitalWrite(LED_BUILTIN, (b = !b));
-
-  if (!client.connected()) {
-    reconnect();
-  }
-  client.loop();
-
-  if (callback_buffer_length) {
-    Serial.print("callback:\n");
-    Serial.write(callback_buffer, callback_buffer_length);
-    Serial.print("\n\n");
-
-    StaticJsonDocument<255> doc;
-
-    if (auto error = deserializeJson(doc, callback_buffer, callback_buffer_length)) {
-      Serial.printf("Failed to deserialize JSON: %s\n", error.c_str());
-    } else{
-
-      if (const auto adrr = get_xbee_adress(callback_id)) {
-
-        output_xbee_frame(adrr, doc["time"]);
-      } else {
-        Serial.printf("unable to resolve id := %s\n", callback_id);
-      }
+      Serial.printf_P(PSTR("MQTT NOT CONNECTED!"));
+      Serial.printf_P(PSTR("MQTT State: %d\n"), mqtt.state());
+      Serial.printf_P(PSTR("WiFi State: %d\n"), WiFi.status());
     }
 
-    callback_buffer_length = 0;
+    delay(1000);
   }
-
-  if (!Serial.available()) { 
-    //Serial.write("No Data\n"); 
-    delay(100);
-    return; 
-  }
-  //Serial.write("Data incomming\n");
-
-  int res = Serial.read();
-  if (res >= 0) {
-    uint8_t byte = res;
-    if (byte == '?') {
-      Serial1.write("!OK!");
-    } else if (byte == 0x7E) {
-      Serial.write(" 0x7E ");
-
-      uint16_t payload_bytes_read = 0;
-      auto read_byte = [&]{++payload_bytes_read; return static_cast<uint8_t>(Serial.read());};
-
-      uint16_t length = read_byte() << 8;
-      length |= read_byte();
-      payload_bytes_read = 0;
-
-      Serial.printf("length := %u\n", length);
-
-      const auto frame_type = read_byte();
-      uint64_t source_adrr64 = 0;
-      for (uint_fast8_t i = 0; i < (64/8); ++i)
-        source_adrr64 |= (uint64_t)read_byte() << (8*(7-i));
-      uint16_t source_adrr16 = read_byte() << 8;
-      source_adrr16 |= read_byte();
-      uint8_t recieve_options = read_byte();
-
-      char* write_needle = message_buffer;
-      /*while (payload_bytes_read < length) {
-        /*if (!(payload_bytes_read%10))*/ /*Serial.flush(), yield();
-        const auto byte = read_byte();
-        //Serial.write(byte);
-        *write_needle++ = byte;
-      }*/
-      write_needle = write_needle + Serial.readBytes(message_buffer, length-payload_bytes_read);
-
-      *write_needle++ = '\0';
-      auto checksum = read_byte();
-      --payload_bytes_read; // correct for checksum
-      
-      char* message_to_send = message_buffer;
-
-      const auto actual_msg_length = strlen(message_to_send);
-      Serial.printf("message(length := %d): %s\n", actual_msg_length, message_to_send);
-
-      if (!actual_msg_length) {
-        Serial.print("aborting since message is empty\n");
-      } else if (!is_valid_message(message_to_send)) {
-        Serial.print("aborting due to corrupted message\n");
-      } else if (message_buffer[0] == '!') {
-        Serial.print("init request\n");
-        if (!register_SmartSensor(message_buffer+1, source_adrr64)) return;
-
-        char topic[max_id_length+5+8+1];
-        sprintf(topic, "node/%s/message", message_buffer+1);
-
-        Serial.printf("subscribing to %s\n", topic);
-        client.subscribe(topic, 1);
-
-        Serial.print("sending init\n");
-
-        message_to_send = write_needle;
-        write_needle += sprintf(message_to_send, 
-R"!({
-    "type":  "simulation",
-    "mode": 0,
-    "id":    "%s",
-    "name":  "test 1",
-    "measurements": [{
-        "name": "temperature",
-        "description": "Temperature sensor -40 to 100 with 0.1 accuracy.",
-        "unit": "degree of Celsius"
-    },
-    {
-        "name": "humidity",
-        "description": "Humidity sensor 0 to 100 with 0.5 accuracy.",
-        "unit": ""
-    }],
-    "actuators": []
 }
-)!", message_buffer + 1);
-        *(++write_needle) = '\0';
-        Serial.print(message_to_send);
-        client.publish("node/init", 
-          message_to_send,
-        false);
-      } else {
-        Serial.print("normal JSON\n");
-        Serial.print("uploading to MQTT\n");
-        client.publish("node/data", 
-          message_to_send,
-        false);
-      }
 
-      
-    }
+void postMqtt() {}
+
+void preWaitOnData() {
+  timer = millis();
+}
+
+void loopWaitOnData() {
+  if ( WiFi.status() != WL_CONNECTED || !mqtt.connected() ) { // If we are not connected, raise an error
+    fsm.raiseEvent(EVENT_ERROR);
   }
 
-  /*
-  if ((millis() - last) > 1000) {
-    Serial.println("publishing");
+  if ( millis() > (timer+5000) ) {
+    digitalWrite(LED_BUILTIN, !digitalRead(LED_BUILTIN)); // toggle led each 5 seconds
+    timer = millis();
+    Serial.printf("Total messages: %d\n", mqttMessageQueue.size());
+  }
+
+  // Process the MQTT message queue
+  while ( mqttMessageQueue.size() > 0 ) {
+    String *topic   = mqttMessageQueue.pop();
+    String *message = mqttMessageQueue.pop();
+
+    Serial.printf("Topic: %s\n", topic->c_str());
+
+    DeserializationError err = deserializeJson(jsondoc, message->c_str());
+    if (err) {
+      Serial.println("No JSON: " + String(err.c_str()));
     
-    last = millis();
+    } else {
+      String event = jsondoc["event"];
+      Serial.println("JSON EVENT: " + event);
+    }
+  }
 
-  }*/
+
+
 }
+
+void postWaitOnData() {}
+void preMqttData() {}
+void loopMqttData() {}
+void postMqttData() {}
+void preSensorData() {}
+void loopSensorData() {}
+void postSensorData() {}

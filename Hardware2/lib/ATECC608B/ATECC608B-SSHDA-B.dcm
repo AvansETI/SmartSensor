@@ -1,0 +1,9 @@
+EESchema-DOCLIB  Version 2.0
+#
+$CMP ATECC608B-SSHDA-B
+D IC AUTHENTICATION CHIP
+K
+F https://www.mouser.de/datasheet/2/268/ATECC608B_CryptoAuthentication_Device_Summary_Data-1917867.pdf
+$ENDCMP
+#
+#End Doc Library

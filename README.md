@@ -5,9 +5,7 @@ Author: _Maurice Snoeren (Lectoraat Smart Energy en Datascience & ICT)_
 
 De SmartSensor is een resultaat van verschillende onderzoeken sinds 2018. Focus is gegeven aan laag vermogen, controle over energiestromen en eenvoud. Deze SmartSensor wordt binnen onderzoek en onderwijs toegepast.
 
-<img src="Documentation/SmartSensor v1.1 Board.png" width="400px"/>
-
-_3D generated model_
+<img src="Documentation/v1.2/board.jpg" width="400px"/>
 
 ## Inleiding
 Meten is weten! Het belang van meten en het verzamelen van informatie is wel bekend. Echter komt het vaak  voor dat data niet voorhanden is of dat de data van beschikbare systemen van onvoldoende kwaliteit is. Bestaande meetsystemen zijn vaak kostbaar en onvoldoende flexibel om de benodigde aanpassingen te maken die nodig zijn binnen de verschillende onderzoeken. De SmartSensor biedt een open platform, waarmee eenvoudig vele meetpunten in een omgeving geïnstalleerd kunnen worden. Het platform biedt de mogelijkheid eigen metingen toe te voegen. Uniek is dat het met de SmartSensor mogelijk wordt om met andere systemen te communiceren. Hierdoor wordt het mogelijk om tevens sturing aan te brengen. Een open platform dat binnen Avans Hogeschool wordt ingezet voor het onderzoek en onderwijs.

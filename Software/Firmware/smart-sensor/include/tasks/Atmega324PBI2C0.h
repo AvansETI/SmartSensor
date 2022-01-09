@@ -3,11 +3,12 @@
  * @file       : I2C0.h
  * @description: This module handles the I2C interface. The interrupts needs to be enabled to let this
  *               module properly run.
- * @date       : 11-09-2021
+ * @date       : 24-10-2021
  * @author     : Maurice Snoeren (MS)
- * @version    : 0.1
+ * @version    : 1.0
+ * @license    : GNU version 3.0
  * @todo       : -
- * @updates
+ * @changes
  * 
  */
 #include <stdint.h>
@@ -17,12 +18,13 @@
 
 #include <util/Queue.h>
 #include <util/I2C.h>
-
 #include <drivers/Driver.h>
-
 #include <tasks/Task.h>
 
+/* Define the I2C0 clock speed. */
 #define I2C0_SCL_CLOCK 400'000L
+
+/* Define how many I2C commands can be given at once. */
 #define I2C0_BUFFER_LENGTH 20
 
 /* The class I2CDriver handles the i2c 0 interface on the board. */
@@ -46,9 +48,11 @@ private:
     uint32_t timer;
 
 protected:
-    Atmega324PBI2C0(): state(I2CState::WAITING) { } // Singleton
+    /* Protected constructor to create a singleton of the class. */
+    Atmega324PBI2C0(): state(I2CState::WAITING) { }
 
 public:
+    /* Get the singleton instance of this class. */
     static Atmega324PBI2C0* getInstance() {
         static Atmega324PBI2C0 _i2c;
         return &_i2c;

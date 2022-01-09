@@ -1,0 +1,20 @@
+{
+    "places": [
+    {
+        "id": "lovensdijk-61-breda",
+        "name": "Lovensdijkstraat 61 Breda",
+        "latitude": 51.5858,
+        "longitude": 4.7928,
+        "declination": 0,
+        "azimuth": 0,
+        "installed_kwp": 100
+    },{
+        "id": "palet-middelburg",
+        "name": "Palet Middelburg",
+        "latitude": 51.48548472252819,
+        "longitude": 3.617448052062993,
+        "declination": 0,
+        "azimuth": 0,
+        "installed_kwp": 100
+    }]
+}
