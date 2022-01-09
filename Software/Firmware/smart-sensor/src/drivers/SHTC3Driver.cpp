@@ -20,7 +20,7 @@ uint8_t SHTC3Driver::setup() {
         return 2; // The given ID is not correct!
     }
 
-    this->samplingInterval = 10;//60*5; // five minutes
+    this->samplingInterval = 60*5; // five minutes
     this->samplingTimestamp = 0;
 
     return 0;
@@ -152,7 +152,7 @@ uint8_t SHTC3Driver::sample() {
         i2c->cmdStop();
     
     } else {
-        //this->waitingOnI2C = true;
+        this->waitingOnI2C = true;
     }
 
     return 0;

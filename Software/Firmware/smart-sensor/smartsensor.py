@@ -30,12 +30,12 @@ measurements_mapping = {
     "li": {
         "name": "light",
         "description": "Measurement of the ambient light.",
-        "unit": "lumen"
+        "unit": "lux"
     },
     "c2": {
         "name": "co2",
         "description": "Measurement of the CO2.",
-        "unit": ""
+        "unit": "ppm"
     },
     "gi": {
         "name": "gpio",
@@ -51,6 +51,11 @@ measurements_mapping = {
         "name": "rs232",
         "description": "The bytes that has been received on the RS232 connection. Setup gpio 6-7 as S!",
         "unit": "-"
+    },
+    "tv": {
+        "name": "tvoc",
+        "description": "The equivalent Total Volatile Organic Compound (eTVOC)",
+        "unit": "ppb"
     },
     "ts": {
         "name": "timestamp",
@@ -101,10 +106,10 @@ def on_disconnect(client, userdata, rc):
 
 # The callback for when a PUBLISH message is received from the server.
 def on_message(client, userdata, msg):
-    print(msg.topic+" "+str(msg.payload))
+    #print(msg.topic+" "+str(msg.payload))
+    pass
 
 def get_init_message(smartnode):
-    print(smartnode)
     measurements_line:str = smartnode["measurements"]
     actuators_line:str = smartnode["actuators"]
 
@@ -125,7 +130,9 @@ def get_init_message(smartnode):
     }
 
 def get_data_message(smartnode):
-    print(smartnode)
+    if len(smartnode["values"]) <= 1:
+        print("MMMM??!")
+
     measurements = {}
     for value in smartnode["values"]:
         for key in value:
@@ -147,97 +154,67 @@ client.on_message = on_message
 
 client.username_pw_set("node", password="smartmeternode")
 client.connect("sendlab.nl", 11883, 60)
-
-#client.subscribe("node/" + sensor_id + "/message", qos=0) => When a new one is found, subscribe!
-
-#print("Sending init message...")
-#client.publish("node/init", json.dumps(sensor_init))
-
 client.loop_start()
-
-
-
-#while ( 1 ):
-#    timediff = datetime.now() - timestamp;
-#    if ( timediff.seconds > 1 ):
-#        data = {
-#            "id": sensor_id,
-#            "measurements": [{
-#                "timestamp": datetime.now(timezone.utc).isoformat(),
-#                "temperature": temp,
-#                "humidity": humidity,
- #           }],
- #       }
- #       client.publish("node/data", json.dumps(data))
- #       temp = temp + random.random()*1 - 0.5;
- #       humidity = humidity + random.random()*1 - 0.5;
- #       timestamp = datetime.now()
- #       print(data)
-
-    #client.loop()
-
 
 ser = serial.Serial('COM9')
 
 while (1):
-    line = ser.readline().decode('utf-8')
-    print(line.rstrip())
+    try:
+        line = bytes(ser.readline()).decode('utf-8') # ser.readline().decode('utf-8')
+        print(line.rstrip())
 
-    #INIT:86FF1312170E0932554E:smartnode-v1.2
-    match = re.match("^INIT:(.+):(.+)$", line)
-    if match:
-        id   = match.groups()[0]
-        name = match.groups()[1]
-        smartnodes[id] = { 
-            "id": id,
-            "name": name,
-            "measurements": "",
-            "actuators": "",
-            "values": []
-        }
+        #INIT:86FF1312170E0932554E:smartnode-v1.2
+        match = re.match("^INIT:(.+):(.+)$", line)
+        if match:
+            id   = match.groups()[0]
+            name = match.groups()[1]
+            smartnodes[id] = { 
+                "id": id,
+                "name": name,
+                "measurements": "",
+                "actuators": "",
+                "values": []
+            }
 
-    #MEA:86FF1312170E0932554E:lt:te:hu:li:c2:gi:ai:rs
-    match = re.match("^MEA:([^:]+):(.+)$", line)
-    if match:
-        id   = match.groups()[0]
-        measurements = match.groups()[1]
-        smartnodes[id]["measurements"] = measurements
+        #MEA:86FF1312170E0932554E:lt:te:hu:li:c2:gi:ai:rs
+        match = re.match("^MEA:([^:]+):(.+)$", line)
+        if match:
+            id   = match.groups()[0]
+            measurements = match.groups()[1]
+            smartnodes[id]["measurements"] = measurements
 
-    #ACT:86FF1312170E0932554E:bm:gs:go:rs
-    match = re.match("^ACT:([^:]+):(.+)$", line)
-    if match:
-        id   = match.groups()[0]
-        actuators = match.groups()[1]
-        smartnodes[id]["actuators"] = actuators
+        #ACT:86FF1312170E0932554E:bm:gs:go:rs
+        match = re.match("^ACT:([^:]+):(.+)$", line)
+        if match:
+            id   = match.groups()[0]
+            actuators = match.groups()[1]
+            smartnodes[id]["actuators"] = actuators
 
-    #END:86FF1312170E0932554E
-    match = re.match("^END:(.+)$", line)
-    if match:
-        id   = match.groups()[0]
-        client.publish("node/init", json.dumps(get_init_message(smartnodes[id])))
-        print("node/init", json.dumps(get_init_message(smartnodes[id])))
-        print("Send init message for: " + id)
+        #END:86FF1312170E0932554E
+        match = re.match("^END:(.+)$", line)
+        if match:
+            id   = match.groups()[0]
+            client.publish("node/init", json.dumps(get_init_message(smartnodes[id])))
+            #print("node/init", json.dumps(get_init_message(smartnodes[id])))
+            #print("Send init message for: " + id)
 
-    #86FF1312170E0932554E:te:22.7
-    match = re.match("^([^:]+):([^:]+):(.+)$", line)
-    if match:
-        id    = match.groups()[0]
-        key   = match.groups()[1]
-        value = match.groups()[2]
+        #86FF1312170E0932554E:te:22.7
+        match = re.match("^([^:]+):([^:]+):(.+)$", line)
+        if match:
+            id    = match.groups()[0]
+            key   = match.groups()[1]
+            value = match.groups()[2]
 
-        if id in smartnodes:
-            smartnodes[id]["values"].append({key: value})
+            if id in smartnodes:
+                smartnodes[id]["values"].append({key: value})
 
-            if ( key == "ts" ):
-                client.publish("node/data", json.dumps(get_data_message(smartnodes[id])))
-                print("node/data", json.dumps(get_data_message(smartnodes[id])))
-                smartnodes[id]["values"] = []
-       
-
-#matches = re.match("^(.+)\*.+$", cosem)
-#    if matches:
-#      return ("actual_power_delivered", float(matches.groups()[0]))
-
+                if ( key == "ts" ):
+                    client.publish("node/data", json.dumps(get_data_message(smartnodes[id])))
+                    #print("node/data", json.dumps(get_data_message(smartnodes[id])))
+                    smartnodes[id]["values"] = []
+    except:
+        pass
+    
 client.loop_stop()
 
 

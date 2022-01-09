@@ -28,6 +28,8 @@
 #include <drivers/LedDriver.h>
 #include <drivers/SHTC3Driver.h>
 #include <drivers/MCP7940NDriver.h>
+#include <drivers/VEML7700.h>
+#include <drivers/CCS811.h>
 #include <drivers/XBeeProS2C.h>
 
 #include <tasks/Atmega324PBSerial0.h>
@@ -57,6 +59,10 @@ private:
 
     /* The class that handles the RTC chip that contains the time in real-time. */
     MCP7940NDriver* mcp7940nDriver;
+
+    VEML7700Driver* vml7700Driver;
+
+    CCS811Driver* ccs811Driver;
 
     /* The class that handles the XBeeProS2C communication and configuration. */
     XBeeProS2C* xbeeProS2CDriver;
