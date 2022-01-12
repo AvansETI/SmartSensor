@@ -161,6 +161,11 @@ def thread_function(ser):
         ser.write(b"MEA:86FF1312170E0932554E:lt:te:hu:li:c2:gi:ai:rs\n")
         ser.write(b"ACT:86FF1312170E0932554E:bm:gs:go:rs\n")
         ser.write(b"END:86FF1312170E0932554E\n")
+        time.sleep(5)
+        ser.write(b"86FF1312170E0932554E:te:22.7\n")
+        ser.write(b"86FF1312170E0932554E:hu:58.2\n")
+        ser.write(b"86FF1312170E0932554E:ts:2022-01-12T20:29:00\n")
+
 
 ser = serial.Serial('COM3')
 

@@ -214,19 +214,48 @@ uint8_t countCharacters(String line, char c) {
     return counter;
 }
 
+bool isInteger(String data) {
+    for (uint8_t i=0; i < data.length(); ++i ) {
+        if ( data.charAt(i) >= '0' && data.charAt(i) <= '9' ) {
+
+        } else {
+            return false;
+        }
+    }
+    return true;
+}
+
+bool isFloat(String data) {
+    int dot = data.indexOf(".");
+    if ( dot > 0 ) {
+        return isInteger(data.substring(0, dot)) && isInteger(data.substring(dot+1));
+    }
+
+    return false;
+}
+
+class SmartNodeValue {
+public:
+    String key;
+    String value;
+    SmartNodeValue(String key, String value): key(key), value(value) {}
+    SmartNodeValue(): key(""), value("") {}
+};
+
 class SmartNode {
 private:
     String id;
     String name;
     String measurements;
     String actuators;
-    Queue<String, 20> values;
+    Queue<SmartNodeValue, 20> values;
+    String timestamp;
 
 public:
-    SmartNode(): id(""), name(""), measurements(""), actuators("") {
+    SmartNode(): id(""), name(""), measurements(""), actuators(""), timestamp("") {
     }
 
-    SmartNode(String id, String name): id(id), name(name), measurements(""), actuators("") {
+    SmartNode(String id, String name): id(id), name(name), measurements(""), actuators(""), timestamp("") {
     }
 
     String getId() { return this->id; }
@@ -240,11 +269,29 @@ public:
     }
 
     void addValue(String data) {
-        this->values.add(data);
+        int i = data.indexOf(':');
+        if ( i > 0 ) {
+            String key = data.substring(0, i);
+            String value = data.substring(i+1);
+            if ( getMeasurementIndex(key.c_str()) != -1 ) { // It exist!
+                if ( key.equals("ts") ) { // timestamp, so send the message!
+                    if ( this->values.size() > 0 ) {
+                        this->timestamp = value;
+                        Serial.print("Timestampe! Send the message!\n");
+                    } else { 
+                        Serial.print("Something wrong with timestamp\n");
+                    }
+                } else {
+                    Serial.printf("Adding: %s:%s\n", key.c_str(), value.c_str());
+                    this->values.add(SmartNodeValue(key, value));
+                }
+            }
+        }
     }
 
     void resetValues() {
         this->values.empty();
+        this->timestamp = "";
     }
 
     String getJsonMeasurement(const char* measurement) {
@@ -302,6 +349,63 @@ public:
         return json;
     }
 
+    String getJsonValues() {
+        String json = "";
+        while ( this->values.size() > 0 ) {
+            SmartNodeValue* value = this->values.pop();
+
+            if ( isInteger( value->value ) ) {
+                value->value = value->value + ".0";
+            } else if (isFloat( value->value) ) {
+                // it is okay
+            } else {
+                value->value = "\"" + value->value + "\"";
+            }
+
+            json = json + "\"" + getMeasurementName(value->key.c_str())+ "\":" + value->value;
+            if ( this->values.size() != 0 ) {
+                json = json + ",";
+            } 
+        }
+
+        return json;
+    }
+
+/*
+    String getJsonValues() {
+        String json = "";
+        while ( this->values.size() > 0 ) {
+            String* measurement = this->values.pop();
+            uint8_t counter = 0;
+            String key = "";
+            String value = "";
+            
+            for (uint8_t i=0; i < measurement->length(); ++i) {
+                if ( measurement->charAt(i) != ':' ) {
+                    value += measurement->charAt(i);
+                    counter++;
+                } else {
+                    Serial.printf("Found key: %s\n", value.c_str());
+                    key = value;
+                    value = "";
+                    counter++;
+                }
+            }
+
+            if ( !key.equals("ts") ) {
+                // TODO: Need to check the value if it is a number
+                json = json + "\"" + String(getMeasurementName(key.c_str())) + "\":" + value;
+                if ( this->values.size() != 0 ) {
+                    json = json + ",";
+                } 
+            } else {
+                this->timestamp = value;
+            }
+        }
+
+        return json;
+    }*/
+
     String getInitMessage() {
         String message = "{ \"type\": \"smartnode\", \"mode\": 0, ";
         message = message + "\"id\": \"" + this->name + "-" + this->id + "\", ";
@@ -312,8 +416,15 @@ public:
     }
 
     String getMeasurementMessage() {
-        return "";
+        String message = "{ \"id\": \"" + this->name + "-" + this->id + "\",";
+        message = message + "\"measurements\": [{" + this->getJsonValues() + ",\"timestamp\": \"" + this->timestamp + "\"}],";
+        message = message + "\"timestamp\": \"" + this->timestamp + "\" }";
+
+        return message;
     }
 
+    bool readyToSendData() {
+        return (!this->timestamp.equals(""));
+    }
 
 };

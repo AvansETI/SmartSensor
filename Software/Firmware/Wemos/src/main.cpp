@@ -123,7 +123,7 @@ void setup() {
 
   // Some mqtt configuration
   mqtt.setClient(client); // Setup the MQTT client
-  mqtt.setBufferSize(1024); // override MQTT_MAX_PACKET_SIZE
+  mqtt.setBufferSize(4096); // override MQTT_MAX_PACKET_SIZE
   mqtt.setCallback(callbackMQTT);
   mqtt.setServer(MQTT_SERVER, MQTT_PORT);
 
@@ -231,10 +231,9 @@ void processSmartNodeMessage() {
          String name = RS232Message.substring(i+1);
          Serial.printf("ID %s\n", id.c_str());
          Serial.printf("NAME: %s\n", name.c_str());
-         addSmartNode(id, name); 
-  }
+         addSmartNode(id, name);
 
-  if ( RS232Message.charAt(0) == 'M' && RS232Message.charAt(1) == 'E' &&
+  } else if ( RS232Message.charAt(0) == 'M' && RS232Message.charAt(1) == 'E' &&
        RS232Message.charAt(2) == 'A' && RS232Message.charAt(3) == ':' ) {
          int i = RS232Message.indexOf(":", 4);
          String id = RS232Message.substring(4, i);
@@ -245,9 +244,8 @@ void processSmartNodeMessage() {
          if ( node != NULL ) {
            node->addMeasurementsData(measurementsData);
          }
-  }
 
-  if ( RS232Message.charAt(0) == 'A' && RS232Message.charAt(1) == 'C' &&
+  } else if ( RS232Message.charAt(0) == 'A' && RS232Message.charAt(1) == 'C' &&
        RS232Message.charAt(2) == 'T' && RS232Message.charAt(3) == ':' ) {
          int i = RS232Message.indexOf(":", 4);
          String id = RS232Message.substring(4, i);
@@ -258,21 +256,39 @@ void processSmartNodeMessage() {
          if ( node != NULL ) {
            node->addActuatorsData(actuatorsData);
          }
-  }
 
-  if ( RS232Message.charAt(0) == 'E' && RS232Message.charAt(1) == 'N' &&
+  } else if ( RS232Message.charAt(0) == 'E' && RS232Message.charAt(1) == 'N' &&
        RS232Message.charAt(2) == 'D' && RS232Message.charAt(3) == ':' ) {
          String id = RS232Message.substring(4);
          Serial.printf("END ID: %s\n", id.c_str());
          SmartNode* node = getSmartNode(id);
          if ( node != NULL ) {
             Serial.print("Send the init message!\n");
+            mqtt.publish("node/init", node->getInitMessage().c_str());
             Serial.printf("INIT: %s\n", node->getInitMessage().c_str());
             node->resetValues();
 
          } else {
            Serial.print("something wrong\n");
          }
+   } else { // Value?
+      int i = RS232Message.indexOf(":");
+      if ( i > 0 ) {
+        String id = RS232Message.substring(0, i);
+        String value = RS232Message.substring(i+1);
+        SmartNode* node = getSmartNode(id);
+        if ( node != NULL ) {
+            node->addValue(value);
+            if ( node->readyToSendData() ) {
+              mqtt.publish("node/data", node->getMeasurementMessage().c_str());
+              Serial.printf("DATA: %s\n", node->getMeasurementMessage().c_str());
+              node->resetValues();
+            }
+
+         } else {
+           Serial.print("something wrong\n");
+         }
+      }
    }
 }
 
