@@ -75,14 +75,15 @@ void SmartSensorBoard::loop() {
                 this->sendDataString(data);
             }
 
-        } else if ( message->getType() == MessageType::TIMESTAMP ) {
+        } else if ( message->getType() == MessageType::TIMESTAMP ) { // BUG?
             if ( this->sendDataStringAvailable() ) {
+                this->measurementReceivedTimestamp = 0; // trial
                 sprintf(data, "%s:%s\n", this->getID(), this->queueMessages.pop()->getMessage());
                 this->sendDataString(data);
             }
             
             
-        } else if ( message->getType() == MessageType::COMMAND ) {
+        } else if ( message->getType() == MessageType::COMMAND ) { // TODO
             this->processCommand(this->queueMessages.pop()->getMessage());            
 
         } else {
@@ -93,7 +94,7 @@ void SmartSensorBoard::loop() {
     // When no measurements pop in after 500ms, request the timestamp
     if ( this->measurementReceivedTimestamp != 0 && (this->millis()/100) - this->measurementReceivedTimestamp > 5 ) {
         this->getActualTimestamp();
-        this->measurementReceivedTimestamp = 0;
+        this->measurementReceivedTimestamp = this->millis()/100; // wait again?
         if ( this->sendDataStringAvailable() ) {
             sprintf(data, "%s:lt:%d\n", this->getID(), this->loopTime); // Send also the loop time.
             this->sendDataString(data);

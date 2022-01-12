@@ -13,6 +13,7 @@
 
 #include <fsm.h>
 #include <Queue.h>
+#include <smartnode.h>
 
 // Create the wifi-client to connect to the Internet
 WiFiClient client;
@@ -67,6 +68,12 @@ constexpr int  MQTT_PORT     = 11883;
 Queue<String, 40> mqttMessageQueue;
 unsigned long timer;
 StaticJsonDocument<4096> jsondoc;
+
+String RS232Message = "";
+
+#define SMARTNODES_TOTAL 20
+SmartNode smartnodes[SMARTNODES_TOTAL];
+uint8_t smartnodesPointer = 0;
 
 void callbackMQTT(char* topic, byte* pl, unsigned int length) {
   Serial.printf("MQTT message received: %s\n", topic);
@@ -130,8 +137,9 @@ void loop() {
 }
 
 void preWifi() {
-  if ( !WiFi.isConnected() ) { 
-    WiFi.begin("MaCMaN_GUEST", "GUEST@MACMAN"); // Connect to the Wi-Fi (if not known use WifiManager from tzapu!)
+  if ( !WiFi.isConnected() ) {
+    //WiFi.begin("MaCMaN_GUEST", "GUEST@MACMAN"); // Connect to the Wi-Fi (if not known use WifiManager from tzapu!)
+    WiFi.begin("MaCMaN_N", "MaCMaN78@heksenenzo123"); // Connect to the Wi-Fi (if not known use WifiManager from tzapu!)
     Serial.printf_P(PSTR("Setup Wi-Fi:"));
     while ( WiFi.status() != WL_CONNECTED ) {
         delay(500);
@@ -191,16 +199,104 @@ void preWaitOnData() {
   timer = millis();
 }
 
+SmartNode* getSmartNode (String id) {
+  for ( uint8_t i=0; i < smartnodesPointer; ++i ) {
+    if ( smartnodes[i].getId().equals(id) ) {
+      return &smartnodes[i];
+    }
+  }
+
+  return NULL;
+}
+
+void addSmartNode (String id, String name) {
+  SmartNode* node = getSmartNode(id);
+
+  if ( node == NULL && smartnodesPointer < SMARTNODES_TOTAL ) {
+    smartnodes[smartnodesPointer] = SmartNode(id, name);
+    smartnodesPointer++;
+  }
+}
+
+void processSmartNodeMessage() {
+  if ( RS232Message.length() < 6 ) {
+    return;
+  }
+
+  if ( RS232Message.charAt(0) == 'I' && RS232Message.charAt(1) == 'N' &&
+       RS232Message.charAt(2) == 'I' && RS232Message.charAt(3) == 'T' &&
+       RS232Message.charAt(4) == ':' ) {
+         int i = RS232Message.indexOf(":", 5);
+         String id = RS232Message.substring(5, i);
+         String name = RS232Message.substring(i+1);
+         Serial.printf("ID %s\n", id.c_str());
+         Serial.printf("NAME: %s\n", name.c_str());
+         addSmartNode(id, name); 
+  }
+
+  if ( RS232Message.charAt(0) == 'M' && RS232Message.charAt(1) == 'E' &&
+       RS232Message.charAt(2) == 'A' && RS232Message.charAt(3) == ':' ) {
+         int i = RS232Message.indexOf(":", 4);
+         String id = RS232Message.substring(4, i);
+         String measurementsData = RS232Message.substring(i+1);
+         Serial.printf("ID(%d): %s\n", i, id.c_str());
+         Serial.printf("MEA: %s\n", measurementsData.c_str());
+         SmartNode* node = getSmartNode(id);
+         if ( node != NULL ) {
+           node->addMeasurementsData(measurementsData);
+         }
+  }
+
+  if ( RS232Message.charAt(0) == 'A' && RS232Message.charAt(1) == 'C' &&
+       RS232Message.charAt(2) == 'T' && RS232Message.charAt(3) == ':' ) {
+         int i = RS232Message.indexOf(":", 4);
+         String id = RS232Message.substring(4, i);
+         String actuatorsData = RS232Message.substring(i+1);
+         Serial.printf("ID(%d): %s\n", i, id.c_str());
+         Serial.printf("ACT: %s\n", actuatorsData.c_str());
+         SmartNode* node = getSmartNode(id);
+         if ( node != NULL ) {
+           node->addActuatorsData(actuatorsData);
+         }
+  }
+
+  if ( RS232Message.charAt(0) == 'E' && RS232Message.charAt(1) == 'N' &&
+       RS232Message.charAt(2) == 'D' && RS232Message.charAt(3) == ':' ) {
+         String id = RS232Message.substring(4);
+         Serial.printf("END ID: %s\n", id.c_str());
+         SmartNode* node = getSmartNode(id);
+         if ( node != NULL ) {
+            Serial.print("Send the init message!\n");
+            Serial.printf("INIT: %s\n", node->getInitMessage().c_str());
+            node->resetValues();
+
+         } else {
+           Serial.print("something wrong\n");
+         }
+   }
+}
+
 void loopWaitOnData() {
   if ( WiFi.status() != WL_CONNECTED || !mqtt.connected() ) { // If we are not connected, raise an error
     fsm.raiseEvent(EVENT_ERROR);
   }
 
+  if ( Serial.available() > 0 ) {
+    char ch = Serial.read();
+    if ( ch != '\n' ) {
+      RS232Message = RS232Message + ch;
+
+    } else {
+      Serial.printf("%s\n", RS232Message.c_str());
+      processSmartNodeMessage();
+      RS232Message = "";
+    }
+  }
+
   if ( millis() > (timer+5000) ) {
     digitalWrite(LED_BUILTIN, !digitalRead(LED_BUILTIN)); // toggle led each 5 seconds
     timer = millis();
-    Serial.printf("Total messages: %d\n", mqttMessageQueue.size());
-    fsm.raiseEvent(EVENT_ERROR);
+    //Serial.printf("Total messages: %d\n", mqttMessageQueue.size());
   }
 
   // Process the MQTT message queue

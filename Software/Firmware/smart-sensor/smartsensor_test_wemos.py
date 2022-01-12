@@ -153,7 +153,19 @@ client.username_pw_set("node", password="smartmeternode")
 client.connect("sendlab.nl", 11883, 60)
 client.loop_start()
 
+def thread_function(ser):
+    while (1):
+        time.sleep(10)
+        print("writing!")
+        ser.write(b"INIT:86FF1312170E0932554E:smartnode-v1.2\n")
+        ser.write(b"MEA:86FF1312170E0932554E:lt:te:hu:li:c2:gi:ai:rs\n")
+        ser.write(b"ACT:86FF1312170E0932554E:bm:gs:go:rs\n")
+        ser.write(b"END:86FF1312170E0932554E\n")
+
 ser = serial.Serial('COM3')
+
+x = threading.Thread(target=thread_function, args=(ser,))
+x.start()
 
 while (1):
     try:
@@ -191,8 +203,9 @@ while (1):
         match = re.match("^END:(.+)$", line)
         if match:
             id   = match.groups()[0]
-            client.publish("node/init", json.dumps(get_init_message(smartnodes[id])))
-            print("node/init", json.dumps(get_init_message(smartnodes[id])))
+            #client.publish("node/init", json.dumps(get_init_message(smartnodes[id])))
+            #print("node/init", json.dumps(get_init_message(smartnodes[id])))
+            #print("Send init message for: " + id)
 
         #86FF1312170E0932554E:te:22.7
         match = re.match("^([^:]+):([^:]+):(.+)$", line)
@@ -209,8 +222,8 @@ while (1):
                         print("MMMM??!")
                     else:
                         pass
-                        client.publish("node/data", json.dumps(get_data_message(smartnodes[id])))
-                        print("node/data", json.dumps(get_data_message(smartnodes[id])))
+                        #client.publish("node/data", json.dumps(get_data_message(smartnodes[id])))
+                        #print("node/data", json.dumps(get_data_message(smartnodes[id])))
                     smartnodes[id]["values"] = []
     except:
         pass
