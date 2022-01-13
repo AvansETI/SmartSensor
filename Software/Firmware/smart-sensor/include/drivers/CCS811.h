@@ -13,7 +13,7 @@
 #include <drivers/Driver.h>
 
 #include <math.h>
-#include <avr/delay.h>
+#include <util/delay.h>
 #include <avr/pgmspace.h>
 
 #include <util/I2C.h>
@@ -53,8 +53,8 @@ private:
     /* Set the sampling interval of the sensor in seconds. */
     uint16_t samplingInterval;
 
-    /* Hold the timestamp in seconds where we have started the sampling. */
-    uint16_t samplingTimestamp;
+    /* Busy indicates that sample process has been started and need to wait until the next cycle. */
+    uint8_t busy;
 
     /* When the sampling could not occur due to a busy I2C bus, this flag becomes true. */
     bool waitingOnI2C; 

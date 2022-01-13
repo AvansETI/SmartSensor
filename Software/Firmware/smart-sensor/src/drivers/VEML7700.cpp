@@ -19,7 +19,7 @@ uint8_t VEML7700Driver::setup() {
     this->writeGain(VEML7700_GAIN_1);
 
     this->samplingInterval = 10; // 10s
-    this->samplingTimestamp = 0;
+    this->busy             = false;
 
     return 0;
 }
@@ -49,17 +49,20 @@ bool VEML7700Driver::isConnected() {
 }
 
 uint8_t VEML7700Driver::loop(uint32_t millis) {
-    if ( this->samplingTimestamp == 0 ) {
-        this->samplingTimestamp = millis/1000;
+    uint32_t seconds = (millis / 1000);
+    uint8_t  modulo  = seconds % this->samplingInterval;
+
+    if ( modulo > 0 && modulo < (this->samplingInterval / 2) ) {
+        if ( !this->busy ) {
+            this->busy = true;
+            this->sample();
+        }
+    } else {
+        this->busy = false;
     }
 
     if ( this->waitingOnI2C ) { // Last time the sample could not be processed.
         this->sample();
-    }
-
-    if ( (millis/1000) - this->samplingTimestamp > this->samplingInterval ) {
-        this->samplingTimestamp = millis/1000;
-        this->sample(); // Start the sampling process using callbacks when the measurement is ready!
     }
 
     return 0;

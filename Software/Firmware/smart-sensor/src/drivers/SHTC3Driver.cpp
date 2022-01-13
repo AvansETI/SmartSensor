@@ -20,8 +20,8 @@ uint8_t SHTC3Driver::setup() {
         return 2; // The given ID is not correct!
     }
 
-    this->samplingInterval = 60*5; // five minutes
-    this->samplingTimestamp = 0;
+    this->samplingInterval = 60;//60*5; // five minutes
+    this->busy = false;
 
     return 0;
 }
@@ -32,17 +32,20 @@ bool SHTC3Driver::isConnected() {
 }
 
 uint8_t SHTC3Driver::loop(uint32_t millis) {
-    if ( this->samplingTimestamp == 0 ) {
-        this->samplingTimestamp = millis/1000;
+    uint32_t seconds = (millis / 1000);
+    uint8_t  modulo  = seconds % this->samplingInterval;
+
+    if ( modulo > 0 && modulo < (this->samplingInterval / 2) ) {
+        if ( !this->busy ) {
+            this->busy = true;
+            this->sample();
+        }
+    } else {
+        this->busy = false;
     }
 
     if ( this->waitingOnI2C ) { // Last time the sample could not be processed.
         this->sample();
-    }
-
-    if ( (millis/1000) - this->samplingTimestamp > this->samplingInterval ) {
-        this->samplingTimestamp = millis/1000;
-        this->sample(); // Start the sampling process using callbacks when the measurement is ready!
     }
 
     return 0;
