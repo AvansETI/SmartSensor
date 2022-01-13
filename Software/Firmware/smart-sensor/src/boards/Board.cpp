@@ -55,6 +55,7 @@ void SmartSensorBoard::setup() {
     this->resetCause = MCUSR; // Read the reset cause
     MCUSR = 0x00; // Reset the flags
     this->measurementReceivedTimestamp = 0;
+    this->totalMeasurementsSend = 0;
     this->sendInitMessage();
 }
 
@@ -71,14 +72,14 @@ void SmartSensorBoard::loop() {
         if ( message->getType() == MessageType::MEASUREMENT ) {
             if ( this->sendDataStringAvailable() ) {
                 this->measurementReceivedTimestamp = this->millis()/100;
-                sprintf(data, "%s:%s\n", this->getID(), this->queueMessages.pop()->getMessage());
+                sprintf_P(data, PSTR("%s:%s\n"), this->getID(), this->queueMessages.pop()->getMessage());
                 this->sendDataString(data);
+                this->totalMeasurementsSend++;
             }
 
-        } else if ( message->getType() == MessageType::TIMESTAMP ) { // BUG?
+        } else if ( message->getType() == MessageType::TIMESTAMP ) {
             if ( this->sendDataStringAvailable() ) {
-                this->measurementReceivedTimestamp = 0; // trial
-                sprintf(data, "%s:%s\n", this->getID(), this->queueMessages.pop()->getMessage());
+                sprintf_P(data, PSTR("%s:%s\n"), this->getID(), this->queueMessages.pop()->getMessage());
                 this->sendDataString(data);
             }
             
@@ -93,11 +94,13 @@ void SmartSensorBoard::loop() {
 
     // When no measurements pop in after 500ms, request the timestamp
     if ( this->measurementReceivedTimestamp != 0 && (this->millis()/100) - this->measurementReceivedTimestamp > 5 ) {
-        this->getActualTimestamp();
-        this->measurementReceivedTimestamp = this->millis()/100; // wait again?
-        if ( this->sendDataStringAvailable() ) {
-            sprintf(data, "%s:lt:%d\n", this->getID(), this->loopTime); // Send also the loop time.
-            this->sendDataString(data);
+        this->measurementReceivedTimestamp = 0;
+        if ( this->totalMeasurementsSend > 0 ) {
+            this->getActualTimestamp();
+            if ( this->sendDataStringAvailable() ) {
+                sprintf_P(data, PSTR("%s:lt:%d\n"), this->getID(), this->loopTime); // Send also the loop time.
+                this->sendDataString(data);
+            }
         }
     }
 
