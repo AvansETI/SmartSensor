@@ -1,0 +1,14 @@
+{
+    "smartmeter_mqtt": {
+        "host": "sendlab.nl",
+        "port": 11884,
+        "username": "smartmeter_admin",
+        "password": "XXXXX"
+    },
+    "smartnetwork_mqtt": {
+        "host": "sendlab.nl",
+        "port": 11884,
+        "username": "node",
+        "password": "XXXXX"
+    }
+}
