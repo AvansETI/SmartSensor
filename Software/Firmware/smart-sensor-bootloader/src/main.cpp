@@ -12,13 +12,19 @@
 #include <stdint.h>
 #include <avr/io.h>
 #include <avr/pgmspace.h>
-// #include <stdio.h>
+#include <stdio.h>
+#include <list.h>
+#include <Converter.h>
 char offbuffer[2];
 char hexbuffer[2];
 char messagebuffer[500];
+char input[2];
+int hexno;
 int bufferpos;
 int state;
 int timesincechar;
+Node *proglist;
+
 /* When a character is received on the serial bus, this interrupt is called. */
 ISR(USART0_RX_vect)
 {
@@ -32,10 +38,57 @@ ISR(USART0_RX_vect)
 		{
 			endmes = true;
 		}
-		else if (messagebuffer[bufferpos] == 'H' & c != ':')
+		// else if (messagebuffer[bufferpos] == 'H' & c != ':')
+		else if (c != ':' & endmes == false)
 		{
-			messagebuffer[bufferpos] = c;
-			bufferpos++;
+			// messagebuffer[bufferpos] = c;
+			// bufferpos++;
+			if (hexno == 0)
+			{
+				input[0] = c;
+				hexno++;
+			}
+			else if (hexno == 1)
+			{
+				input[1] = c;
+				hexno = 0;
+
+				uint8_t inputval = convertHexToByte(&input[0], &input[1]);
+
+				proglist = postInsert(proglist, inputval);
+				input[0] = 0;
+				input[1] = 0;
+				unsigned char message[] = "Adding Nodes: ";
+				int i = 0;
+				while (message[i] != 0) /* print the String  "Character recieved: + The character" */
+				{
+					while (!(UCSR0A & (1 << UDRE)))
+						;
+					UDR0 = message[i];
+					i++;
+				}
+				
+				unsigned char testval[] = {(char)inputval};
+				int b = 0;
+				while (testval[b] != 0)
+				{
+					while (!(UCSR0A & (1 << UDRE)))
+					{
+						UDR0 = testval[b];
+						b++;
+					}
+					
+				}
+				
+				// while (!(UCSR0A & (1 << UDRE)))
+				// {
+				// 	UDR0 = proglist->n;
+				// }
+				// while (!(UCSR0A & (1 << UDRE)))
+				// {
+				// 	UDR0 = '\n\r';
+				// }
+			}
 		}
 		if (c == ':')
 		{
@@ -52,7 +105,7 @@ ISR(USART0_RX_vect)
 			// }
 
 			// char pageno[4];
-			// snprintf(pageno, sizeof(pageno), "%d", page + 1);
+			// // snprintf(pageno, sizeof(pageno), "%d", page + 1);
 			// int p = 0;
 			// /* Send page number */
 			// while (pageno[p] != 0)
@@ -69,23 +122,23 @@ ISR(USART0_RX_vect)
 			// 	;
 			// UDR0 = ' \n\r';
 
-			for (int i = 0; i < sizeof(messagebuffer); i++)
-			{
-				if (messagebuffer[i] != 'H')
-				{
-					while (!(UCSR0A & (1 << UDRE)))
-						;
-					{
-						UDR0 = messagebuffer[i];
-					}
-					messagebuffer[i] = 'H';
-				}
-			}
-			while (!(UCSR0A & (1 << UDRE)))
-				;
-			UDR0 = ' \n\r';
-			bufferpos = 0;
-			// page++;
+			// for (int i = 0; i < sizeof(messagebuffer); i++)
+			// {
+			// 	if (messagebuffer[i] != 'H')
+			// 	{
+			// 		while (!(UCSR0A & (1 << UDRE)))
+			// 			;
+			// 		{
+			// 			UDR0 = messagebuffer[i];
+			// 		}
+			// 		messagebuffer[i] = 'H';
+			// 	}
+			// }
+			// while (!(UCSR0A & (1 << UDRE)))
+			// 	;
+			// UDR0 = ' \n\r';
+			// bufferpos = 0;
+			// // page++;
 		}
 		if (endmes == true)
 		{
@@ -103,24 +156,60 @@ ISR(USART0_RX_vect)
 			// while (!(UCSR0A & (1 << UDRE)))
 			// 	;
 			// UDR0 = ' \n\r';
-			for (int i = 0; i < sizeof(messagebuffer); i++)
+			// for (int i = 0; i < sizeof(messagebuffer); i++)
+			// {
+			// 	while (!(UCSR0A & (1 << UDRE)))
+			// 		;
+			// 	{
+			// 		if (messagebuffer[i] != 'H')
+			// 		{
+			// 			UDR0 = messagebuffer[i];
+			// 		}
+			// 	}
+			// 	messagebuffer[i] = 'H';
+			// }
+			// while (!(UCSR0A & (1 << UDRE)))
+			// 	;
+			// UDR0 = ' \n\r';
+			// state = 0;
+			// // page = 0;
+			// bufferpos = 0;
+			// int d = 0;
+			// unsigned char endfilemes[] = "Final page content: ";
+			// while (endfilemes[d] != 0)
+			// {
+			// 	while (!(UCSR0A & (1 << UDRE)))
+			// 	{
+			// 		UDR0 = endfilemes[d];
+			// 		d++;
+			// 	}
+			// }
+
+			unsigned char message[] = "Printing Nodes: ";
+			int i = 0;
+			while (message[i] != 0) /* print the String  "Character recieved: + The character" */
 			{
 				while (!(UCSR0A & (1 << UDRE)))
 					;
-				{
-					if (messagebuffer[i] != 'H')
-					{
-						UDR0 = messagebuffer[i];
-					}
-				}
-				messagebuffer[i] = 'H';
+				UDR0 = message[i];
+				i++;
 			}
-			while (!(UCSR0A & (1 << UDRE)))
-				;
-			UDR0 = ' \n\r';
+
+			for (size_t i = 0; i < countNodes(proglist); i++)
+			{
+				while (!(UCSR0A & (1 << UDRE)))
+				{
+					UDR0 = proglist->n;
+					// UDR0 = countNodes(proglist);
+					proglist = deleteNode(proglist, proglist->n);
+				}
+				while (!(UCSR0A & (1 << UDRE)))
+					UDR0 = ' \n\r';
+			}
+
 			state = 0;
-			// page = 0;
-			bufferpos = 0;
+
+			// printList(proglist);
 		}
 	}
 
@@ -231,7 +320,7 @@ void boot_program_page(uint32_t page, uint8_t *buf)
 		uint16_t w = *buf++;
 		w += (*buf++) << 8;
 
-		boot_page_fill(page + i, w);
+		// boot_page_fill(page + i, w);
 	}
 
 	boot_page_write(page); // Store buffer in flash page.
@@ -253,7 +342,11 @@ int main(void)
 	offbuffer[1] = 'W';
 	hexbuffer[0] = 'N';
 	hexbuffer[1] = 'O';
+	input[1] = '0';
+	input[2] = '0';
 	timesincechar = 0;
+	hexno = 0;
+	proglist = NULL;
 	uint32_t baudrate = 9600;
 	uint32_t ubrr = 20000000 / 16 / 9600 - 1; //((20000000 -((baudrate) * 8L)) / ((baudrate) * 16UL));
 
