@@ -1,21 +1,20 @@
 // Avans University of Applied Sciences (Avans Hogeschool)
-// Module: Intelligent Wireless Sensor Netwerken (IWSN)
+// Project: SmartSensor
 // Author: Maurice Snoeren
 // Date  : 10-01-2022
-// Author: Maurice Snoeren
 //
 #pragma once
 
 #include <Arduino.h>
 #include <Queue.h>
 
-// Measurement mapping
-
-#define MEASUREMENTS_TOTAL 10
-#define ACTUATORS_TOTAL    4
-
+// String buffer to hold the largest string of the memory mapping, see the description.
 char _buffer[150];
 
+// Total measurements have been configured by the mapping
+#define MEASUREMENTS_TOTAL 10
+
+// Measurement mapping
 const char* const measurement_mapping[] PROGMEM = {
     "lt", // loop_time
     "te", // temperature
@@ -68,8 +67,10 @@ const char* const measurement_unit[] PROGMEM = {
     "-", // timestamp, no measurement ... just for translation!
 };
 
-// Actuator mapping
+// Total actuators have been configured by the mapping
+#define ACTUATORS_TOTAL    4
 
+// Actuator mapping
 const char* const actuator_mapping[] PROGMEM = {
     "bm", // boot_mode
     "gs", // gpio_setup
@@ -98,6 +99,7 @@ const char* const actuator_unit[] PROGMEM = {
     "-", // rs232
 };
 
+// Returns the index of the location of the measurement based on the key
 int8_t getMeasurementIndex(const char* key) {
     char buffer[2];
     for ( uint8_t i=0; i < MEASUREMENTS_TOTAL; ++i ) {
@@ -111,6 +113,7 @@ int8_t getMeasurementIndex(const char* key) {
     return -1;
 }
 
+// Returns the name of the measurement based on the index
 char* getMeasurementName(int8_t index) {
     strcpy_P(_buffer, PSTR(""));
     if ( index != -1 ) {
@@ -119,11 +122,13 @@ char* getMeasurementName(int8_t index) {
     return _buffer;
 }
 
+// Returns the name of the measurement based on the key
 char* getMeasurementName(const char* key) {
     int8_t index = getMeasurementIndex(key);
     return getMeasurementName(index);
 }
 
+// Returns the description of the measurement based on the index
 char* getMeasurementDescription(int8_t index) {
     strcpy_P(_buffer, PSTR(""));
     if ( index != -1 ) {
@@ -132,11 +137,13 @@ char* getMeasurementDescription(int8_t index) {
     return _buffer;
 }
 
+// Returns the description of the measurement based on the key
 char* getMeasurementDescription(const char* key) {
     int8_t index = getMeasurementIndex(key);
     return getMeasurementDescription(index);
 }
 
+// Returns the unit of the measurement based on the index
 char* getMeasurementUnit(int8_t index) {
         strcpy_P(_buffer, PSTR(""));
     if ( index != -1 ) {
@@ -145,11 +152,13 @@ char* getMeasurementUnit(int8_t index) {
     return _buffer;
 }
 
+// Returns the unit of the measurement based on the key
 char* getMeasurementUnit(const char* key) {
     int8_t index = getMeasurementIndex(key);
     return getMeasurementUnit(index);
 }
 
+// Returns the index of the measurement mapping
 int8_t getActuatorIndex(const char* key) {
     char buffer[2];
     for ( uint8_t i=0; i < MEASUREMENTS_TOTAL; ++i ) {
@@ -163,6 +172,7 @@ int8_t getActuatorIndex(const char* key) {
     return -1;
 }
 
+// Returns the name of the actuator based on the index
 char* getActuatorName(int8_t index) {
     strcpy_P(_buffer, PSTR(""));
     if ( index != -1 ) {
@@ -171,11 +181,13 @@ char* getActuatorName(int8_t index) {
     return _buffer;
 }
 
+// Returns the name of the actuator based on the key
 char* getActuatorName(const char* key) {
     int8_t index = getActuatorIndex(key);
     return getActuatorName(index);
 }
 
+// Returns the description of the actuator based on the index
 char* getActuatorDescription(int8_t index) {
     strcpy_P(_buffer, PSTR(""));
     if ( index != -1 ) {
@@ -184,11 +196,13 @@ char* getActuatorDescription(int8_t index) {
     return _buffer;
 }
 
+// Returns the description of the actuator based on the key
 char* getActuatorDescription(const char* key) {
     int8_t index = getActuatorIndex(key);
     return getActuatorDescription(index);
 }
 
+// Returns the unit of the actuator based on the index
 char* getActuatorUnit(int8_t index) {
     strcpy_P(_buffer, PSTR(""));
     if ( index != -1 ) {
@@ -197,11 +211,13 @@ char* getActuatorUnit(int8_t index) {
     return _buffer;
 }
 
+// Returns the unit of the actuator based on the key
 char* getActuatorUnit(const char* key) {
     int8_t index = getActuatorIndex(key);
     return getActuatorUnit(index);
 }
 
+// Count how many times a character given by c is found in the string
 uint8_t countCharacters(String line, char c) {
     uint8_t counter = 0;
 
@@ -214,6 +230,7 @@ uint8_t countCharacters(String line, char c) {
     return counter;
 }
 
+// Returns true when the string is holding an integer value
 bool isInteger(String data) {
     for (uint8_t i=0; i < data.length(); ++i ) {
         if ( data.charAt(i) >= '0' && data.charAt(i) <= '9' ) {
@@ -225,6 +242,7 @@ bool isInteger(String data) {
     return true;
 }
 
+// Returns true when the string is holding a float value
 bool isFloat(String data) {
     int dot = data.indexOf(".");
     if ( dot > 0 ) {
@@ -234,6 +252,7 @@ bool isFloat(String data) {
     return false;
 }
 
+// Class to hold a node value, which is often a measurement.
 class SmartNodeValue {
 public:
     String key;
@@ -242,6 +261,7 @@ public:
     SmartNodeValue(): key(""), value("") {}
 };
 
+// Class that holds the node information
 class SmartNode {
 private:
     String id;
@@ -277,12 +297,12 @@ public:
                 if ( key.equals("ts") ) { // timestamp, so send the message!
                     if ( this->values.size() > 0 ) {
                         this->timestamp = value;
-                        Serial.print("Timestampe! Send the message!\n");
+                        //Serial.print("Timestampe! Send the message!\n");
                     } else { 
-                        Serial.print("Something wrong with timestamp\n");
+                        Serial.printf_P(PSTR("Timestamp received, but no values in the buffer?!\n"));
                     }
                 } else {
-                    Serial.printf("Adding: %s:%s\n", key.c_str(), value.c_str());
+                    //Serial.printf("Adding: %s:%s\n", key.c_str(), value.c_str());
                     this->values.add(SmartNodeValue(key, value));
                 }
             }
@@ -370,41 +390,6 @@ public:
 
         return json;
     }
-
-/*
-    String getJsonValues() {
-        String json = "";
-        while ( this->values.size() > 0 ) {
-            String* measurement = this->values.pop();
-            uint8_t counter = 0;
-            String key = "";
-            String value = "";
-            
-            for (uint8_t i=0; i < measurement->length(); ++i) {
-                if ( measurement->charAt(i) != ':' ) {
-                    value += measurement->charAt(i);
-                    counter++;
-                } else {
-                    Serial.printf("Found key: %s\n", value.c_str());
-                    key = value;
-                    value = "";
-                    counter++;
-                }
-            }
-
-            if ( !key.equals("ts") ) {
-                // TODO: Need to check the value if it is a number
-                json = json + "\"" + String(getMeasurementName(key.c_str())) + "\":" + value;
-                if ( this->values.size() != 0 ) {
-                    json = json + ",";
-                } 
-            } else {
-                this->timestamp = value;
-            }
-        }
-
-        return json;
-    }*/
 
     String getInitMessage() {
         String message = "{ \"type\": \"smartnode\", \"mode\": 0, ";
