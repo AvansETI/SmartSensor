@@ -12,6 +12,18 @@
 #include <string.h>
 #include <stdlib.h>
 
+uint8_t getValueFromHex(char c) {
+    if ( c >= '0' && c <= '9') {
+        return c - '0';
+    }
+    return c - 'A'+ 10;
+}
+
+void kanweg() {
+    uint8_t buffer = getValueFromHex('A') + (8 << getValueFromHex('B'));
+
+}
+
 //converts an input of 2 hex characters to a single byte value
 uint8_t convertHexToByte(char *one, char *two) {
     char val[4];
