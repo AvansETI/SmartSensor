@@ -65,7 +65,7 @@ protected:
     SmartSensorBoard(): totalDrivers(0) {}
 
     /* Hold the timestamp in seconds where we have got a measurement. */
-    uint16_t measurementReceivedTimestamp;
+    uint32_t measurementReceivedTimestamp;
 
     /* Hold the amount of measurements that have been send out! */
     uint8_t totalMeasurementsSend;
