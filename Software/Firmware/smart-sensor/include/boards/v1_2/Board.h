@@ -68,7 +68,12 @@ private:
     XBeeProS2C* xbeeProS2CDriver;
 
     SerialBuffer<MESSAGE_LENGTH> serialBuffer;
-        
+
+    bool gateway;
+
+protected:
+    bool checkGatewayAvailable();
+
 public:
     SmartSensorBoardV1_2() { }
 
@@ -99,4 +104,5 @@ public:
     void recievedCharacter(char c);
 
     void sendInitMessage();
+
 };

@@ -8,6 +8,7 @@
 #include <string.h>
 
 #include <avr/boot.h>
+#include <avr/wdt.h>
 #include <avr/io.h>
 #include <avr/interrupt.h>
 #include <avr/pgmspace.h>
@@ -60,6 +61,16 @@ void SmartSensorBoardV1_2::setup() {
         this->debug_P(PSTR("No\n"));
     }
 
+    /* Check if there is a gateway listening to our messages! */
+    this->gateway = this->checkGatewayAvailable();
+    this->debug_P(PSTR("Gateway: "));
+    if ( this->isGateway() ) {
+         this->debug_P(PSTR("Yes\n"));
+    } else {
+        this->debug_P(PSTR("No\n"));
+    }
+
+    /* Send the ID of the SmartNode./
     this->debugf_P(PSTR("ID: %s\n"), this->getID());
 
     /* Show the user that we have started up, by one-second led on and then flash led. */
@@ -80,6 +91,14 @@ void SmartSensorBoardV1_2::setup() {
     sei(); // Enable the interrupts!
 
     this->serial0->setCallback(this);
+}
+
+bool SmartSensorBoardV1_2::checkGatewayAvailable() {
+    //char line[10] = "\0";
+    //this->serial0->print_P(PSTR("GWAV\n"));
+    //this->serial0->readLine(line, 10, 10);
+    //return false;
+    //return strcmp(line, "GWAV!") == 0;
 }
 
 bool SmartSensorBoardV1_2::adapterInUse() {

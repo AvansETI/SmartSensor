@@ -83,4 +83,6 @@ public:
     /* Transmits one character over the serial port.
     */
     void transmitChar(char data);
+
+    bool readLine(char* line, uint8_t timeout, uint8_t length);
 };
