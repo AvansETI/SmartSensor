@@ -116,28 +116,28 @@ ISR(USART0_RX_vect)
 				i++;
 			}
 
-			int b = 0;
-			int c = 0;
-			while (!(b >= progpos))
-			{
-				while (!(UCSR0A & (1 << UDRE)))
-					;
-				UDR0 = '0x';
-				while (!(UCSR0A & (1 << UDRE)))
-					;
-				UDR0 = prog[b];
-				while (!(UCSR0A & (1 << UDRE)))
-					;
-				UDR0 = ' ';
-				b++;
-				c++;
-				if (c == 10)
-				{
-					while (!(UCSR0A & (1 << UDRE)))
-						;
-					UDR0 = '\n\r';
-				}
-			}
+			// int b = 0;
+			// int c = 0;
+			// while (!(b >= progpos))
+			// {
+			// 	while (!(UCSR0A & (1 << UDRE)))
+			// 		;
+			// 	UDR0 = '0x';
+			// 	while (!(UCSR0A & (1 << UDRE)))
+			// 		;
+			// 	UDR0 = prog[b];
+			// 	while (!(UCSR0A & (1 << UDRE)))
+			// 		;
+			// 	UDR0 = ' ';
+			// 	b++;
+			// 	c++;
+			// 	if (c == 10)
+			// 	{
+			// 		while (!(UCSR0A & (1 << UDRE)))
+			// 			;
+			// 		UDR0 = '\n\r';
+			// 	}
+			// }
 
 			//do check and program page
 			// boot_program_page(0, prog);
