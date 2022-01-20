@@ -12,18 +12,54 @@
 #include <stdint.h>
 #include <avr/io.h>
 #include <avr/pgmspace.h>
-#include <stdio.h>
-#include <list.h>
 #include <Converter.h>
-char offbuffer[2];
-char hexbuffer[2];
-char messagebuffer[500];
-char input[2];
-int hexno;
+char messagebuffer[50];
 int bufferpos;
 int state;
 int timesincechar;
-Node *proglist;
+uint8_t prog[2048];
+int progpos;
+char inputbuffer[50];
+int inputpos;
+char commandbuffer[3];
+
+// void boot_program_page(uint32_t page, uint8_t *buf)
+// {
+// 	uint16_t i;
+// 	uint8_t sreg;
+
+// 	// Disable interrupts.
+
+// 	sreg = SREG;
+// 	cli();
+
+// 	eeprom_busy_wait();
+
+// 	boot_page_erase(page);
+// 	boot_spm_busy_wait(); // Wait until the memory is erased.
+
+// 	for (i = 0; i < SPM_PAGESIZE; i += 2)
+// 	{
+// 		// Set up little-endian word.
+
+// 		uint16_t w = *buf++;
+// 		w += (*buf++) << 8;
+
+// 		// boot_page_fill(page + i, w);
+// 	}
+
+// 	boot_page_write(page); // Store buffer in flash page.
+// 	boot_spm_busy_wait();  // Wait until the memory is written.
+
+// 	// Reenable RWW-section again. We need this if we want to jump back
+// 	// to the application after bootloading.
+
+// 	boot_rww_enable();
+
+// 	// Re-enable interrupts (if they were ever enabled).
+
+// 	SREG = sreg;
+// }
 
 /* When a character is received on the serial bus, this interrupt is called. */
 ISR(USART0_RX_vect)
@@ -38,315 +74,192 @@ ISR(USART0_RX_vect)
 		{
 			endmes = true;
 		}
-		// else if (messagebuffer[bufferpos] == 'H' & c != ':')
-		else if (c != ':' & endmes == false)
+		else if (c != ':' & c != '\n' & endmes == false)
 		{
-			// messagebuffer[bufferpos] = c;
-			// bufferpos++;
-			if (hexno == 0)
+			//in current version if a single line is too long (should not happen with standard file generation)
+			if (!(inputpos >= sizeof(inputbuffer)))
 			{
-				input[0] = c;
-				hexno++;
+				inputbuffer[inputpos] = c;
 			}
-			else if (hexno == 1)
+			inputpos++;
+		}
+		if (c == '\n')
+		{
+			//due to hex file structure begin at position 8 with actually taking data and do not take the last few characters, these are for a better check but currently focused on functional
+			inputpos = 8;
+			while ((inputbuffer[inputpos] != 'Z') & !(inputpos >= (sizeof(inputbuffer) - 2)))
 			{
-				input[1] = c;
-				hexno = 0;
-
-				uint8_t inputval = convertHexToByte(&input[0], &input[1]);
-
-				proglist = postInsert(proglist, inputval);
-				input[0] = 0;
-				input[1] = 0;
-				unsigned char message[] = "Adding Nodes: ";
-				int i = 0;
-				while (message[i] != 0) /* print the String  "Character recieved: + The character" */
-				{
-					while (!(UCSR0A & (1 << UDRE)))
-						;
-					UDR0 = message[i];
-					i++;
-				}
-				
-				unsigned char testval[] = {(char)inputval};
-				int b = 0;
-				while (testval[b] != 0)
-				{
-					while (!(UCSR0A & (1 << UDRE)))
-					{
-						UDR0 = testval[b];
-						b++;
-					}
-					
-				}
-				
-				// while (!(UCSR0A & (1 << UDRE)))
-				// {
-				// 	UDR0 = proglist->n;
-				// }
-				// while (!(UCSR0A & (1 << UDRE)))
-				// {
-				// 	UDR0 = '\n\r';
-				// }
+				//convert to bytes and move by 2
+				uint8_t progput = convertHexToByte(inputbuffer[inputpos], inputbuffer[inputpos + 1]);
+				inputpos = inputpos + 2;
+				//put converted bytes in array
+				prog[progpos] = progput;
+				progpos++;
+			}
+			inputpos = 0;
+			for (int i = 0; i < sizeof(inputbuffer); i++)
+			{
+				inputbuffer[i] = 'Z';
 			}
 		}
-		if (c == ':')
-		{
-			// int b = 0;
-			// unsigned char filemes[] = "Contents of page ";
-			// while (filemes[b] != 0)
-			// {
-			// 	while (!(UCSR0A & (1 << UDRE)))
-			// 		;
-			// 	{
-			// 		UDR0 = filemes[b];
-			// 		b++;
-			// 	}
-			// }
 
-			// char pageno[4];
-			// // snprintf(pageno, sizeof(pageno), "%d", page + 1);
-			// int p = 0;
-			// /* Send page number */
-			// while (pageno[p] != 0)
-			// {
-			// 	while (!(UCSR0A & (1 << UDRE)))
-			// 		;
-			// 	{
-			// 		UDR0 = pageno[p];
-			// 		p++;
-			// 	}
-			// }
-			// /* Send "space \n\r" Character */
-			// while (!(UCSR0A & (1 << UDRE)))
-			// 	;
-			// UDR0 = ' \n\r';
-
-			// for (int i = 0; i < sizeof(messagebuffer); i++)
-			// {
-			// 	if (messagebuffer[i] != 'H')
-			// 	{
-			// 		while (!(UCSR0A & (1 << UDRE)))
-			// 			;
-			// 		{
-			// 			UDR0 = messagebuffer[i];
-			// 		}
-			// 		messagebuffer[i] = 'H';
-			// 	}
-			// }
-			// while (!(UCSR0A & (1 << UDRE)))
-			// 	;
-			// UDR0 = ' \n\r';
-			// bufferpos = 0;
-			// // page++;
-		}
 		if (endmes == true)
 		{
-			// int d = 0;
-			// unsigned char endfilemes[] = "Final page content: ";
-			// while (endfilemes[d] != 0)
-			// {
-			// 	while (!(UCSR0A & (1 << UDRE)))
-			// 		;
-			// 	{
-			// 		UDR0 = endfilemes[d];
-			// 		d++;
-			// 	}
-			// }
-			// while (!(UCSR0A & (1 << UDRE)))
-			// 	;
-			// UDR0 = ' \n\r';
-			// for (int i = 0; i < sizeof(messagebuffer); i++)
-			// {
-			// 	while (!(UCSR0A & (1 << UDRE)))
-			// 		;
-			// 	{
-			// 		if (messagebuffer[i] != 'H')
-			// 		{
-			// 			UDR0 = messagebuffer[i];
-			// 		}
-			// 	}
-			// 	messagebuffer[i] = 'H';
-			// }
-			// while (!(UCSR0A & (1 << UDRE)))
-			// 	;
-			// UDR0 = ' \n\r';
-			// state = 0;
-			// // page = 0;
-			// bufferpos = 0;
-			// int d = 0;
-			// unsigned char endfilemes[] = "Final page content: ";
-			// while (endfilemes[d] != 0)
-			// {
-			// 	while (!(UCSR0A & (1 << UDRE)))
-			// 	{
-			// 		UDR0 = endfilemes[d];
-			// 		d++;
-			// 	}
-			// }
-
-			unsigned char message[] = "Printing Nodes: ";
+			//as a test print the prog array
+			unsigned char progmessage[] = "Printing the prog array\n";
 			int i = 0;
-			while (message[i] != 0) /* print the String  "Character recieved: + The character" */
+			while (progmessage[i] != 0)
 			{
 				while (!(UCSR0A & (1 << UDRE)))
 					;
-				UDR0 = message[i];
+				UDR0 = progmessage[i];
 				i++;
 			}
 
-			for (size_t i = 0; i < countNodes(proglist); i++)
+			int b = 0;
+			int c = 0;
+			while (!(b >= progpos))
 			{
 				while (!(UCSR0A & (1 << UDRE)))
-				{
-					UDR0 = proglist->n;
-					// UDR0 = countNodes(proglist);
-					proglist = deleteNode(proglist, proglist->n);
-				}
+					;
+				UDR0 = '0x';
 				while (!(UCSR0A & (1 << UDRE)))
-					UDR0 = ' \n\r';
+					;
+				UDR0 = prog[b];
+				while (!(UCSR0A & (1 << UDRE)))
+					;
+				UDR0 = ' ';
+				b++;
+				c++;
+				if (c == 10)
+				{
+					while (!(UCSR0A & (1 << UDRE)))
+						;
+					UDR0 = '\n\r';
+				}
 			}
 
+			//do check and program page
+			// boot_program_page(0, prog);
 			state = 0;
-
-			// printList(proglist);
 		}
 	}
 
 	if (state == 0)
 	{
-		if (offbuffer[0] == 'O')
+		//in current version the character Z is used as a control character and thus cannot be used in commands or input files
+		//The character P is used to print the current message
+		//normal state for recieving commands is 0
+		if (!(bufferpos >= sizeof(messagebuffer)) & c != 'P')
 		{
+			messagebuffer[bufferpos] = c;
+			bufferpos++;
+		}
+		else if (c != 'P')
+		{
+			bufferpos = 0;
+			for (int i = 0; i < sizeof(messagebuffer); i++)
+			{
+				messagebuffer[i] = 'Z';
+			}
+		}
+
+		//command for moving to other program, state 2
+		if (commandbuffer[0] == 'O')
+		{
+			//command for moving to other program
 			if (c == 'F')
 			{
-				if (offbuffer[1] == 'F')
+				if (commandbuffer[1] == 'F')
 				{
-					int i = 0;
+					int b = 0;
 					unsigned char shutdown[] = "Pretend this is a shutdown message. \n";
-					while (shutdown[i] != 0)
-					{
-						while (!(UCSR0A & (1 << UDRE)))
-							;
-						{
-							UDR0 = shutdown[i];
-							i++;
-						}
-					}
 
-					offbuffer[0] = 'P';
-					offbuffer[1] = 'W';
+					for (int i = 0; i < sizeof(commandbuffer); i++)
+					{
+						commandbuffer[i] = 'Z';
+					}
 
 					state = 2;
 				}
 				else
 				{
-					offbuffer[1] = c;
+					commandbuffer[1] = c;
 				}
 			}
 			else
 			{
-				offbuffer[0] = 'P';
-				offbuffer[1] = 'W';
+				for (int i = 0; i < sizeof(commandbuffer); i++)
+				{
+					commandbuffer[i] = 'Z';
+				}
 			}
 		}
 		else if (c == 'O')
 		{
-			offbuffer[0] = c;
+			commandbuffer[0] = c;
 		}
 
-		if (hexbuffer[0] == 'H')
+		//command to go into hex mode, hex mode is state 1
+		if (commandbuffer[0] == 'H')
 		{
-			if (hexbuffer[1] == 'E')
+			if (commandbuffer[1] == 'E')
 			{
 				if (c == 'X')
 				{
 					state = 1;
 				}
-				hexbuffer[0] = 'N';
-				hexbuffer[1] = 'O';
+				for (int i = 0; i < sizeof(commandbuffer); i++)
+				{
+					commandbuffer[i] = 'Z';
+				}
 			}
 			else if (c == 'E')
 			{
-				hexbuffer[1] = c;
+				commandbuffer[1] = c;
 			}
 			else
 			{
-				hexbuffer[0] = 'N';
-				hexbuffer[1] = 'O';
+				for (int i = 0; i < sizeof(commandbuffer); i++)
+				{
+					commandbuffer[i] = 'Z';
+				}
 			}
 		}
 		else if (c == 'H')
 		{
-			hexbuffer[0] = c;
+			commandbuffer[0] = c;
 		}
 
-		unsigned char message[] = "Character recieved: ";
-		int i = 0;
-		while (message[i] != 0) /* print the String  "Character recieved: + The character" */
+		//prints contents of messagebuffer
+		if (c == 'P')
 		{
+			int i = 0;
+			while (messagebuffer[i] != 'Z')
+			{
+				//wait until channel is free
+				while (!(UCSR0A & (1 << UDRE)))
+					;
+				//print char
+				UDR0 = messagebuffer[i];
+				i++;
+			}
+			//wait until channel is free
 			while (!(UCSR0A & (1 << UDRE)))
 				;
-			UDR0 = message[i];
-			i++;
+			UDR0 = '\n\r';
+			for (int i = 0; i < sizeof(messagebuffer); i++)
+			{
+				messagebuffer[i] = 'Z';
+			}
+			bufferpos = 0;
 		}
-		while (!(UCSR0A & (1 << UDRE)))
-			;
-		UDR0 = c;
-		while (!(UCSR0A & (1 << UDRE)))
-			;
-		UDR0 = '\n\r';
 	}
-}
-
-void boot_program_page(uint32_t page, uint8_t *buf)
-{
-	uint16_t i;
-	uint8_t sreg;
-
-	// Disable interrupts.
-
-	sreg = SREG;
-	cli();
-
-	eeprom_busy_wait();
-
-	boot_page_erase(page);
-	boot_spm_busy_wait(); // Wait until the memory is erased.
-
-	for (i = 0; i < SPM_PAGESIZE; i += 2)
-	{
-		// Set up little-endian word.
-
-		uint16_t w = *buf++;
-		w += (*buf++) << 8;
-
-		// boot_page_fill(page + i, w);
-	}
-
-	boot_page_write(page); // Store buffer in flash page.
-	boot_spm_busy_wait();  // Wait until the memory is written.
-
-	// Reenable RWW-section again. We need this if we want to jump back
-	// to the application after bootloading.
-
-	boot_rww_enable();
-
-	// Re-enable interrupts (if they were ever enabled).
-
-	SREG = sreg;
 }
 
 int main(void)
 {
-	offbuffer[0] = 'P';
-	offbuffer[1] = 'W';
-	hexbuffer[0] = 'N';
-	hexbuffer[1] = 'O';
-	input[1] = '0';
-	input[2] = '0';
 	timesincechar = 0;
-	hexno = 0;
-	proglist = NULL;
 	uint32_t baudrate = 9600;
 	uint32_t ubrr = 20000000 / 16 / 9600 - 1; //((20000000 -((baudrate) * 8L)) / ((baudrate) * 16UL));
 
@@ -356,38 +269,24 @@ int main(void)
 	UCSR0B = (1 << RXEN) | (1 << TXEN) | (1 << RXCIE);	 // Enable TX and RX and recieve interrupt
 	UCSR0C = (1 << UCPOL) | (1 << UCSZ0) | (1 << UCSZ1); // 8 data and 1 stop
 	sei();
-	char data[] = "Hello from ATmega";
-	int i = 0;
 
-	for (int c = 0; c < sizeof(messagebuffer); c++)
+	for (int b = 0; b < sizeof(messagebuffer); b++)
 	{
-		messagebuffer[c] = 'H';
+		messagebuffer[b] = 'Z';
+	}
+	for (int b = 0; b < sizeof(commandbuffer); b++)
+	{
+		commandbuffer[b] = 'Z';
 	}
 	bufferpos = 0;
+	inputpos = 0;
+	progpos = 0;
 	state = 0;
 
 	while (1) /* Loop the messsage continously */
 	{
 		if (state == 0)
 		{
-			i = 0;
-			while (data[i] != 0) /* print the String  "Hello from ATmega" */
-			{
-				while (!(UCSR0A & (1 << UDRE)))
-					;
-				UDR0 = data[i];
-				i++;
-			}
-
-			/* Send "\n" Character */
-			while (!(UCSR0A & (1 << UDRE)))
-				;
-			UDR0 = '\n';
-
-			/* Send "\r" Character */
-			while (!(UCSR0A & (1 << UDRE)))
-				;
-			UDR0 = '\r';
 		}
 		else if (state == 2)
 		{
@@ -402,7 +301,7 @@ int main(void)
 					i++;
 				}
 			}
-			asm("JMP 0x3800");
+			// asm("JMP 0x3800");
 		}
 		//end if timed out
 		timesincechar++;
