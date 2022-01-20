@@ -17,49 +17,49 @@ char messagebuffer[50];
 int bufferpos;
 int state;
 int timesincechar;
-uint8_t prog[2048];
+uint8_t prog[512];
 int progpos;
 char inputbuffer[50];
 int inputpos;
 char commandbuffer[3];
 
-// void boot_program_page(uint32_t page, uint8_t *buf)
-// {
-// 	uint16_t i;
-// 	uint8_t sreg;
+void boot_program_page(uint32_t page, uint8_t *buf)
+{
+	uint16_t i;
+	uint8_t sreg;
 
-// 	// Disable interrupts.
+	// Disable interrupts.
 
-// 	sreg = SREG;
-// 	cli();
+	sreg = SREG;
+	cli();
 
-// 	eeprom_busy_wait();
+	eeprom_busy_wait();
 
-// 	boot_page_erase(page);
-// 	boot_spm_busy_wait(); // Wait until the memory is erased.
+	boot_page_erase(page);
+	boot_spm_busy_wait(); // Wait until the memory is erased.
 
-// 	for (i = 0; i < SPM_PAGESIZE; i += 2)
-// 	{
-// 		// Set up little-endian word.
+	for (i = 0; i < SPM_PAGESIZE; i += 2)
+	{
+		// Set up little-endian word.
 
-// 		uint16_t w = *buf++;
-// 		w += (*buf++) << 8;
+		uint16_t w = *buf++;
+		w += (*buf++) << 8;
 
-// 		// boot_page_fill(page + i, w);
-// 	}
+		boot_page_fill(page + i, w);
+	}
 
-// 	boot_page_write(page); // Store buffer in flash page.
-// 	boot_spm_busy_wait();  // Wait until the memory is written.
+	boot_page_write(page); // Store buffer in flash page.
+	boot_spm_busy_wait();  // Wait until the memory is written.
 
-// 	// Reenable RWW-section again. We need this if we want to jump back
-// 	// to the application after bootloading.
+	// Reenable RWW-section again. We need this if we want to jump back
+	// to the application after bootloading.
 
-// 	boot_rww_enable();
+	boot_rww_enable();
 
-// 	// Re-enable interrupts (if they were ever enabled).
+	// Re-enable interrupts (if they were ever enabled).
 
-// 	SREG = sreg;
-// }
+	SREG = sreg;
+}
 
 /* When a character is received on the serial bus, this interrupt is called. */
 ISR(USART0_RX_vect)
@@ -116,31 +116,31 @@ ISR(USART0_RX_vect)
 				i++;
 			}
 
-			// int b = 0;
-			// int c = 0;
-			// while (!(b >= progpos))
-			// {
-			// 	while (!(UCSR0A & (1 << UDRE)))
-			// 		;
-			// 	UDR0 = '0x';
-			// 	while (!(UCSR0A & (1 << UDRE)))
-			// 		;
-			// 	UDR0 = prog[b];
-			// 	while (!(UCSR0A & (1 << UDRE)))
-			// 		;
-			// 	UDR0 = ' ';
-			// 	b++;
-			// 	c++;
-			// 	if (c == 10)
-			// 	{
-			// 		while (!(UCSR0A & (1 << UDRE)))
-			// 			;
-			// 		UDR0 = '\n\r';
-			// 	}
-			// }
+			int b = 0;
+			int c = 0;
+			while (!(b >= progpos))
+			{
+				while (!(UCSR0A & (1 << UDRE)))
+					;
+				UDR0 = '0x';
+				while (!(UCSR0A & (1 << UDRE)))
+					;
+				UDR0 = prog[b];
+				while (!(UCSR0A & (1 << UDRE)))
+					;
+				UDR0 = ' ';
+				b++;
+				c++;
+				if (c == 10)
+				{
+					while (!(UCSR0A & (1 << UDRE)))
+						;
+					UDR0 = '\n\r';
+				}
+			}
 
 			//do check and program page
-			// boot_program_page(0, prog);
+			boot_program_page(0, prog);
 			state = 0;
 		}
 	}
@@ -231,7 +231,7 @@ ISR(USART0_RX_vect)
 			commandbuffer[0] = c;
 		}
 
-		//prints contents of messagebuffer
+		//prints contents of messagebuffer, keeps a limited buffer to lower memory usage
 		if (c == 'P')
 		{
 			int i = 0;
