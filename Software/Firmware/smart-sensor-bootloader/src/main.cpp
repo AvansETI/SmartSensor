@@ -235,13 +235,22 @@ ISR(USART0_RX_vect)
 		if (c == 'P')
 		{
 			int i = 0;
-			while (messagebuffer[i] != 'Z')
+			// while (messagebuffer[i] != 'Z')
+			// {
+			// 	//wait until channel is free
+			// 	while (!(UCSR0A & (1 << UDRE)))
+			// 		;
+			// 	//print char
+			// 	UDR0 = messagebuffer[i];
+			// 	i++;
+			// }
+			while (!(i >= progpos))
 			{
 				//wait until channel is free
 				while (!(UCSR0A & (1 << UDRE)))
 					;
 				//print char
-				UDR0 = messagebuffer[i];
+				UDR0 = prog[i];
 				i++;
 			}
 			//wait until channel is free

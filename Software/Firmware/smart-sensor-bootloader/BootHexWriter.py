@@ -11,7 +11,7 @@ file.close()
 ser.write(b'HEX')
 time.sleep(10)
 for line in lines:
-    ser.write(b'{line}')
+    ser.write(bytes(line, 'utf-8'))
     time.sleep(1)
 time.sleep(10)
 ser.write(b'O')
