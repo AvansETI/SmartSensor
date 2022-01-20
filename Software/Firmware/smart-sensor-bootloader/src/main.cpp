@@ -301,7 +301,7 @@ int main(void)
 					i++;
 				}
 			}
-			// asm("JMP 0x3800");
+			asm("JMP 0x0000");
 		}
 		//end if timed out
 		timesincechar++;
