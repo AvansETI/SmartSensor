@@ -5,7 +5,8 @@ ser = serial.Serial('COM6')
 
 lines = []
 file = open('uploadtest.hex', 'r')
-lines = file.readlines
+lines = file.readlines()
+file.close()
 
 ser.write(b'HEX')
 time.sleep(10)
