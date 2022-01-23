@@ -226,6 +226,16 @@ SmartNode* getSmartNode (String id) {
 }
 
 // Helper function to add a smartnode to the array, so we are able to handle the messages
+void addSmartNode (String id) {
+  SmartNode* node = getSmartNode(id);
+
+  if ( node == NULL && smartnodesPointer < SMARTNODES_TOTAL ) {
+    smartnodes[smartnodesPointer] = SmartNode(id);
+    smartnodesPointer++;
+  }
+}
+
+// Helper function to add a smartnode to the array, so we are able to handle the messages
 void addSmartNode (String id, String name) {
   SmartNode* node = getSmartNode(id);
 
@@ -236,21 +246,23 @@ void addSmartNode (String id, String name) {
 }
 
 // Process the messages received from the SmartNode
+// TODO: Add a message that can be used for the SmartNode that the Wemos is attached!
 void processSmartNodeMessage() {
-  if ( RS232Message.length() < 6 ) {
+  if ( RS232Message.length() < 4 ) {
     return;
   }
 
   // Handle message: INIT
   if ( RS232Message.charAt(0) == 'I' && RS232Message.charAt(1) == 'N' &&
-       RS232Message.charAt(2) == 'I' && RS232Message.charAt(3) == 'T' &&
-       RS232Message.charAt(4) == ':' ) {
-         int i = RS232Message.indexOf(":", 5);
-         String id = RS232Message.substring(5, i);
-         String name = RS232Message.substring(i+1);
-         //Serial.printf("ID %s\n", id.c_str());
-         //Serial.printf("NAME: %s\n", name.c_str());
-         addSmartNode(id, name);
+       RS232Message.charAt(2) == 'I' && RS232Message.charAt(3) == 'T' ) {
+    int i = RS232Message.indexOf(":", 5);
+    if ( i >= 0 ) {
+      String id = RS232Message.substring(5, i);
+      String name = RS232Message.substring(i+1);
+      //Serial.printf("ID %s\n", id.c_str());
+      //Serial.printf("NAME: %s\n", name.c_str());
+      addSmartNode(id, name);
+    }
 
   // Handle message: MEA(surement)
   } else if ( RS232Message.charAt(0) == 'M' && RS232Message.charAt(1) == 'E' &&
@@ -287,12 +299,17 @@ void processSmartNodeMessage() {
          if ( node != NULL ) {
             //Serial.print("Send the init message!\n");
             mqtt.publish("node/init", node->getInitMessage().c_str());
-            Serial.printf("INIT: %s\n", node->getInitMessage().c_str());
+            //Serial.printf("INIT: %s\n", node->getInitMessage().c_str());
             node->resetValues();
 
          } else {
-           Serial.print("something wrong\n");
+           //Serial.print("something wrong\n");
          }
+
+   // Handle message: GWAV - gateway availabl
+   } else if ( RS232Message.charAt(0) == 'G' && RS232Message.charAt(1) == 'W' &&
+               RS232Message.charAt(2) == 'A' && RS232Message.charAt(3) == 'V' ) {
+      Serial.printf_P(PSTR("GWAV!\n"));
 
    // Handle other message, most likely measurement values
    } else {
@@ -301,12 +318,18 @@ void processSmartNodeMessage() {
         String id = RS232Message.substring(0, i);
         String value = RS232Message.substring(i+1);
         SmartNode* node = getSmartNode(id);
-        if ( node != NULL ) { // Cannot do anything, i do not know the name, maybe only use the id.
+
+        if ( node == NULL ) {
+          addSmartNode(id);
+          node = getSmartNode(id);
+        }
+
+        if ( node != NULL ) { // Error?!
             node->addValue(value);
             if ( node->readyToSendData() ) {
               String m = node->getMeasurementMessage();
               mqtt.publish("node/data", m.c_str());
-              Serial.printf("DATA: %s\n", m.c_str());
+              //Serial.printf("DATA: %s\n", m.c_str());
               node->resetValues();
             }
 

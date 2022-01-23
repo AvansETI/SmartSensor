@@ -275,6 +275,9 @@ public:
     SmartNode(): id(""), name(""), measurements(""), actuators(""), timestamp("") {
     }
 
+    SmartNode(String id): id(id), name(""), measurements(""), actuators(""), timestamp("") {
+    }
+    
     SmartNode(String id, String name): id(id), name(name), measurements(""), actuators(""), timestamp("") {
     }
 
@@ -393,7 +396,8 @@ public:
 
     String getInitMessage() {
         String message = "{ \"type\": \"smartnode\", \"mode\": 0, ";
-        message = message + "\"id\": \"" + this->name + "-" + this->id + "\", ";
+        //message = message + "\"id\": \"" + this->name + "-" + this->id + "\", ";
+        message = message + "\"id\": \"" + this->id + "\", ";
         message = message + "\"name\": \"" + this->name + "\", \"measurements\": [" + this->getJsonMeasurements() + "],";
         message = message + "\"actuators\": [" + this->getJsonActuators() + "] }";
 
@@ -401,7 +405,8 @@ public:
     }
 
     String getMeasurementMessage() {
-        String message = "{ \"id\": \"" + this->name + "-" + this->id + "\",";
+        //String message = "{ \"id\": \"" + this->name + "-" + this->id + "\",";
+        String message = "{ \"id\": \"" + this->id + "\",";
         message = message + "\"measurements\": [{" + this->getJsonValues() + ",\"timestamp\": \"" + this->timestamp + "\"}],";
         message = message + "\"timestamp\": \"" + this->timestamp + "\" }";
 
