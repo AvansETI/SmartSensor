@@ -11,11 +11,10 @@ ISR(TIMER4_COMPA_vect) { //      => 4 cycles
 uint8_t Timing::setup() {
     // No prescaler F_CPU/1
     OCR4A  = (uint16_t) (F_CPU/1000)-10; // Number that represents 1ms, maybe minus extra cycles 10=4+4+2
-    TCCR4A = 0b00'00'00'00;              // OC1A/OC1B disabled, CTC-mode
+    TCCR4A = 0b00'00'00'00;              // OC4A/OC4B disabled, CTC-mode
     TCCR4B = 0b00'0'01'001;              // CTC-mode, clk_io/1 prescaler
     TCCR4C = 0b00'00'00'00;              // Disable force
-    TIMSK4 = 0b00'1'00'010;              // Timer1 interrupt enabled, interrupt on compare OCR1A, Overflow interrupt disabled!
-    // TIFR1 => interrupt flags, cleared when function is executed.
+    TIMSK4 = 0b00'1'00'010;              // Timer4 interrupt enabled, interrupt on compare OCR1A, Overflow interrupt disabled!
 
     return 0;
 }

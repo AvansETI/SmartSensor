@@ -123,7 +123,7 @@ def get_init_message(smartnode):
     return {
         "type":  "smartnode",
         "mode": 0,
-        "id": smartnode["name"] + "-" + smartnode["id"],
+        "id": smartnode["id"], # smartnode["name"] + "-" + smartnode["id"],
         "name":  smartnode["name"],
         "measurements": measurements,
         "actuators": actuators,
@@ -139,7 +139,7 @@ def get_data_message(smartnode):
             measurements[measurements_mapping[key]["name"]] = value[key]
 
     return {
-        "id": smartnode["name"] + "-" + smartnode["id"],
+        "id": smartnode["id"], # smartnode["name"] + "-" + smartnode["id"],
         "measurements": [measurements],
         "timestamp": measurements["timestamp"]
     }
@@ -153,7 +153,7 @@ client.username_pw_set("node", password="smartmeternode")
 client.connect("sendlab.nl", 11883, 60)
 client.loop_start()
 
-ser = serial.Serial('COM3')
+ser = serial.Serial('COM9')
 
 while (1):
     try:
@@ -194,24 +194,32 @@ while (1):
             client.publish("node/init", json.dumps(get_init_message(smartnodes[id])))
             print("node/init", json.dumps(get_init_message(smartnodes[id])))
 
+        #GWAV => TODO
+        match = re.match("^GWAV\n$", line)
+        if match:
+            print("Matched GWAV")
+
+
         #86FF1312170E0932554E:te:22.7
         match = re.match("^([^:]+):([^:]+):(.+)$", line)
         if match:
             id    = match.groups()[0]
             key   = match.groups()[1]
             value = match.groups()[2]
+            
+            if not id in smartnodes:
+                smartnodes[id] = {"id": id, "values": []}
 
-            if id in smartnodes:
-                smartnodes[id]["values"].append({key: value})
+            smartnodes[id]["values"].append({key: value})
 
-                if ( key == "ts" ):
-                    if len(smartnodes[id]["values"]) <= 1:
-                        print("MMMM??!")
-                    else:
-                        pass
-                        client.publish("node/data", json.dumps(get_data_message(smartnodes[id])))
-                        print("node/data", json.dumps(get_data_message(smartnodes[id])))
-                    smartnodes[id]["values"] = []
+            if ( key == "ts" ):
+                if len(smartnodes[id]["values"]) <= 1:
+                    print("MMMM??!")
+                else:
+                    pass
+                    client.publish("node/data", json.dumps(get_data_message(smartnodes[id])))
+                    print("node/data", json.dumps(get_data_message(smartnodes[id])))
+                smartnodes[id]["values"] = []
     except:
         pass
     

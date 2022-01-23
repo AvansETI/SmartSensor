@@ -56,7 +56,7 @@ void SmartSensorBoard::setup() {
     MCUSR = 0x00; // Reset the flags
     this->measurementReceivedTimestamp = 0;
     this->totalMeasurementsSend = 0;
-    this->sendInitMessage();
+    //this->sendInitMessage(); // Will be called in the concrete class.
 }
 
 void SmartSensorBoard::loop() {

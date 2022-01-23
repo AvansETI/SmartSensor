@@ -42,7 +42,7 @@ class SmartSensorBoard: public MessageInterface {
 
 protected:
     /* The id of the board that is used for identification with the back-end */
-    char id[21];
+    char id[30];
 
     /* Reset cause is hold by this variable. */
     uint8_t resetCause;

@@ -16,8 +16,6 @@ uint8_t CCS811Driver::setup() {
     CCS811_INT_DDR = CCS811_INT_DDR & ~(1 << CCS811_INT_PIN); // set int pin as input
     CCS811_NWAKE_DDR = CCS811_NWAKE_DDR | (1 << CCS811_NWAKE_PIN); // Set nWake  as output!
     
-
-    //CCS811_INT_DDR = CCS811_INT_DDR & ~(1 << CCS811_INT_PIN); // set int pin as input
     this->lowWakePin(); // set wake pin to low!
 
     if ( !this->isConnected() ) {

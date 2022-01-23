@@ -17,6 +17,8 @@
 void SmartSensorBoardV1_2::setup() {
     BOARDV1_2_ADAPTER_IN_USE_DDR = BOARDV1_2_ADAPTER_IN_USE_DDR & ~(1 << BOARDV1_2_ADAPTER_IN_USE_PIN); // Set pin for adapter in use as input.
 
+    this->createID(); // TODO => Is not working
+
     this->timing = Timing::getInstance(); // TODO: We could calibrate the timer loop using the RTC!
     this->timing->setup();
     
@@ -61,16 +63,7 @@ void SmartSensorBoardV1_2::setup() {
         this->debug_P(PSTR("No\n"));
     }
 
-    /* Check if there is a gateway listening to our messages! */
-    this->gateway = this->checkGatewayAvailable();
-    this->debug_P(PSTR("Gateway: "));
-    if ( this->isGateway() ) {
-         this->debug_P(PSTR("Yes\n"));
-    } else {
-        this->debug_P(PSTR("No\n"));
-    }
-
-    /* Send the ID of the SmartNode./
+    /* Send the ID of the SmartNode.*/
     this->debugf_P(PSTR("ID: %s\n"), this->getID());
 
     /* Show the user that we have started up, by one-second led on and then flash led. */
@@ -82,11 +75,17 @@ void SmartSensorBoardV1_2::setup() {
     _delay_ms(100);
     this->ledDriver->led1Off();
 
+    //this->checkGatewayAvailable();
+    this->debug_P(PSTR("Gateway: "));
     if ( this->isGateway() ) {
+        this->debug_P(PSTR("Yes\n"));
         this->ledDriver->led1Flash(5'000, 2'500);
     } else {
+        this->debug_P(PSTR("No\n"));
         this->ledDriver->led1Flash(5'000, 100);
     }
+
+    this->sendInitMessage();
 
     sei(); // Enable the interrupts!
 
@@ -94,11 +93,13 @@ void SmartSensorBoardV1_2::setup() {
 }
 
 bool SmartSensorBoardV1_2::checkGatewayAvailable() {
-    //char line[10] = "\0";
-    //this->serial0->print_P(PSTR("GWAV\n"));
-    //this->serial0->readLine(line, 10, 10);
-    //return false;
-    //return strcmp(line, "GWAV!") == 0;
+    char line[10] = "\0";
+    this->serial0->print_P(PSTR("GWAV\n"));
+    this->serial0->readLine(line, 10, 10);
+    this->debugf("LINE: %s\n", line);
+    this->gateway = strcmp(line, "GWAV!") == 0;
+    //this->gateway = true;
+    return this->gateway;
 }
 
 bool SmartSensorBoardV1_2::adapterInUse() {
@@ -122,8 +123,9 @@ void SmartSensorBoardV1_2::debug_P( const char* message) {
     this->serial0->print_P(message);
 }
 
-const char* SmartSensorBoardV1_2::getID() {
+void SmartSensorBoardV1_2::createID() {
     // Get the Atmege unique serial number
+    // Create ID => SN<ATMEGA_ID>
     for ( uint8_t i=0; i < 20; i=i+2 ) {
         uint8_t b = boot_signature_byte_get(0x0E + i); // 0x0E => SER0
         
@@ -137,7 +139,13 @@ const char* SmartSensorBoardV1_2::getID() {
 
     this->id[20] = '\0';
 
-    return this->id;
+    for ( uint8_t i=0; i < 21; i++ ) {
+        this->id[21-1-i+3] = this->id[21-1-i];
+    }
+    
+    this->id[0] = 'S';
+    this->id[1] = 'N';
+    this->id[2] = '-';
 }
 
 void SmartSensorBoardV1_2::getActualTimestamp() {

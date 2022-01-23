@@ -73,7 +73,7 @@ private:
 
 protected:
     bool checkGatewayAvailable();
-
+    void createID();
 public:
     SmartSensorBoardV1_2() { }
 
@@ -92,9 +92,6 @@ public:
     void getActualTimestamp();
     void setActualTimestamp(const RTCTime &time);
     
-    /* Get the serial number that is stored in the Atmega324PB. */
-    const char* getID();
-
     uint8_t sendDataString(const char* data);
     uint8_t sendDataString_P(const char* data);
     uint8_t sendDataStringAvailable();
@@ -104,5 +101,4 @@ public:
     void recievedCharacter(char c);
 
     void sendInitMessage();
-
 };

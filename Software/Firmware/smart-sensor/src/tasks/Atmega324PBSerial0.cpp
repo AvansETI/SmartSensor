@@ -145,16 +145,20 @@ bool Atmega324PBSerial0::readLine(char* line, uint8_t timeout, uint8_t length) {
     for (uint8_t i=0; i < timeout; ++i) {
         if ( this->isCharacterReceieved() ) {
             char c = this->readCharacter();
+            this->transmitChar(c);
             if ( c == '\n' ) return true;
             line[index] = c;
+            line[index+1] = '\0';
             index++;
+            
         } else {
             _delay_ms(100);
         }
 
-        if ( index >= length ) {
+        if ( index >= length - 1 ) {
             return true;
         }
     }
+
     return false;
 }
