@@ -22,7 +22,7 @@ int progpos;
 char inputbuffer[50];
 int inputpos;
 char commandbuffer[3];
-uint32_t pageno;
+int pageno;
 
 void boot_program_page(uint32_t page, uint8_t *buf)
 {
@@ -96,11 +96,12 @@ ISR(USART0_RX_vect)
 				//put converted bytes in array
 				prog[progpos] = progput;
 				progpos++;
-				if (progpos >= sizeof(prog))
-				{
-					boot_program_page(pageno, prog);
-					pageno = pageno + 128;
-				}
+				// if (progpos >= sizeof(prog))
+				// {
+				// 	boot_program_page(pageno * SPM_PAGESIZE, prog);
+				// 	pageno++;
+				// 	progpos = 0;
+				// }
 				
 			}
 			inputpos = 0;
@@ -147,7 +148,7 @@ ISR(USART0_RX_vect)
 			}
 
 			//do check and program page
-			boot_program_page(pageno, prog);
+			boot_program_page(pageno * SPM_PAGESIZE, prog);
 			state = 0;
 		}
 	}
