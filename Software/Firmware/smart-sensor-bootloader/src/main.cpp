@@ -17,11 +17,12 @@ char messagebuffer[50];
 int bufferpos;
 int state;
 int timesincechar;
-uint8_t prog[512];
+uint8_t prog[128];
 int progpos;
 char inputbuffer[50];
 int inputpos;
 char commandbuffer[3];
+uint32_t pageno;
 
 void boot_program_page(uint32_t page, uint8_t *buf)
 {
@@ -95,6 +96,12 @@ ISR(USART0_RX_vect)
 				//put converted bytes in array
 				prog[progpos] = progput;
 				progpos++;
+				if (progpos >= sizeof(prog))
+				{
+					boot_program_page(pageno, prog);
+					pageno = pageno + 128;
+				}
+				
 			}
 			inputpos = 0;
 			for (int i = 0; i < sizeof(inputbuffer); i++)
@@ -140,7 +147,7 @@ ISR(USART0_RX_vect)
 			}
 
 			//do check and program page
-			boot_program_page(0, prog);
+			boot_program_page(pageno, prog);
 			state = 0;
 		}
 	}
@@ -235,22 +242,13 @@ ISR(USART0_RX_vect)
 		if (c == 'P')
 		{
 			int i = 0;
-			// while (messagebuffer[i] != 'Z')
-			// {
-			// 	//wait until channel is free
-			// 	while (!(UCSR0A & (1 << UDRE)))
-			// 		;
-			// 	//print char
-			// 	UDR0 = messagebuffer[i];
-			// 	i++;
-			// }
-			while (!(i >= progpos))
+			while (messagebuffer[i] != 'Z')
 			{
 				//wait until channel is free
 				while (!(UCSR0A & (1 << UDRE)))
 					;
 				//print char
-				UDR0 = prog[i];
+				UDR0 = messagebuffer[i];
 				i++;
 			}
 			//wait until channel is free
@@ -271,6 +269,7 @@ int main(void)
 	timesincechar = 0;
 	uint32_t baudrate = 9600;
 	uint32_t ubrr = 20000000 / 16 / 9600 - 1; //((20000000 -((baudrate) * 8L)) / ((baudrate) * 16UL));
+	pageno = 0;
 
 	UBRR0H = (unsigned char)(ubrr >> 8); // Configuration of the baudrate
 	UBRR0L = (unsigned char)ubrr;
