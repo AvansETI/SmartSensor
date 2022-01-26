@@ -23,12 +23,12 @@ char messagebuffer[50];
 int bufferpos;
 int state;
 int timesincechar;
-uint8_t prog[256];
+uint8_t prog[1024];
 int progpos;
 char inputbuffer[50];
 int inputpos;
 char commandbuffer[3];
-int pageno;
+uint32_t pageno;
 
 void boot_program_page(uint32_t page, uint8_t *buf)
 {
@@ -102,13 +102,12 @@ ISR(USART0_RX_vect)
 				//put converted bytes in array
 				prog[progpos] = progput;
 				progpos++;
-				//for some reason this empties prog array
-				if (progpos >= sizeof(prog))
-				{
-					boot_program_page(pageno * SPM_PAGESIZE, prog);
-					pageno++;
-					progpos = 0;
-				}
+				// if (progpos >= 128)
+				// {
+				// 	boot_program_page(pageno * SPM_PAGESIZE, prog);
+				// 	pageno++;
+				// 	progpos = 0;
+				// }
 				
 			}
 			inputpos = 0;
@@ -156,7 +155,21 @@ ISR(USART0_RX_vect)
 			}
 
 			//do check and program page
-			boot_program_page(pageno * SPM_PAGESIZE, prog);
+			//earlier attempt
+			// boot_program_page(pageno * SPM_PAGESIZE, prog);
+
+
+			//hopefully this works
+			uint8_t* prog_ptr = prog;
+			for (int i = 0; i < 8; i++)
+			{
+				boot_program_page(pageno, prog_ptr);
+				pageno += SPM_PAGESIZE;
+				prog_ptr += SPM_PAGESIZE;
+			}
+			
+
+			//state back to 0
 			state = 0;
 		}
 	}
