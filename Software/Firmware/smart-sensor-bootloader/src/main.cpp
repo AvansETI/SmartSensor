@@ -555,6 +555,8 @@ int main(void)
 	PORTD &= ~(1 << PD4);
 	_delay_ms(1000);
 
+	asm("jmp 0x3800");
+
 
 	timesincechar = 0;
 	uint32_t baudrate = 9600;
