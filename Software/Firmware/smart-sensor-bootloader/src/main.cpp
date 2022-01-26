@@ -555,7 +555,7 @@ int main(void)
 	PORTD &= ~(1 << PD4);
 	_delay_ms(1000);
 
-	
+
 	timesincechar = 0;
 	uint32_t baudrate = 9600;
 	uint32_t ubrr = 20000000 / 16 / 9600 - 1; //((20000000 -((baudrate) * 8L)) / ((baudrate) * 16UL));
