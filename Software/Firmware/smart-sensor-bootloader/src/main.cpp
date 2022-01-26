@@ -13,6 +13,12 @@
 #include <avr/io.h>
 #include <avr/pgmspace.h>
 #include <Converter.h>
+
+typedef void (*f_ptr_type)(void);
+
+f_ptr_type call_zero = (f_ptr_type)0x0000;
+
+
 char messagebuffer[50];
 int bufferpos;
 int state;
@@ -39,8 +45,7 @@ void boot_program_page(uint32_t page, uint8_t *buf)
 	boot_page_erase(page);
 	boot_spm_busy_wait(); // Wait until the memory is erased.
 
-	//found I + 1 in original bootloader, but single page did function with I + 2?
-	for (i = 0; i < SPM_PAGESIZE; i += 1)
+	for (i = 0; i < SPM_PAGESIZE; i += 2)
 	{
 		// Set up little-endian word.
 
@@ -146,6 +151,7 @@ ISR(USART0_RX_vect)
 					while (!(UCSR0A & (1 << UDRE)))
 						;
 					UDR0 = '\n\r';
+					d = 0;
 				}
 			}
 
