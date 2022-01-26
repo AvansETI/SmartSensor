@@ -17,7 +17,7 @@ char messagebuffer[50];
 int bufferpos;
 int state;
 int timesincechar;
-uint8_t prog[128];
+uint8_t prog[256];
 int progpos;
 char inputbuffer[50];
 int inputpos;
@@ -39,7 +39,8 @@ void boot_program_page(uint32_t page, uint8_t *buf)
 	boot_page_erase(page);
 	boot_spm_busy_wait(); // Wait until the memory is erased.
 
-	for (i = 0; i < SPM_PAGESIZE; i += 2)
+	//found I + 1 in original bootloader, but single page did function with I + 2?
+	for (i = 0; i < SPM_PAGESIZE; i += 1)
 	{
 		// Set up little-endian word.
 
@@ -96,12 +97,13 @@ ISR(USART0_RX_vect)
 				//put converted bytes in array
 				prog[progpos] = progput;
 				progpos++;
-				// if (progpos >= sizeof(prog))
-				// {
-				// 	boot_program_page(pageno * SPM_PAGESIZE, prog);
-				// 	pageno++;
-				// 	progpos = 0;
-				// }
+				//for some reason this empties prog array
+				if (progpos >= sizeof(prog))
+				{
+					boot_program_page(pageno * SPM_PAGESIZE, prog);
+					pageno++;
+					progpos = 0;
+				}
 				
 			}
 			inputpos = 0;
@@ -125,7 +127,7 @@ ISR(USART0_RX_vect)
 			}
 
 			int b = 0;
-			int c = 0;
+			int d = 0;
 			while (!(b >= progpos))
 			{
 				while (!(UCSR0A & (1 << UDRE)))
@@ -138,8 +140,8 @@ ISR(USART0_RX_vect)
 					;
 				UDR0 = ' ';
 				b++;
-				c++;
-				if (c == 10)
+				d++;
+				if (d == 10)
 				{
 					while (!(UCSR0A & (1 << UDRE)))
 						;
@@ -272,6 +274,12 @@ int main(void)
 	uint32_t ubrr = 20000000 / 16 / 9600 - 1; //((20000000 -((baudrate) * 8L)) / ((baudrate) * 16UL));
 	pageno = 0;
 
+	DDRD |= 1 << PD4;
+	PORTD |= 1 << PD4;
+	_delay_ms(100);
+	PORTD &= ~(1 << PD4);
+	_delay_ms(1000);
+
 	UBRR0H = (unsigned char)(ubrr >> 8); // Configuration of the baudrate
 	UBRR0L = (unsigned char)ubrr;
 	UCSR0A = 0x00;
@@ -287,6 +295,11 @@ int main(void)
 	{
 		commandbuffer[b] = 'Z';
 	}
+	for (int b = 0; b < sizeof(prog); b++)
+	{
+		prog[b] = 0xFF;
+	}
+	
 	bufferpos = 0;
 	inputpos = 0;
 	progpos = 0;
