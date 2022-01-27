@@ -68,9 +68,6 @@ ISR(USART0_RX_vect)
 {
 	char c = UDR0;
 	timesincechar = 0;
-	while (!(UCSR0A & (1 << UDRE)))
-		;
-	UDR0 = c;
 	/*For proper use of recieving hex file a delay should be added after every sent character to prevent data loss*/
 	if (state == 1)
 	{
@@ -87,6 +84,9 @@ ISR(USART0_RX_vect)
 				inputbuffer[inputpos] = c;
 			}
 			inputpos++;
+			while (!(UCSR0A & (1 << UDRE)))
+				;
+			UDR0 = c;
 		}
 		if (c == '\n')
 		{
