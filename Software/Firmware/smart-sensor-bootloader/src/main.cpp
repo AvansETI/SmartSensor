@@ -174,7 +174,7 @@ ISR(USART0_RX_vect)
 
 			//hopefully this works
 			uint8_t *prog_ptr = prog;
-			for (int i = 0; i < sizeof(prog); i++)
+			for (int i = 0; i < 5; i++)
 			{
 				USART_Transmit(prog[i]);
 			}
