@@ -18,7 +18,7 @@ char messagebuffer[50];
 int bufferpos;
 int state;
 int timesincechar;
-uint8_t prog[128];
+uint8_t prog[1024];
 int progpos;
 char inputbuffer[50];
 int inputpos;
@@ -161,7 +161,7 @@ ISR(USART0_RX_vect)
 				prog_ptr += SPM_PAGESIZE;
 			}
 
-			asm("jmp 0");
+			// asm("jmp 0");
 
 			//state back to 0
 			state = 0;
@@ -315,17 +315,6 @@ int main(void)
 	{
 		if (state == 0)
 		{	
-			int i = 0;
-			unsigned char shutdown[] = "RUNNING \n";
-			while (shutdown[i] != 0)
-			{
-				while (!(UCSR0A & (1 << UDRE)))
-					;
-				{
-					UDR0 = shutdown[i];
-					i++;
-				}
-			}	
 		}
 		else if (state == 2)
 		{
