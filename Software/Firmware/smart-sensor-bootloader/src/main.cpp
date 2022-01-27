@@ -314,7 +314,18 @@ int main(void)
 	while (1) /* Loop the messsage continously */
 	{
 		if (state == 0)
-		{		
+		{	
+			int i = 0;
+			unsigned char shutdown[] = "RUNNING \n";
+			while (shutdown[i] != 0)
+			{
+				while (!(UCSR0A & (1 << UDRE)))
+					;
+				{
+					UDR0 = shutdown[i];
+					i++;
+				}
+			}	
 		}
 		else if (state == 2)
 		{
