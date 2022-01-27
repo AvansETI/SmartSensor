@@ -107,12 +107,14 @@ ISR(USART0_RX_vect)
 				// 	;
 				// UDR0 = inputbuffer[inputpos];
 				// UDR0 = inputbuffer[inputpos+1];
-				USART_Transmit(progput);
+				// USART_Transmit(progput);
 
 
 				inputpos = inputpos + 2;
 				//put converted bytes in array
 				prog[progpos] = progput;
+				USART_Transmit(prog[progpos]);
+
 				
 				progpos++;
 				// if (progpos >= 128)
