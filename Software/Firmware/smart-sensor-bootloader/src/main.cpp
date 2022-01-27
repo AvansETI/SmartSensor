@@ -18,7 +18,7 @@ char messagebuffer[50];
 int bufferpos;
 int state;
 int timesincechar;
-uint8_t prog[1024];
+uint8_t prog[128];
 int progpos;
 char inputbuffer[50];
 int inputpos;
@@ -282,6 +282,12 @@ ISR(USART0_RX_vect)
 
 int main(void)
 {
+
+	DDRD |= 1 << PD4;
+	PORTD |= 1 << PD4;
+	_delay_ms(100);
+	PORTD &= ~(1 << PD4);
+	_delay_ms(1000);
 
 	timesincechar = 0;
 	uint32_t baudrate = 9600;
