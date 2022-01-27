@@ -13,5 +13,7 @@ time.sleep(10)
 for line in lines:
     ser.write(bytes(line, 'utf-8'))
     time.sleep(1)
+    result = ser.read_all()
+    print(result)
 time.sleep(10)
 ser.write(b'O')

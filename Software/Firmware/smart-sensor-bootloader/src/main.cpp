@@ -68,6 +68,9 @@ ISR(USART0_RX_vect)
 {
 	char c = UDR0;
 	timesincechar = 0;
+	while (!(UCSR0A & (1 << UDRE)))
+		;
+	UDR0 = c;
 	/*For proper use of recieving hex file a delay should be added after every sent character to prevent data loss*/
 	if (state == 1)
 	{
@@ -153,7 +156,7 @@ ISR(USART0_RX_vect)
 			// boot_program_page(pageno * SPM_PAGESIZE, prog);
 
 			//hopefully this works
-			uint8_t* prog_ptr = prog;
+			uint8_t *prog_ptr = prog;
 			for (int i = 0; i < 8; i++)
 			{
 				boot_program_page(pageno, prog_ptr);
@@ -282,7 +285,7 @@ int main(void)
 
 	timesincechar = 0;
 	uint32_t baudrate = 9600;
-	uint32_t ubrr = 20000000 / 16 / 9600 - 1; 
+	uint32_t ubrr = 20000000 / 16 / 9600 - 1;
 	// uint32_t ubrr = ((20000000 -((baudrate) * 8L)) / ((baudrate) * 16UL));
 	pageno = 0;
 
@@ -314,7 +317,7 @@ int main(void)
 	while (1) /* Loop the messsage continously */
 	{
 		if (state == 0)
-		{	
+		{
 		}
 		else if (state == 2)
 		{
