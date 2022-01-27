@@ -63,6 +63,16 @@ void boot_program_page(uint32_t page, uint8_t *buf)
 	SREG = sreg;
 }
 
+void USART_Transmit( unsigned char data )
+{
+ /* Wait for empty transmit buffer */
+ while ( !( UCSR0A & (1<<UDRE)) )
+ ;
+ /* Put data into buffer, sends the data */
+ UDR0 = data;
+}
+
+
 /* When a character is received on the serial bus, this interrupt is called. */
 ISR(USART0_RX_vect)
 {
@@ -89,16 +99,21 @@ ISR(USART0_RX_vect)
 		{
 			//due to hex file structure begin at position 8 with actually taking data and do not take the last few characters, these are for a better check but currently focused on functional
 			inputpos = 8;
-			while ((inputbuffer[inputpos] != 'Z') & !(inputpos > (sizeof(inputbuffer) - 2)))
+			while ((inputbuffer[inputpos] != 'Z') & !(inputpos >= (sizeof(inputbuffer) - 2)))
 			{
 				//convert to bytes and move by 2
 				uint8_t progput = convertHexToByte(inputbuffer[inputpos], inputbuffer[inputpos + 1]);
+				// while (!(UCSR0A & (1 << UDRE)))
+				// 	;
+				// UDR0 = inputbuffer[inputpos];
+				// UDR0 = inputbuffer[inputpos+1];
+				USART_Transmit(progput);
+
+
 				inputpos = inputpos + 2;
 				//put converted bytes in array
 				prog[progpos] = progput;
-				while (!(UCSR0A & (1 << UDRE)))
-					;
-				UDR0 = prog[progpos];
+				
 				progpos++;
 				// if (progpos >= 128)
 				// {
@@ -116,40 +131,40 @@ ISR(USART0_RX_vect)
 
 		if (endmes == true)
 		{
-			//as a test print the prog array
-			unsigned char progmessage[] = "Printing the prog array\n";
-			int i = 0;
-			while (progmessage[i] != 0)
-			{
-				while (!(UCSR0A & (1 << UDRE)))
-					;
-				UDR0 = progmessage[i];
-				i++;
-			}
+			// //as a test print the prog array
+			// unsigned char progmessage[] = "Printing the prog array\n";
+			// int i = 0;
+			// while (progmessage[i] != 0)
+			// {
+			// 	while (!(UCSR0A & (1 << UDRE)))
+			// 		;
+			// 	UDR0 = progmessage[i];
+			// 	i++;
+			// }
 
-			int b = 0;
-			int d = 0;
-			while (!(b >= sizeof(prog)))
-			{
-				while (!(UCSR0A & (1 << UDRE)))
-					;
-				UDR0 = '0x';
-				while (!(UCSR0A & (1 << UDRE)))
-					;
-				UDR0 = prog[b];
-				while (!(UCSR0A & (1 << UDRE)))
-					;
-				UDR0 = ' ';
-				b++;
-				d++;
-				if (d == 10)
-				{
-					while (!(UCSR0A & (1 << UDRE)))
-						;
-					UDR0 = '\n\r';
-					d = 0;
-				}
-			}
+			// int b = 0;
+			// int d = 0;
+			// while (!(b >= sizeof(prog)))
+			// {
+			// 	while (!(UCSR0A & (1 << UDRE)))
+			// 		;
+			// 	UDR0 = '0x';
+			// 	while (!(UCSR0A & (1 << UDRE)))
+			// 		;
+			// 	UDR0 = prog[b];
+			// 	while (!(UCSR0A & (1 << UDRE)))
+			// 		;
+			// 	UDR0 = ' ';
+			// 	b++;
+			// 	d++;
+			// 	if (d == 10)
+			// 	{
+			// 		while (!(UCSR0A & (1 << UDRE)))
+			// 			;
+			// 		UDR0 = '\n\r';
+			// 		d = 0;
+			// 	}
+			// }
 
 			//do check and program page
 			//earlier attempt
@@ -157,6 +172,11 @@ ISR(USART0_RX_vect)
 
 			//hopefully this works
 			uint8_t *prog_ptr = prog;
+			for (int i = 0; i < sizeof(prog); i++)
+			{
+				USART_Transmit(prog[i]);
+			}
+			
 			for (int i = 0; i < 8; i++)
 			{
 				boot_program_page(pageno, prog_ptr);
