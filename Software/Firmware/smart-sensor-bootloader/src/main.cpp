@@ -84,21 +84,21 @@ ISR(USART0_RX_vect)
 				inputbuffer[inputpos] = c;
 			}
 			inputpos++;
-			while (!(UCSR0A & (1 << UDRE)))
-				;
-			UDR0 = c;
 		}
 		if (c == '\n')
 		{
 			//due to hex file structure begin at position 8 with actually taking data and do not take the last few characters, these are for a better check but currently focused on functional
 			inputpos = 8;
-			while ((inputbuffer[inputpos] != 'Z') & !(inputpos >= (sizeof(inputbuffer) - 2)))
+			while ((inputbuffer[inputpos] != 'Z') & !(inputpos > (sizeof(inputbuffer) - 2)))
 			{
 				//convert to bytes and move by 2
 				uint8_t progput = convertHexToByte(inputbuffer[inputpos], inputbuffer[inputpos + 1]);
 				inputpos = inputpos + 2;
 				//put converted bytes in array
 				prog[progpos] = progput;
+				while (!(UCSR0A & (1 << UDRE)))
+					;
+				UDR0 = prog[progpos];
 				progpos++;
 				// if (progpos >= 128)
 				// {
@@ -164,7 +164,7 @@ ISR(USART0_RX_vect)
 				prog_ptr += SPM_PAGESIZE;
 			}
 
-			// asm("jmp 0");
+			asm("jmp 0");
 
 			//state back to 0
 			state = 0;
