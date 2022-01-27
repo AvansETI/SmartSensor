@@ -317,6 +317,7 @@ int main(void)
 	{
 		if (state == 0)
 		{
+			
 		}
 		else if (state == 2)
 		{
