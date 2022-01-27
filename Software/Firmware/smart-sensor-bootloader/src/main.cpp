@@ -282,7 +282,8 @@ int main(void)
 
 	timesincechar = 0;
 	uint32_t baudrate = 9600;
-	uint32_t ubrr = 20000000 / 16 / 9600 - 1; //((20000000 -((baudrate) * 8L)) / ((baudrate) * 16UL));
+	uint32_t ubrr = 20000000 / 16 / 9600 - 1; 
+	// uint32_t ubrr = ((20000000 -((baudrate) * 8L)) / ((baudrate) * 16UL));
 	pageno = 0;
 
 	UBRR0H = (unsigned char)(ubrr >> 8); // Configuration of the baudrate
