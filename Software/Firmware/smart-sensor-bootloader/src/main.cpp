@@ -393,7 +393,12 @@ int main(void)
 	unsigned char message[] = "Hello from Serial\n"; 
 	while (1)
 	{
-		sendString(message);
+		// sendString(message);
+		for (int i = 0; i < sizeof(message); i++)
+		{
+			sendChar(message[i]);
+		}
+		
 		_delay_ms(100);
 	}
 	
