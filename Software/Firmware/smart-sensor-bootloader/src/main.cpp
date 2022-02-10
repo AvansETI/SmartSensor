@@ -14,6 +14,7 @@
 #include <avr/pgmspace.h>
 #include <Converter.h>
 #include <Serial.h>
+#include <stdio.h>
 
 // char messagebuffer[50];
 // int bufferpos;
@@ -382,24 +383,119 @@
 // 	}
 // }
 
+typedef enum
+{
+	bootState,
+	recieveState,
+	writeState,
+	executeState,
+	lastState
+} states;
+
+typedef enum
+{
+	bootEvent,
+	recieveEvent,
+	writeEvent,
+	executeEvent,
+	lastEvent
+} events;
+
+typedef states (*const eventHandler[lastState][lastEvent])(void);
+
+typedef states (*eventHandlerTwo)(void);
+
+states bootHandler(void)
+{
+	unsigned char bootmes[] = "Boot\n";
+	for (int i = 0; i < sizeof(bootmes); i++)
+	{
+		sendChar(bootmes[i]);
+	}
+	return bootState;
+}
+
+states recieveHandler(void) {
+	unsigned char recmes[] = "Recieve\n";
+	for (int i = 0; i < sizeof(recmes); i++)
+	{
+		sendChar(recmes[i]);
+	}
+	return recieveState;
+}
+
+states writeHandler(void) {
+	unsigned char wrimes[] = "Write\n";
+	for (int i = 0; i < sizeof(wrimes); i++)
+	{
+		sendChar(wrimes[i]);
+	}
+	return writeState;
+}
+
+states executeHandler(void) {
+	unsigned char exemes[] = "Execute\n";
+	for (int i = 0; i < sizeof(exemes); i++)
+	{
+		sendChar(exemes[i]);
+	}
+	return executeState;
+}
+
 int main(void)
 {
+	states nextState = bootState;
+	// events newEvent;
+
+	// static eventHandler stateMachine =
+	// {
+	// 	[bootState] = {[recieveEvent] = recieveHandler},
+	// 	[recieveState] = {[writeEvent] = writeHandler},
+	// 	[writeState] = {[executeEvent] = executeHandler},
+	// 	[executeState] = {[bootEvent] = bootHandler},
+	// };
+
 	DDRD |= 1 << PD4;
 	PORTD |= 1 << PD4;
 	_delay_ms(100);
 	PORTD &= ~(1 << PD4);
 	_delay_ms(1000);
 	initSerial();
-	unsigned char message[] = "Hello from Serial\n"; 
+	// unsigned char message[] = "Hello from Serial\n";
+	int testint = 0;
 	while (1)
 	{
 		// sendString(message);
-		for (int i = 0; i < sizeof(message); i++)
+		// for (int i = 0; i < sizeof(message); i++)
+		// {
+		// 	sendChar(message[i]);
+		// }
+		testint++;
+		if (testint == 10)
 		{
-			sendChar(message[i]);
+			//simulating event to change state, will be worked on further
+			//for now just test cycling through states
+			testint = 0;
+			switch (nextState)
+			{
+			case bootState:
+				nextState = recieveHandler();
+				break;
+			case recieveState:
+				nextState = writeHandler();
+				break;
+			case writeState:
+				nextState = executeHandler();
+				break;
+			case executeState:
+				nextState = bootHandler();
+				break;
+			default:
+				break;
+			}
 		}
 		
+
 		_delay_ms(100);
 	}
-	
 }
