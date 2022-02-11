@@ -461,11 +461,11 @@ int main(void)
 	PORTD &= ~(1 << PD4);
 	_delay_ms(1000);
 	initSerial();
-	// unsigned char message[] = "Hello from Serial\n";
+	char message[] = "Hello from Serial\n";
 	int testint = 0;
 	while (1)
 	{
-		// sendString(message);
+		sendString(message);
 		// for (int i = 0; i < sizeof(message); i++)
 		// {
 		// 	sendChar(message[i]);

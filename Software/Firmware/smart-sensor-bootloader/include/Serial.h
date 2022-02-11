@@ -3,5 +3,5 @@
 
 
 void initSerial();
-void sendString(unsigned char input[]);
-void sendChar(unsigned char c);
+void sendString(const char *input);
+void sendChar(char c);

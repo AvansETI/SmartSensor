@@ -18,7 +18,7 @@ void initSerial()
     sei();
 }
 
-void sendChar(unsigned char c)
+void sendChar(char c)
 {
     /* Wait for empty transmit buffer */
     while (!(UCSR0A & (1 << UDRE)))
@@ -27,11 +27,16 @@ void sendChar(unsigned char c)
     UDR0 = c;
 }
 
-void sendString(unsigned char input[])
+void sendString(const char *input)
 {
-    for (int i = 0; i < sizeof(input); i++)
+    // for (int i = 0; i < sizeof(input); i++)
+    // {
+    //     sendChar(input[i]);
+    // }
+    while (*input != 0x00)
     {
-        sendChar(input[i]);
+        sendChar(*input++);
     }
+    
     
 }
