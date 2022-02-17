@@ -463,29 +463,29 @@ int main(void)
 		// sendString(message);
 		stateMachine.loop();
 		testint++;
-		if (testint == 10)
+		if (testint == 1)
 		{
 			// simulating event to change state, will be worked on further
 			// for now just test cycling through states with some testing of errors
 			stateMachine.raiseEvent(bootEvent);
 		}
-		else if (testint == 20)
+		else if (testint == 2)
 		{
 			stateMachine.raiseEvent(recieveEvent);
 		}
-		else if (testint == 30)
+		else if (testint == 3)
 		{
 			stateMachine.raiseEvent(writeEvent);
 		}
-		else if (testint == 40)
+		else if (testint == 4)
 		{
 			stateMachine.raiseEvent(executeEvent);
 		}
-		else if (testint == 50)
+		else if (testint == 5)
 		{
 			stateMachine.raiseEvent(writeEvent);
 		}
-		else if (testint == 60)
+		else if (testint == 6)
 		{
 			stateMachine.raiseEvent(recieveEvent);
 			testint = 0;
