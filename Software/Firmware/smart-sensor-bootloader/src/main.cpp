@@ -389,7 +389,7 @@ typedef enum
 	recieveState,
 	writeState,
 	executeState,
-	lastState
+	totalState
 } states;
 
 typedef enum
@@ -398,62 +398,40 @@ typedef enum
 	recieveEvent,
 	writeEvent,
 	executeEvent,
-	lastEvent
+	startEvent,
+	totalEvent
 } events;
 
-// typedef states (*const eventHandler[lastState][lastEvent])(void);
+STATE stateMachine(totalState, totalEvent);
 
-// typedef states (*eventHandlerTwo)(void);
-
-// states bootHandler(void)
-// {
-// 	unsigned char bootmes[] = "Boot\n";
-// 	for (int i = 0; i < sizeof(bootmes); i++)
-// 	{
-// 		sendChar(bootmes[i]);
-// 	}
-// 	return bootState;
-// }
-
-// states recieveHandler(void) {
-// 	unsigned char recmes[] = "Recieve\n";
-// 	for (int i = 0; i < sizeof(recmes); i++)
-// 	{
-// 		sendChar(recmes[i]);
-// 	}
-// 	return recieveState;
-// }
-
-// states writeHandler(void) {
-// 	unsigned char wrimes[] = "Write\n";
-// 	for (int i = 0; i < sizeof(wrimes); i++)
-// 	{
-// 		sendChar(wrimes[i]);
-// 	}
-// 	return writeState;
-// }
-
-// states executeHandler(void) {
-// 	unsigned char exemes[] = "Execute\n";
-// 	for (int i = 0; i < sizeof(exemes); i++)
-// 	{
-// 		sendChar(exemes[i]);
-// 	}
-// 	return executeState;
-// }
+// handlers for various events
+void bootHandler()
+{
+	char bootmes[] = "Boot\n";
+	sendString(bootmes);
+	stateMachine.raiseEvent(bootEvent);
+}
+void recieveHandler()
+{
+	char recmes[] = "Recieve\n";
+	sendString(recmes);
+	stateMachine.raiseEvent(recieveEvent);
+}
+void writeHandler()
+{
+	char wrimes[] = "Write\n";
+	sendString(wrimes);
+	stateMachine.raiseEvent(writeEvent);
+}
+void executeHandler()
+{
+	char exemes[] = "Execute\n";
+	sendString(exemes);
+	stateMachine.raiseEvent(executeEvent);
+}
 
 int main(void)
 {
-	states nextState = bootState;
-	// events newEvent;
-
-	// static eventHandler stateMachine =
-	// {
-	// 	[bootState] = {[recieveEvent] = recieveHandler},
-	// 	[recieveState] = {[writeEvent] = writeHandler},
-	// 	[writeState] = {[executeEvent] = executeHandler},
-	// 	[executeState] = {[bootEvent] = bootHandler},
-	// };
 
 	DDRD |= 1 << PD4;
 	PORTD |= 1 << PD4;
@@ -463,38 +441,55 @@ int main(void)
 	initSerial();
 	char message[] = "Hello from Serial\n";
 	int testint = 0;
+
+	// add necessary data to state machine
+	// add states to machine
+	stateMachine.addState(bootState, bootHandler);
+	stateMachine.addState(recieveState, recieveHandler);
+	stateMachine.addState(writeState, writeHandler);
+	stateMachine.addState(executeState, executeHandler);
+
+	// add transitions to machine
+	stateMachine.addTransition(bootState, bootEvent, recieveState);
+	stateMachine.addTransition(recieveState, recieveEvent, writeState);
+	stateMachine.addTransition(writeState, writeEvent, executeState);
+	stateMachine.addTransition(executeState, executeEvent, bootState);
+
+	// setup state machine
+	stateMachine.setup(bootState, startEvent);
 	while (1)
 	{
-		sendString(message);
-		// for (int i = 0; i < sizeof(message); i++)
-		// {
-		// 	sendChar(message[i]);
-		// }
+		
+		// sendString(message);
+		stateMachine.loop();
 		testint++;
 		if (testint == 10)
 		{
-			//simulating event to change state, will be worked on further
-			//for now just test cycling through states
-			testint = 0;
-			switch (nextState)
-			{
-			case bootState:
-				nextState = recieveHandler();
-				break;
-			case recieveState:
-				nextState = writeHandler();
-				break;
-			case writeState:
-				nextState = executeHandler();
-				break;
-			case executeState:
-				nextState = bootHandler();
-				break;
-			default:
-				break;
-			}
+			// simulating event to change state, will be worked on further
+			// for now just test cycling through states with some testing of errors
+			stateMachine.raiseEvent(bootEvent);
 		}
-		
+		else if (testint == 20)
+		{
+			stateMachine.raiseEvent(recieveEvent);
+		}
+		else if (testint == 30)
+		{
+			stateMachine.raiseEvent(writeEvent);
+		}
+		else if (testint == 40)
+		{
+			stateMachine.raiseEvent(executeEvent);
+		}
+		else if (testint == 50)
+		{
+			stateMachine.raiseEvent(writeEvent);
+		}
+		else if (testint == 60)
+		{
+			stateMachine.raiseEvent(recieveEvent);
+			testint = 0;
+		}
 
 		_delay_ms(100);
 	}
