@@ -15,7 +15,7 @@
 #include <Converter.h>
 #include <Serial.h>
 #include <stdio.h>
-
+#include <StateMachine.h>
 // char messagebuffer[50];
 // int bufferpos;
 // int state;
@@ -401,46 +401,46 @@ typedef enum
 	lastEvent
 } events;
 
-typedef states (*const eventHandler[lastState][lastEvent])(void);
+// typedef states (*const eventHandler[lastState][lastEvent])(void);
 
-typedef states (*eventHandlerTwo)(void);
+// typedef states (*eventHandlerTwo)(void);
 
-states bootHandler(void)
-{
-	unsigned char bootmes[] = "Boot\n";
-	for (int i = 0; i < sizeof(bootmes); i++)
-	{
-		sendChar(bootmes[i]);
-	}
-	return bootState;
-}
+// states bootHandler(void)
+// {
+// 	unsigned char bootmes[] = "Boot\n";
+// 	for (int i = 0; i < sizeof(bootmes); i++)
+// 	{
+// 		sendChar(bootmes[i]);
+// 	}
+// 	return bootState;
+// }
 
-states recieveHandler(void) {
-	unsigned char recmes[] = "Recieve\n";
-	for (int i = 0; i < sizeof(recmes); i++)
-	{
-		sendChar(recmes[i]);
-	}
-	return recieveState;
-}
+// states recieveHandler(void) {
+// 	unsigned char recmes[] = "Recieve\n";
+// 	for (int i = 0; i < sizeof(recmes); i++)
+// 	{
+// 		sendChar(recmes[i]);
+// 	}
+// 	return recieveState;
+// }
 
-states writeHandler(void) {
-	unsigned char wrimes[] = "Write\n";
-	for (int i = 0; i < sizeof(wrimes); i++)
-	{
-		sendChar(wrimes[i]);
-	}
-	return writeState;
-}
+// states writeHandler(void) {
+// 	unsigned char wrimes[] = "Write\n";
+// 	for (int i = 0; i < sizeof(wrimes); i++)
+// 	{
+// 		sendChar(wrimes[i]);
+// 	}
+// 	return writeState;
+// }
 
-states executeHandler(void) {
-	unsigned char exemes[] = "Execute\n";
-	for (int i = 0; i < sizeof(exemes); i++)
-	{
-		sendChar(exemes[i]);
-	}
-	return executeState;
-}
+// states executeHandler(void) {
+// 	unsigned char exemes[] = "Execute\n";
+// 	for (int i = 0; i < sizeof(exemes); i++)
+// 	{
+// 		sendChar(exemes[i]);
+// 	}
+// 	return executeState;
+// }
 
 int main(void)
 {
