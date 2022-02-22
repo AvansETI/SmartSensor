@@ -405,29 +405,31 @@ typedef enum
 STATE stateMachine(totalState, totalEvent);
 
 // handlers for various events
+//raiseevents in the handlers were are there for testing and are currently commented out
+//events should be raised by other methods, not these events themselves
 void bootHandler()
 {
 	char bootmes[] = "Boot\n";
 	sendString(bootmes);
-	stateMachine.raiseEvent(bootEvent);
+	// stateMachine.raiseEvent(bootEvent);
 }
 void recieveHandler()
 {
 	char recmes[] = "Recieve\n";
 	sendString(recmes);
-	stateMachine.raiseEvent(recieveEvent);
+	// stateMachine.raiseEvent(recieveEvent);
 }
 void writeHandler()
 {
 	char wrimes[] = "Write\n";
 	sendString(wrimes);
-	stateMachine.raiseEvent(writeEvent);
+	// stateMachine.raiseEvent(writeEvent);
 }
 void executeHandler()
 {
 	char exemes[] = "Execute\n";
 	sendString(exemes);
-	stateMachine.raiseEvent(executeEvent);
+	// stateMachine.raiseEvent(executeEvent);
 }
 
 int main(void)
