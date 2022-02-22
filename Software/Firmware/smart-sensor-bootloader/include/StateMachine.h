@@ -8,9 +8,8 @@ struct methodCall
 struct transitionCall
 {
     int stateFrom;
-    //same as with arrays below
-    int eventRaised[10];
-    int nextState[10];
+    int eventRaised;
+    int nextState;
 };
 
 
@@ -21,6 +20,7 @@ class STATE {
         int totalEvents;
         int currentState;
         int lastEvent;
+        int transitionno;
         //until a good method for dynamic sizes is implemented, hardcoded as 10
         methodCall methods[10];
         transitionCall transitions[10];
