@@ -3,29 +3,29 @@
 #include <StateMachine.h>
 #include <Serial.h>
 
-int currenstateNo = 0;
-
-STATE::STATE(int totalState, int totalEvents)
+//Constructor for the FiniteStateMachine, totalstates and totalevents are passed along so they can be used in their checks
+//transitionno is also set to 0 so that it can later be used when adding transitions
+FiniteStateMachine::FiniteStateMachine(int totalState, int totalEvents)
 {
     this->totalStates = totalState;
     this->totalEvents = totalEvents;
     this->transitionno = 0;
 }
 
-void STATE::addState(int s, void (*event)(void))
+//method for adding states, the state and it's associated method are passed along
+//If the state does not exceed the total number of states then it's method is added to the array at the states position
+void FiniteStateMachine::addState(int s, void (*method)(void))
 {
     if (s < this->totalStates)
     {
-        this->methods[s].loop = event;
+        this->states[s].loop = method;
     }
 }
 
-void STATE::addTransition(int state, int event, int nextState)
+//method for adding transitions, the state from which the transition can be called, the associated event and the state it should transtion to are passed along
+//If neither the state nor the event exceed the totals then the transition is added at the current position of transitionno and that variable is raised by 1
+void FiniteStateMachine::addTransition(int state, int event, int nextState)
 {
-    // if ( state < this->totalStates && event < this->totalEvents ) {
-    //     this->debug("FSM: Added transition for state " + String(state) + " and event " + String(event) + ": " + String(newState));
-    //     this->transitions[state][event] = newState;
-    // }
 
     if (state < this->totalStates && event < this->totalEvents)
     {
@@ -36,16 +36,20 @@ void STATE::addTransition(int state, int event, int nextState)
     }
 }
 
-void STATE::raiseEvent(int event)
+//Method for handling raised events, the raised event is passed along
+void FiniteStateMachine::raiseEvent(int event)
 {
+    //If there is a state and the event does not exceed the amount of events continue
     if (this->currentState != -1 && event < this->totalEvents)
     {
-        // go through the transitions to check if this one is valid
-        // currently hardcoded to 10 because transition size
-        for (int i = 0; i < 10; i++)
+        //Check if the transition is valid
+        for (int i = 0; i < AMOUNT_OF_TRANSITIONS; i++)
         {
+            //Check if the current state has an associated transition
             if (this->currentState == this->transitions[i].stateFrom)
             {
+                //Check if that transition corresponds to the currently raised event
+                //If it does, go to the state indicated
                 if (event == this->transitions[i].eventRaised)
                 {
                     int newState = this->transitions[i].nextState;
@@ -53,58 +57,25 @@ void STATE::raiseEvent(int event)
                 }
             }
         }
-
-        // if (this->transitions[this->currentState].eventRaised != -1)
-        // {
-        //     int newState = this->transitions[this->currentState].nextState;
-
-        //     this->currentState = newState;
-        //     // currenstateNo = newState;
-        //     // switch (currenstateNo)
-        //     // {
-        //     // case 0:
-        //     //     sendString("0\n");
-        //     //     break;
-        //     // case 1:
-        //     //     sendString("1\n");
-        //     //     break;
-        //     // case 2:
-        //     //     sendString("2\n");
-        //     //     break;
-        //     // case 3:
-        //     //     sendString("3\n");
-        //     //     break;
-        //     // case 4:
-        //     //     sendString("4\n");
-        //     //     break;
-        //     // case 5:
-        //     //     sendString("5\n");
-        //     //     break;
-        //     // case 6:
-        //     //     sendString("6\n");
-        //     //     break;
-
-        //     // default:
-        //     //     break;
-        //     // }
-        // }
     }
 }
 
-void STATE::setup(int startState, int eventToRaise)
+//Method used for setup of the State Machine, should be called once all states and transitions are added
+void FiniteStateMachine::setup(int startState, int eventToRaise)
 {
-    if (this->currentState == -1 || startState < this->totalStates)
+    //If the startstate does not exceed the amount of states it is set as the current state
+    if (startState < this->totalStates)
     {
         this->currentState = startState;
-        // this->lastEvent = eventToRaise;
     }
 }
 
-void STATE::loop()
+//Method used to loop through the State Machine
+void FiniteStateMachine::loop()
 {
+    //If there is a current state and that state does noet exceed the amount of states call it's loop method
     if (this->currentState != -1 && this->currentState < this->totalStates)
     {
-        this->methods[this->currentState].loop();
-        // this->raiseEvent(this->lastEvent);
+        this->states[this->currentState].loop();
     }
 }

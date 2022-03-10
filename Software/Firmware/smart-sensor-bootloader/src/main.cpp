@@ -398,14 +398,13 @@ typedef enum
 	recieveEvent,
 	writeEvent,
 	executeEvent,
-	startEvent,
 	totalEvent
 } events;
 
-STATE stateMachine(totalState, totalEvent);
+FiniteStateMachine stateMachine(totalState, totalEvent);
 
 // handlers for various events
-//raiseevents in the handlers were are there for testing and are currently commented out
+//raiseevents in the handlers were there for testing and are currently commented out
 //events should be raised by other methods, not these events themselves
 void bootHandler()
 {
@@ -458,7 +457,7 @@ int main(void)
 	stateMachine.addTransition(executeState, executeEvent, bootState);
 
 	// setup state machine
-	stateMachine.setup(bootState, startEvent);
+	stateMachine.setup(bootState, totalEvent);
 	while (1)
 	{
 		
