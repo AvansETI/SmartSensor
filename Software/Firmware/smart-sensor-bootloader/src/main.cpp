@@ -13,7 +13,7 @@
 #include <avr/io.h>
 #include <avr/pgmspace.h>
 #include <Converter.h>
-#include <Serial.h>
+#include <Communication.h>>
 #include <stdio.h>
 #include <StateMachine.h>
 // char messagebuffer[50];
@@ -461,42 +461,70 @@ int main(void)
 	while (1)
 	{
 		
-		// sendString(message);
-		testint++;
-		if (testint == 1)
+		// // sendString(message);
+		// testint++;
+		// if (testint == 1)
+		// {
+		// 	// simulating event to change state, will be worked on further
+		// 	// for now just test cycling through states with some testing of errors
+		// 	stateMachine.raiseEvent(bootEvent);
+		// 	sendString("yes");
+		// }
+		// else if (testint == 2)
+		// {
+		// 	stateMachine.raiseEvent(recieveEvent);
+		// 	sendString("yes");
+		// }
+		// else if (testint == 3)
+		// {
+		// 	stateMachine.raiseEvent(writeEvent);
+		// 	sendString("yes");
+		// }
+		// else if (testint == 4)
+		// {
+		// 	stateMachine.raiseEvent(executeEvent);
+		// 	sendString("yes");
+		// }
+		// else if (testint == 5)
+		// {
+		// 	stateMachine.raiseEvent(writeEvent);
+		// 	sendString("no");
+		// }
+		// else if (testint == 6)
+		// {
+		// 	stateMachine.raiseEvent(recieveEvent);
+		// 	sendString("no");
+		// 	testint = 0;
+		// }
+		// stateMachine.loop();
+
+
+		//code for testing communication
+		// const char* input = getRecieved();
+		char *input = getRecieved();
+		for (int i = 0; i < 128; i++)
 		{
-			// simulating event to change state, will be worked on further
-			// for now just test cycling through states with some testing of errors
-			stateMachine.raiseEvent(bootEvent);
-			sendString("yes");
+			if (input[i] != 'Z')
+			{
+				switch (input[i])
+				{
+				case 'U':
+					sendChar('R');
+					break;
+				case '\n':
+					sendChar('X');
+					break;
+				case 'O':
+					break;
+				default:
+					sendChar(input[i]);
+					break;
+				}	
+			}
+			
 		}
-		else if (testint == 2)
-		{
-			stateMachine.raiseEvent(recieveEvent);
-			sendString("yes");
-		}
-		else if (testint == 3)
-		{
-			stateMachine.raiseEvent(writeEvent);
-			sendString("yes");
-		}
-		else if (testint == 4)
-		{
-			stateMachine.raiseEvent(executeEvent);
-			sendString("yes");
-		}
-		else if (testint == 5)
-		{
-			stateMachine.raiseEvent(writeEvent);
-			sendString("no");
-		}
-		else if (testint == 6)
-		{
-			stateMachine.raiseEvent(recieveEvent);
-			sendString("no");
-			testint = 0;
-		}
-		stateMachine.loop();
+		resetArray();
+		
 
 
 		_delay_ms(1000);

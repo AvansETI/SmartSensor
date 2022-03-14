@@ -15,6 +15,8 @@ def startUpdate():
 
 # function dealing with various responses
 def recieveresponse(recieved):
+
+    print(recieved)
     #if R start update
     if recieved == 'R':
         sendstring(lines[linepos])

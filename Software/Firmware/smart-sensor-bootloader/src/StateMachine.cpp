@@ -1,7 +1,7 @@
 // class for handling states
 
 #include <StateMachine.h>
-#include <Serial.h>
+#include <Communication.h>>
 
 //Constructor for the FiniteStateMachine, totalstates and totalevents are passed along so they can be used in their checks
 //transitionno is also set to 0 so that it can later be used when adding transitions

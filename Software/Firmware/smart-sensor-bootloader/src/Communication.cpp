@@ -1,8 +1,24 @@
 // class for handling Serial communication
 // currently hardcoded for port 0, will fix when going over Serial
 
-#include <Serial.h>
+#include <Communication.h>
 #include <avr/interrupt.h>
+#include <avr/io.h>
+
+char recievedChars[128];
+int charpos;
+
+//method to handle the recieving of chars, recieved chars are added to array and can be retrieved to be handled
+ISR(USART0_RX_vect) {
+    char c = UDR0;
+    recievedChars[charpos] = c;
+    charpos++;
+
+
+
+    //test for checking if function worked
+    // sendChar(c);
+}
 
 void initSerial()
 {
@@ -16,6 +32,14 @@ void initSerial()
     UCSR0B = (1 << RXEN) | (1 << TXEN) | (1 << RXCIE);   // Enable TX and RX and recieve interrupt
     UCSR0C = (1 << UCPOL) | (1 << UCSZ0) | (1 << UCSZ1); // 8 data and 1 stop
     sei();
+
+    for (int i = 0; i < 128; i++)
+    {
+        recievedChars[i] = 'Z';
+    }
+    
+
+    charpos = 0;
 }
 
 void sendChar(char c)
@@ -36,7 +60,28 @@ void sendString(const char *input)
     while (*input != 0x00)
     {
         sendChar(*input++);
+    }   
+}
+
+//method for retrieving recieved chars, Z should mean empty
+char* getRecieved() {
+    // char *retrieval;
+    
+    // for (int i = 0; i < 128; i++)
+    // {
+    //     retrieval[i] = recievedChars[i];
+    //     recievedChars[i] = 'Z';
+    // }
+    // charpos = 0;
+    
+    return recievedChars;
+}
+
+//dirty fix, feels like this should be able to be done better
+void resetArray() {
+    for (int i = 0; i < 128; i++)
+    {
+        recievedChars[i] = 'Z';
     }
-    
-    
+    charpos = 0;
 }
