@@ -517,7 +517,7 @@ int main(void)
 				case 'O':
 					break;
 				default:
-					sendChar(input[i]);
+					// sendChar(input[i]);
 					break;
 				}	
 			}

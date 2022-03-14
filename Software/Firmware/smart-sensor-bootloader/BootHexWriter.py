@@ -3,6 +3,7 @@ from re import L
 import serial
 import time
 
+
 # function for sending various strings
 def sendstring(string):
     ser.write(bytes(string, 'utf-8'))
@@ -15,14 +16,16 @@ def startUpdate():
 
 # function dealing with various responses
 def recieveresponse(recieved):
+    global linepos, lines, checkgoing
+
 
     print(recieved)
     #if R start update
-    if recieved == 'R':
+    if b'R' in recieved:
         sendstring(lines[linepos])
         time.sleep(1)
     #if X send next line and increase linepos, if at the last line send O
-    elif recieved == 'X':
+    elif b'X' in recieved:
         linepos = linepos + 1
         if lines[linepos] != NULL:
             sendstring(lines[linepos])
@@ -31,19 +34,19 @@ def recieveresponse(recieved):
             checkgoing = False
         time.sleep(1)
     #if W then resend the last line
-    elif recieved == 'W':
+    elif b'W' in recieved:
         sendstring(lines[linepos])
         time.sleep(1)
     #if T timeout error, restart update by sending U
-    elif recieved == 'T':
+    elif b'T' in recieved:
         startUpdate()
         time.sleep(1)
     #if G completely unexpected error, restart program
-    elif recieved == 'G':
+    elif b'G' in recieved:
         time.sleep(1)
-    #this should never be reached but if it is restart
-    else:
-        print(recieved)
+    # #this should never be reached but if it is restart
+    # else:
+    #     print(recieved)
 
 # Open the serial port on COM6 (can be changed for a different port if needed)
 ser = serial.Serial('COM6')
@@ -59,7 +62,13 @@ checkgoing = True
 
 startUpdate()
 while checkgoing:
-    recieveresponse(ser.read())
+    # result = ser.read_all()
+    # for i in range(len(result)):
+    #     print(result)
+    #     recieveresponse(result)
+    # # print(result)
+    recieveresponse(ser.read_all())
+    time.sleep(3)
 ser.close()
 
 # ser.write(b'HEX')
