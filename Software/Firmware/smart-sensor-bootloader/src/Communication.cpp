@@ -20,6 +20,8 @@ ISR(USART0_RX_vect) {
     // sendChar(c);
 }
 
+//method for initializing the serial connection
+//TODO: Remove reliance on hardcoded data
 void initSerial()
 {
     uint32_t baudrate = 9600;
@@ -42,6 +44,7 @@ void initSerial()
     charpos = 0;
 }
 
+//method for sending individual chars, if more chars are required use sendstring instead
 void sendChar(char c)
 {
     /* Wait for empty transmit buffer */
@@ -51,6 +54,7 @@ void sendChar(char c)
     UDR0 = c;
 }
 
+//method for sending multiple chars
 void sendString(const char *input)
 {
     // for (int i = 0; i < sizeof(input); i++)
