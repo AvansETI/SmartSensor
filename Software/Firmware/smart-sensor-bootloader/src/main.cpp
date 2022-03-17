@@ -402,9 +402,9 @@ typedef enum
 } events;
 
 FiniteStateMachine stateMachine(totalState, totalEvent);
-//variable to store the inputs for conversion
+// variable to store the inputs for conversion
 char progbuf[2];
-//temp variable for testing communication
+// temp variable for testing communication
 uint8_t progtemp[1024];
 int progpos;
 
@@ -415,18 +415,22 @@ bool checkForUpdateInProgress()
 	return true;
 }
 
-void resetProgBuf() {
+void resetProgBuf()
+{
 	for (int i = 0; i < 2; i++)
 	{
 		progbuf[i] = 'Z';
 	}
 }
 
-void addToProgBuf(char input) {
-	if (progbuf[0] != 'Z')
+void addToProgBuf(char input)
+{
+	if (progbuf[0] == 'Z')
 	{
 		progbuf[0] = input;
-	} else {
+	}
+	else
+	{
 		progbuf[1] = input;
 	}
 }
@@ -441,8 +445,8 @@ void bootHandler()
 	// stateMachine.raiseEvent(bootEvent);
 	if (!checkForUpdateInProgress())
 	{
-		//when the command is recieved go update
-		//TODO: Add timeout to go to execute last program
+		// when the command is recieved go update
+		// TODO: Add timeout to go to execute last program
 		char *input = getRecieved();
 		for (int i = 0; i < 128; i++)
 		{
@@ -452,9 +456,11 @@ void bootHandler()
 				stateMachine.raiseEvent(bootEvent);
 			}
 		}
-	} else {
-		//go the the recievestate because that's where the progress should be
-		//TODO: send command to script that update was interrupted
+	}
+	else
+	{
+		// go the the recievestate because that's where the progress should be
+		// TODO: send command to script that update was interrupted
 		stateMachine.raiseEvent(bootEvent);
 	}
 }
@@ -477,7 +483,7 @@ void recieveHandler()
 				{
 					progtemp[i] = 0x00;
 				}
-				
+
 				break;
 			case '\n':
 				sendChar('X');
@@ -486,14 +492,18 @@ void recieveHandler()
 				stateMachine.raiseEvent(recieveEvent);
 				break;
 			default:
-				addToProgBuf(input[i]);
-				if (progbuf[1] != 'Z')
+				if (input[i] != ':')
 				{
-					progtemp[progpos] = convertHexToByte(progbuf[0], progbuf[1]);
-					progpos++;
-					resetProgBuf();
+					addToProgBuf(input[i]);
+					sendChar(input[i]);
+					if (progbuf[1] != 'Z')
+					{
+						progtemp[progpos] = convertHexToByte(progbuf[0], progbuf[1]);
+						progpos++;
+						resetProgBuf();
+					}
 				}
-				
+
 				break;
 			}
 		}
@@ -511,7 +521,6 @@ void writeHandler()
 		sendChar(progtemp[i]);
 	}
 	stateMachine.raiseEvent(writeEvent);
-	
 }
 void executeHandler()
 {
@@ -553,7 +562,7 @@ int main(void)
 		progtemp[i] = 0x00;
 	}
 	progpos = 0;
-	
+
 	// bool inRecieve = false;
 	while (1)
 	{
