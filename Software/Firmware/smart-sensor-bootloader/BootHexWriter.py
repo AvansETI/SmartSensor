@@ -27,7 +27,7 @@ def recieveresponse(recieved):
     #if X send next line and increase linepos, if at the last line send O
     elif b'X' in recieved:
         linepos = linepos + 1
-        if lines[linepos] != NULL:
+        if linepos < len(lines):
             sendstring(lines[linepos])
         else:
             sendstring('O')
@@ -69,6 +69,13 @@ while checkgoing:
     # # print(result)
     recieveresponse(ser.read_all())
     time.sleep(3)
+time.sleep(10)
+result = ser.read_all()
+compare = []
+for i in range (len(result)):
+    compare.append(result[i])
+print(compare)
+print(result)
 ser.close()
 
 # ser.write(b'HEX')

@@ -8,20 +8,19 @@
 char recievedChars[128];
 int charpos;
 
-//method to handle the recieving of chars, recieved chars are added to array and can be retrieved to be handled
-ISR(USART0_RX_vect) {
+// method to handle the recieving of chars, recieved chars are added to array and can be retrieved to be handled
+ISR(USART0_RX_vect)
+{
     char c = UDR0;
     recievedChars[charpos] = c;
     charpos++;
 
-
-
-    //test for checking if function worked
-    // sendChar(c);
+    // test for checking if function worked
+    //  sendChar(c);
 }
 
-//method for initializing the serial connection
-//TODO: Remove reliance on hardcoded data
+// method for initializing the serial connection
+// TODO: Remove reliance on hardcoded data
 void initSerial()
 {
     uint32_t baudrate = 9600;
@@ -39,12 +38,11 @@ void initSerial()
     {
         recievedChars[i] = 'Z';
     }
-    
 
     charpos = 0;
 }
 
-//method for sending individual chars, if more chars are required use sendstring instead
+// method for sending individual chars, if more chars are required use sendstring instead
 void sendChar(char c)
 {
     /* Wait for empty transmit buffer */
@@ -54,7 +52,7 @@ void sendChar(char c)
     UDR0 = c;
 }
 
-//method for sending multiple chars
+// method for sending multiple chars
 void sendString(const char *input)
 {
     // for (int i = 0; i < sizeof(input); i++)
@@ -64,25 +62,27 @@ void sendString(const char *input)
     while (*input != 0x00)
     {
         sendChar(*input++);
-    }   
+    }
 }
 
-//method for retrieving recieved chars, Z should mean empty
-char* getRecieved() {
+// method for retrieving recieved chars, Z should mean empty
+char *getRecieved()
+{
     // char *retrieval;
-    
+
     // for (int i = 0; i < 128; i++)
     // {
     //     retrieval[i] = recievedChars[i];
     //     recievedChars[i] = 'Z';
     // }
     // charpos = 0;
-    
+
     return recievedChars;
 }
 
-//dirty fix, feels like this should be able to be done better
-void resetArray() {
+// dirty fix, feels like this should be able to be done better
+void resetArray()
+{
     for (int i = 0; i < 128; i++)
     {
         recievedChars[i] = 'Z';
