@@ -4,16 +4,18 @@
 #include <Communication.h>
 #include <avr/interrupt.h>
 #include <avr/io.h>
+#include <util/delay.h>
 
-char recievedChars[128];
+char receivedChars[128];
 int charpos;
 
-// method to handle the recieving of chars, recieved chars are added to array and can be retrieved to be handled
+// method to handle the recieving of chars, received chars are added to array and can be retrieved to be handled
+// Interrupt appears to be necessary for funtion even when empty
 ISR(USART0_RX_vect)
 {
-    char c = UDR0;
-    recievedChars[charpos] = c;
-    charpos++;
+    // char c = UDR0;
+    // receivedChars[charpos] = c;
+    // charpos++;
 
     // test for checking if function worked
     //  sendChar(c);
@@ -36,7 +38,7 @@ void initSerial()
 
     for (int i = 0; i < 128; i++)
     {
-        recievedChars[i] = 'Z';
+        receivedChars[i] = 'Z';
     }
 
     charpos = 0;
@@ -65,19 +67,19 @@ void sendString(const char *input)
     }
 }
 
-// method for retrieving recieved chars, Z should mean empty
-char *getRecieved()
+// method for retrieving received chars, Z should mean empty
+char *getreceived()
 {
     // char *retrieval;
 
     // for (int i = 0; i < 128; i++)
     // {
-    //     retrieval[i] = recievedChars[i];
-    //     recievedChars[i] = 'Z';
+    //     retrieval[i] = receivedChars[i];
+    //     receivedChars[i] = 'Z';
     // }
     // charpos = 0;
 
-    return recievedChars;
+    return receivedChars;
 }
 
 // dirty fix, feels like this should be able to be done better
@@ -85,7 +87,75 @@ void resetArray()
 {
     for (int i = 0; i < 128; i++)
     {
-        recievedChars[i] = 'Z';
+        receivedChars[i] = 'Z';
     }
     charpos = 0;
+}
+
+// method to check if there is a char recieved
+bool isCharReceived()
+{
+    return UCSR0A & (1 << RXC);
+}
+
+// method to read a char
+char readChar()
+{
+    return UDR0;
+}
+
+// method for checking if the line is valid
+// Line structure should be for 1 line [:][00][0000][00][DATA][00][\n]
+// representing [start of record][number of bytes][starting address][type][the actual data][checksum][end of line]
+bool isValidLine(char *line)
+{
+    // if (line[0] == ':')
+    // {
+    //     /* code */
+    // }
+
+    // for now dirty to check
+    for (int i = 0; i < 50; i++)
+    {
+        if (line[i] == '\n')
+        {
+            return true;
+        }
+    }
+
+    return false;
+}
+
+// method for reading a line, input: Array, int for the timeout in 100ms and int for the length of the array
+bool readLine(char *line, uint8_t timeout, uint8_t length)
+{
+    uint8_t linepos = 0;
+
+    for (uint8_t i = 0; i < timeout; i++)
+    {
+        if (isCharReceived())
+        {
+            char c = readChar();
+            line[linepos] = c;
+            line[linepos + 1] = '\0';
+            linepos++;
+            if (c == '\n')
+            {
+                return true;
+            }
+        }
+        else
+        {
+            _delay_ms(100);
+        }
+
+        // because of length issues, when end is reached end the method, -1 is there so there is still a NULL character terminating the array
+        if (linepos >= (length - 1))
+        {
+            return true;
+        }
+    }
+    //timeout error
+    sendChar('T');
+    return false;
 }

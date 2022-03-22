@@ -68,7 +68,7 @@ while checkgoing:
     #     recieveresponse(result)
     # # print(result)
     recieveresponse(ser.read_all())
-    # time.sleep(3)
+    time.sleep(3)
 time.sleep(10)
 result = ser.read_all()
 compare = []

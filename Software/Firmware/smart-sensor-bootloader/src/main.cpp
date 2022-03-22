@@ -313,7 +313,7 @@
 // UBRR0H = (unsigned char)(ubrr >> 8); // Configuration of the baudrate
 // UBRR0L = (unsigned char)ubrr;
 // UCSR0A = 0x00;
-// UCSR0B = (1 << RXEN) | (1 << TXEN) | (1 << RXCIE);	 // Enable TX and RX and recieve interrupt
+// UCSR0B = (1 << RXEN) | (1 << TXEN) | (1 << RXCIE);	 // Enable TX and RX and receive interrupt
 // UCSR0C = (1 << UCPOL) | (1 << UCSZ0) | (1 << UCSZ1); // 8 data and 1 stop
 // sei();
 
@@ -386,7 +386,7 @@
 typedef enum
 {
 	bootState,
-	recieveState,
+	receiveState,
 	writeState,
 	executeState,
 	totalState
@@ -395,7 +395,7 @@ typedef enum
 typedef enum
 {
 	bootEvent,
-	recieveEvent,
+	receiveEvent,
 	writeEvent,
 	executeEvent,
 	totalEvent
@@ -412,7 +412,7 @@ int progpos;
 // TODO: Actually implement update check
 bool checkForUpdateInProgress()
 {
-	return true;
+	return false;
 }
 
 void resetProgBuf()
@@ -438,64 +438,95 @@ void addToProgBuf(char input)
 // handlers for various events
 // raiseevents in the handlers were there for testing and are currently commented out
 // events should be raised by other methods, not these events themselves
+
+// handler for the bootstate, handling initial setup and can go to the recievestate or executestate in case of timeout
 void bootHandler()
 {
 	// char bootmes[] = "Boot\n";
 	// sendString(bootmes);
 	// stateMachine.raiseEvent(bootEvent);
-	if (!checkForUpdateInProgress())
+	if (checkForUpdateInProgress())
 	{
-		// when the command is recieved go update
-		// TODO: Add timeout to go to execute last program
-		char *input = getRecieved();
-		for (int i = 0; i < 128; i++)
+		// go to recieve state, that's where progress should be
+		stateMachine.raiseEvent(bootEvent);
+	}
+	else
+	{
+		// send ID info
+		sendString("ID:1234");
+
+		// when update char is received go to receivestate
+		// TODO: add timeout when ended
+		if (isCharReceived())
 		{
-			if (input[i] == 'U')
+			if (readChar() == 'U')
 			{
 				sendChar('R');
 				stateMachine.raiseEvent(bootEvent);
 			}
 		}
 	}
-	else
-	{
-		// go the the recievestate because that's where the progress should be
-		// TODO: send command to script that update was interrupted
-		stateMachine.raiseEvent(bootEvent);
-	}
 }
-void recieveHandler()
-{
-	// char recmes[] = "Recieve\n";
-	// sendString(recmes);
-	// stateMachine.raiseEvent(recieveEvent);
-	char *input = getRecieved();
-	for (int i = 0; i < 128; i++)
-	{
-		if (input[i] != 'Z')
-		{
-			switch (input[i])
-			{
-			case 'U':
-				sendChar('R');
-				progpos = 0;
-				for (int i = 0; i < 1024; i++)
-				{
-					progtemp[i] = 0x00;
-				}
 
-				break;
-			case '\n':
-				sendChar('X');
-				break;
-			case 'O':
-				stateMachine.raiseEvent(recieveEvent);
-				break;
-			default:
-				if (input[i] != ':')
+// handler for the receive state, handles the receiving of updates and other characters, can go to the write state
+void receiveHandler()
+{
+	// char recmes[] = "receive\n";
+	// sendString(recmes);
+	// stateMachine.raiseEvent(receiveEvent);
+	// char *input = getreceived();
+	// for (int i = 0; i < 128; i++)
+	// {
+	// 	if (input[i] != 'Z')
+	// 	{
+	// 		switch (input[i])
+	// 		{
+	// 		case 'U':
+	// 			sendChar('R');
+	// 			progpos = 0;
+	// 			for (int i = 0; i < 1024; i++)
+	// 			{
+	// 				progtemp[i] = 0x00;
+	// 			}
+
+	// 			break;
+	// 		case '\n':
+	// 			sendChar('X');
+	// 			break;
+	// 		case 'O':
+	// 			stateMachine.raiseEvent(receiveEvent);
+	// 			break;
+	// 		default:
+	// 			if (input[i] != ':')
+	// 			{
+	// 				addToProgBuf(input[i]);
+	// 				sendChar(input[i]);
+	// 				if (progbuf[1] != 'Z')
+	// 				{
+	// 					progtemp[progpos] = convertHexToByte(progbuf[0], progbuf[1]);
+	// 					progpos++;
+	// 					resetProgBuf();
+	// 				}
+	// 			}
+
+	// 			break;
+	// 		}
+	// 	}
+	// }
+	// resetArray();
+
+	char receivedchars[50];
+	if (readLine(receivedchars, 250, 50))
+	{
+		if (isValidLine(receivedchars))
+		{
+			int i = 0;
+			while (receivedchars[i] != '\n')
+			{
+				sendChar(receivedchars[i]);
+				if (receivedchars[i] != ':')
 				{
-					addToProgBuf(input[i]);
-					sendChar(input[i]);
+					addToProgBuf(receivedchars[i]);
 					if (progbuf[1] != 'Z')
 					{
 						progtemp[progpos] = convertHexToByte(progbuf[0], progbuf[1]);
@@ -503,12 +534,19 @@ void recieveHandler()
 						resetProgBuf();
 					}
 				}
-
-				break;
 			}
+			sendChar('X');
+		} else if (receivedchars[0] == 'O')
+		{
+			stateMachine.raiseEvent(receiveEvent);
 		}
+		
 	}
-	resetArray();
+	else
+	{
+		// error with Processing line
+		sendChar('W');
+	}
 }
 void writeHandler()
 {
@@ -544,13 +582,13 @@ int main(void)
 	// add necessary data to state machine
 	// add states to machine
 	stateMachine.addState(bootState, bootHandler);
-	stateMachine.addState(recieveState, recieveHandler);
+	stateMachine.addState(receiveState, receiveHandler);
 	stateMachine.addState(writeState, writeHandler);
 	stateMachine.addState(executeState, executeHandler);
 
 	// add transitions to machine
-	stateMachine.addTransition(bootState, bootEvent, recieveState);
-	stateMachine.addTransition(recieveState, recieveEvent, writeState);
+	stateMachine.addTransition(bootState, bootEvent, receiveState);
+	stateMachine.addTransition(receiveState, receiveEvent, writeState);
 	stateMachine.addTransition(writeState, writeEvent, executeState);
 	stateMachine.addTransition(executeState, executeEvent, bootState);
 
@@ -563,13 +601,13 @@ int main(void)
 	}
 	progpos = 0;
 
-	// bool inRecieve = false;
+	// bool inreceive = false;
 	while (1)
 	{
-		// if (!inRecieve)
+		// if (!inreceive)
 		// {
 		// 	stateMachine.raiseEvent(bootEvent);
-		// 	inRecieve = true;
+		// 	inreceive = true;
 		// }
 
 		// // sendString(message);
@@ -583,7 +621,7 @@ int main(void)
 		// }
 		// else if (testint == 2)
 		// {
-		// 	stateMachine.raiseEvent(recieveEvent);
+		// 	stateMachine.raiseEvent(receiveEvent);
 		// 	sendString("yes");
 		// }
 		// else if (testint == 3)
@@ -603,15 +641,15 @@ int main(void)
 		// }
 		// else if (testint == 6)
 		// {
-		// 	stateMachine.raiseEvent(recieveEvent);
+		// 	stateMachine.raiseEvent(receiveEvent);
 		// 	sendString("no");
 		// 	testint = 0;
 		// }
 		stateMachine.loop();
 
 		// code for testing communication
-		//  const char* input = getRecieved();
-		//  char *input = getRecieved();
+		//  const char* input = getreceived();
+		//  char *input = getreceived();
 		//  for (int i = 0; i < 128; i++)
 		//  {
 		//  	if (input[i] != 'Z')
