@@ -534,6 +534,7 @@ void receiveHandler()
 						resetProgBuf();
 					}
 				}
+				i++;
 			}
 			sendChar('X');
 		} else if (receivedchars[0] == 'O')
