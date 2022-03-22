@@ -11,15 +11,15 @@ int charpos;
 
 // method to handle the recieving of chars, received chars are added to array and can be retrieved to be handled
 // Interrupt appears to be necessary for funtion even when empty
-ISR(USART0_RX_vect)
-{
-    // char c = UDR0;
-    // receivedChars[charpos] = c;
-    // charpos++;
+// ISR(USART0_RX_vect)
+// {
+//     // char c = UDR0;
+//     // receivedChars[charpos] = c;
+//     // charpos++;
 
-    // test for checking if function worked
-    //  sendChar(c);
-}
+//     // test for checking if function worked
+//     //  sendChar(c);
+// }
 
 // method for initializing the serial connection
 // TODO: Remove reliance on hardcoded data
@@ -32,7 +32,7 @@ void initSerial()
     UBRR0H = (unsigned char)(ubrr >> 8); // Configuration of the baudrate
     UBRR0L = (unsigned char)ubrr;
     UCSR0A = 0x00;
-    UCSR0B = (1 << RXEN) | (1 << TXEN) | (1 << RXCIE);   // Enable TX and RX and recieve interrupt
+    UCSR0B = (1 << RXEN) | (1 << TXEN);   // Enable TX and RX and recieve interrupt
     UCSR0C = (1 << UCPOL) | (1 << UCSZ0) | (1 << UCSZ1); // 8 data and 1 stop
     sei();
 
