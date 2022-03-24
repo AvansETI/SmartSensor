@@ -405,10 +405,10 @@ typedef enum
 
 FiniteStateMachine stateMachine(totalState, totalEvent);
 // variable to store the inputs for conversion
-char progbuf[2];
+// char progbuf[2];
 // temp variable for testing communication
-uint8_t progtemp[1024];
-int progpos;
+// uint8_t progtemp[1024];
+// int progpos;
 uint8_t dataToWrite[16];
 uint16_t addressToWrite;
 
@@ -419,25 +419,25 @@ bool checkForUpdateInProgress()
 	return false;
 }
 
-void resetProgBuf()
-{
-	for (int i = 0; i < 2; i++)
-	{
-		progbuf[i] = 'Z';
-	}
-}
+// void resetProgBuf()
+// {
+// 	for (int i = 0; i < 2; i++)
+// 	{
+// 		progbuf[i] = 'Z';
+// 	}
+// }
 
-void addToProgBuf(char input)
-{
-	if (progbuf[0] == 'Z')
-	{
-		progbuf[0] = input;
-	}
-	else
-	{
-		progbuf[1] = input;
-	}
-}
+// void addToProgBuf(char input)
+// {
+// 	if (progbuf[0] == 'Z')
+// 	{
+// 		progbuf[0] = input;
+// 	}
+// 	else
+// 	{
+// 		progbuf[1] = input;
+// 	}
+// }
 
 // handlers for various events
 // raiseevents in the handlers were there for testing and are currently commented out
@@ -519,17 +519,22 @@ void receiveHandler()
 	// }
 	// resetArray();
 
+	//Array for holding the received chars, probably won't exceed 45-ish
 	char receivedchars[50];
+	//timeout variable, do not put it too low or the code won't work
 	uint8_t timeout = 250;
+	//length of the array, should always be the same as receivedchars length
 	uint8_t length = 50;
 	if (readLine(receivedchars, timeout, length))
 	{
+		//variable to hold the gathered data
 		uint8_t data[16];
-		for (int i = 0; i < 16; i++)
-		{
-			data[i] = -1;
-		}
+		// for (int i = 0; i < 16; i++)
+		// {
+		// 	data[i] = -1;
+		// }
 
+		//variable to hold the gotten address
 		uint16_t address;
 		if (isValidLine(receivedchars, data, &address))
 		{
@@ -567,6 +572,7 @@ void receiveHandler()
 			// }
 
 			// sendChar('X');
+			//if the line is valid, put the gathered data and address in their variables and go to the write state
 			for (int i = 0; i < 16; i++)
 			{
 				dataToWrite[i] = data[i];
@@ -574,6 +580,8 @@ void receiveHandler()
 			addressToWrite = address;
 			stateMachine.raiseEvent(receiveEvent);
 		}
+		//when done go to the execute state
+		//TODO: Change this so it happens in the write state
 		else if (receivedchars[0] == 'O')
 		{
 			stateMachine.raiseEvent(doneEvent);
@@ -585,6 +593,8 @@ void receiveHandler()
 		sendChar('W');
 	}
 }
+
+//method for handling the writing to the buffer and the flashing of the buffer
 void writeHandler()
 {
 	// char wrimes[] = "Write\n";
@@ -597,11 +607,18 @@ void writeHandler()
 	// }
 	// stateMachine.raiseEvent(writeEvent);
 
+
+	//print code for testing
 	sendString("Address:");
 	char stringarr[2];
 	stringarr[0] = addressToWrite & 0xFF;
 	stringarr[1] = addressToWrite >> 8;
-	sendString(stringarr);
+	// sendString(stringarr);
+	for (int i = 0; i < 2; i++)
+	{
+		sendChar(stringarr[i]);
+	}
+	
 	sendString("Data:");
 	int i = 0;
 	while (i < 16)
@@ -612,6 +629,9 @@ void writeHandler()
 		}
 		i++;
 	}
+
+
+	//when done with a line, send X and go back to receivestate
 	sendChar('X');
 	stateMachine.raiseEvent(flashEvent);
 }
@@ -651,12 +671,12 @@ int main(void)
 
 	// setup state machine
 	stateMachine.setup(bootState, totalEvent);
-	resetProgBuf();
-	for (int i = 0; i < 1024; i++)
-	{
-		progtemp[i] = 0x00;
-	}
-	progpos = 0;
+	// resetProgBuf();
+	// for (int i = 0; i < 1024; i++)
+	// {
+	// 	progtemp[i] = 0x00;
+	// }
+	// progpos = 0;
 
 	// bool inreceive = false;
 	while (1)
