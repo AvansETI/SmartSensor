@@ -4,7 +4,7 @@
 #define AMOUNT_OF_STATES 4
 
 //Define used for the amountn of transitions to be added to the statemachine
-#define AMOUNT_OF_TRANSITIONS 4
+#define AMOUNT_OF_TRANSITIONS 6
 
 //Struct made for the calling of methods that will be added to the states
 struct methodCall

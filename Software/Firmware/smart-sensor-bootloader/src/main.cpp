@@ -397,7 +397,9 @@ typedef enum
 	bootEvent,
 	receiveEvent,
 	writeEvent,
+	flashEvent,
 	executeEvent,
+	doneEvent,
 	totalEvent
 } events;
 
@@ -407,6 +409,8 @@ char progbuf[2];
 // temp variable for testing communication
 uint8_t progtemp[1024];
 int progpos;
+uint8_t dataToWrite[16];
+uint16_t addressToWrite;
 
 // code to check if there was an update in progress, if there was a command should be sent to the updater about it
 // TODO: Actually implement update check
@@ -529,7 +533,7 @@ void receiveHandler()
 		uint16_t address;
 		if (isValidLine(receivedchars, data, &address))
 		{
-			int i = 0;
+			// int i = 0;
 			// while (receivedchars[i] != '\n')
 			// {
 			// 	sendChar(receivedchars[i]);
@@ -546,27 +550,33 @@ void receiveHandler()
 			// 	i++;
 			// }
 
-			sendString("Address:");
-			char stringarr[2];
-			stringarr[0] = address & 0xFF;
-			stringarr[1] = address >> 8;
-			sendString(stringarr);
-			sendString("Data:");
-			while (i < 16)
+			// sendString("Address:");
+			// char stringarr[2];
+			// stringarr[0] = address & 0xFF;
+			// stringarr[1] = address >> 8;
+			// sendString(stringarr);
+			// sendString("Data:");
+			// while (i < 16)
+			// {
+			// 	if (data[i] != -1)
+			// 	{
+			// 		sendChar(data[i]);
+			// 	}
+
+			// 	i++;
+			// }
+
+			// sendChar('X');
+			for (int i = 0; i < 16; i++)
 			{
-				if (data[i] != -1)
-				{
-					sendChar(data[i]);
-				}
-
-				i++;
+				dataToWrite[i] = data[i];
 			}
-
-			sendChar('X');
+			addressToWrite = address;
+			stateMachine.raiseEvent(receiveEvent);
 		}
 		else if (receivedchars[0] == 'O')
 		{
-			stateMachine.raiseEvent(receiveEvent);
+			stateMachine.raiseEvent(doneEvent);
 		}
 	}
 	else
@@ -585,7 +595,25 @@ void writeHandler()
 	// {
 	// 	sendChar(progtemp[i]);
 	// }
-	stateMachine.raiseEvent(writeEvent);
+	// stateMachine.raiseEvent(writeEvent);
+
+	sendString("Address:");
+	char stringarr[2];
+	stringarr[0] = addressToWrite & 0xFF;
+	stringarr[1] = addressToWrite >> 8;
+	sendString(stringarr);
+	sendString("Data:");
+	int i = 0;
+	while (i < 16)
+	{
+		if (dataToWrite[i] != -1)
+		{
+			sendChar(dataToWrite[i]);
+		}
+		i++;
+	}
+	sendChar('X');
+	stateMachine.raiseEvent(flashEvent);
 }
 void executeHandler()
 {
@@ -618,6 +646,8 @@ int main(void)
 	stateMachine.addTransition(receiveState, receiveEvent, writeState);
 	stateMachine.addTransition(writeState, writeEvent, executeState);
 	stateMachine.addTransition(executeState, executeEvent, bootState);
+	stateMachine.addTransition(writeState, flashEvent, receiveState);
+	stateMachine.addTransition(receiveState, doneEvent, executeState);
 
 	// setup state machine
 	stateMachine.setup(bootState, totalEvent);
