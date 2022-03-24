@@ -6,8 +6,9 @@ import time
 
 # function for sending various strings
 def sendstring(string):
-    ser.write(bytes(string, 'utf-8'))
-    time.sleep(1)
+    for i in range (len(string)):
+        ser.write(bytes(string[i], 'utf-8'))
+        time.sleep(0.04)
 
 # functions for starting update
 def startUpdate():

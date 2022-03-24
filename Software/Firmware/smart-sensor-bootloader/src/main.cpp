@@ -516,7 +516,9 @@ void receiveHandler()
 	// resetArray();
 
 	char receivedchars[50];
-	if (readLine(receivedchars, 250, 50))
+	uint8_t timeout = 250;
+	uint8_t length = 50;
+	if (readLine(receivedchars, timeout, length))
 	{
 		if (isValidLine(receivedchars))
 		{
