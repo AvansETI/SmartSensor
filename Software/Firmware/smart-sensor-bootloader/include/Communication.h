@@ -4,8 +4,8 @@
 void initSerial();
 void sendString(const char *input);
 void sendChar(char c);
-char *getReceived();
-void resetArray();
+// char *getReceived();
+// void resetArray();
 bool isCharReceived();
 char readChar();
 bool isValidLine(char *line);

@@ -6,8 +6,8 @@
 #include <avr/io.h>
 #include <util/delay.h>
 
-char receivedChars[128];
-int charpos;
+// char receivedChars[128];
+// int charpos;
 
 // method to handle the recieving of chars, received chars are added to array and can be retrieved to be handled
 // Interrupt appears to be necessary for funtion even when empty
@@ -36,12 +36,12 @@ void initSerial()
     UCSR0C = (1 << UCPOL) | (1 << UCSZ0) | (1 << UCSZ1); // 8 data and 1 stop
     sei();
 
-    for (int i = 0; i < 128; i++)
-    {
-        receivedChars[i] = 'Z';
-    }
+    // for (int i = 0; i < 128; i++)
+    // {
+    //     receivedChars[i] = 'Z';
+    // }
 
-    charpos = 0;
+    // charpos = 0;
 }
 
 // method for sending individual chars, if more chars are required use sendstring instead
@@ -67,30 +67,30 @@ void sendString(const char *input)
     }
 }
 
-// method for retrieving received chars, Z should mean empty
-char *getreceived()
-{
-    // char *retrieval;
+// // method for retrieving received chars, Z should mean empty
+// char *getreceived()
+// {
+//     // char *retrieval;
 
-    // for (int i = 0; i < 128; i++)
-    // {
-    //     retrieval[i] = receivedChars[i];
-    //     receivedChars[i] = 'Z';
-    // }
-    // charpos = 0;
+//     // for (int i = 0; i < 128; i++)
+//     // {
+//     //     retrieval[i] = receivedChars[i];
+//     //     receivedChars[i] = 'Z';
+//     // }
+//     // charpos = 0;
 
-    return receivedChars;
-}
+//     return receivedChars;
+// }
 
-// dirty fix, feels like this should be able to be done better
-void resetArray()
-{
-    for (int i = 0; i < 128; i++)
-    {
-        receivedChars[i] = 'Z';
-    }
-    charpos = 0;
-}
+// // dirty fix, feels like this should be able to be done better
+// void resetArray()
+// {
+//     for (int i = 0; i < 128; i++)
+//     {
+//         receivedChars[i] = 'Z';
+//     }
+//     charpos = 0;
+// }
 
 // method to check if there is a char recieved
 bool isCharReceived()
@@ -109,10 +109,15 @@ char readChar()
 // representing [start of record][number of bytes][starting address][type][the actual data][checksum][end of line]
 bool isValidLine(char *line)
 {
-    // if (line[0] == ':')
-    // {
-    //     /* code */
-    // }
+    //check if the first character is a :
+    if (line[0] == ':')
+    {
+        
+    } else {
+        //error with line, please resend
+        sendChar('W');
+        return false;
+    }
 
     // for now dirty to check
     for (int i = 0; i < 50; i++)
@@ -155,7 +160,7 @@ bool readLine(char *line, uint8_t timeout, uint8_t length)
             return true;
         }
     }
-    //timeout error
-    sendChar('T');
+    //timeout error, W is sent here because it is not a general timeout error but specifically one within writing
+    sendChar('W');
     return false;
 }
