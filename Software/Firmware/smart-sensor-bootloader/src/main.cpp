@@ -520,30 +520,54 @@ void receiveHandler()
 	uint8_t length = 50;
 	if (readLine(receivedchars, timeout, length))
 	{
-		if (isValidLine(receivedchars))
+		uint8_t data[16];
+		for (int i = 0; i < 16; i++)
+		{
+			data[i] = -1;
+		}
+
+		uint16_t address;
+		if (isValidLine(receivedchars, data, &address))
 		{
 			int i = 0;
-			while (receivedchars[i] != '\n')
+			// while (receivedchars[i] != '\n')
+			// {
+			// 	sendChar(receivedchars[i]);
+			// 	if (receivedchars[i] != ':')
+			// 	{
+			// 		addToProgBuf(receivedchars[i]);
+			// 		if (progbuf[1] != 'Z')
+			// 		{
+			// 			progtemp[progpos] = convertHexToByte(progbuf[0], progbuf[1]);
+			// 			progpos++;
+			// 			resetProgBuf();
+			// 		}
+			// 	}
+			// 	i++;
+			// }
+
+			sendString("Address:");
+			char stringarr[2];
+			stringarr[0] = address & 0xFF;
+			stringarr[1] = address >> 8;
+			sendString(stringarr);
+			sendString("Data:");
+			while (i < 16)
 			{
-				sendChar(receivedchars[i]);
-				if (receivedchars[i] != ':')
+				if (data[i] != -1)
 				{
-					addToProgBuf(receivedchars[i]);
-					if (progbuf[1] != 'Z')
-					{
-						progtemp[progpos] = convertHexToByte(progbuf[0], progbuf[1]);
-						progpos++;
-						resetProgBuf();
-					}
+					sendChar(data[i]);
 				}
+
 				i++;
 			}
+
 			sendChar('X');
-		} else if (receivedchars[0] == 'O')
+		}
+		else if (receivedchars[0] == 'O')
 		{
 			stateMachine.raiseEvent(receiveEvent);
 		}
-		
 	}
 	else
 	{
@@ -557,10 +581,10 @@ void writeHandler()
 	// sendString(wrimes);
 	// stateMachine.raiseEvent(writeEvent);
 
-	for (int i = 0; i < 1024; i++)
-	{
-		sendChar(progtemp[i]);
-	}
+	// for (int i = 0; i < 1024; i++)
+	// {
+	// 	sendChar(progtemp[i]);
+	// }
 	stateMachine.raiseEvent(writeEvent);
 }
 void executeHandler()

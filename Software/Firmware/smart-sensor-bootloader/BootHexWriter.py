@@ -8,7 +8,7 @@ import time
 def sendstring(string):
     for i in range (len(string)):
         ser.write(bytes(string[i], 'utf-8'))
-        time.sleep(0.04)
+        time.sleep(0.06)
 
 # functions for starting update
 def startUpdate():

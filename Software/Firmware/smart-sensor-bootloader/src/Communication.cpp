@@ -5,6 +5,7 @@
 #include <avr/interrupt.h>
 #include <avr/io.h>
 #include <util/delay.h>
+#include <Converter.h>
 
 // char receivedChars[128];
 // int charpos;
@@ -32,7 +33,7 @@ void initSerial()
     UBRR0H = (unsigned char)(ubrr >> 8); // Configuration of the baudrate
     UBRR0L = (unsigned char)ubrr;
     UCSR0A = 0x00;
-    UCSR0B = (1 << RXEN) | (1 << TXEN);   // Enable TX and RX and recieve interrupt
+    UCSR0B = (1 << RXEN) | (1 << TXEN);                  // Enable TX and RX and recieve interrupt
     UCSR0C = (1 << UCPOL) | (1 << UCSZ0) | (1 << UCSZ1); // 8 data and 1 stop
     sei();
 
@@ -107,26 +108,58 @@ char readChar()
 // method for checking if the line is valid
 // Line structure should be for 1 line [:][00][0000][00][DATA][00][\n]
 // representing [start of record][number of bytes][starting address][type][the actual data][checksum][end of line]
-bool isValidLine(char *line)
+// TODO: Check the checksum
+bool isValidLine(char *line, uint8_t *data, uint16_t *address)
 {
-    //check if the first character is a :
+    // check if the first character is a :
     if (line[0] == ':')
     {
+        // check the amount of bytes and store to check later
+        uint8_t byteAmount = convertHexToByte(line[1], line[2]);
+        // check address
+        // TODO: Get address back to write
+        uint16_t addressCheck = ((uint16_t)convertHexToByte(line[3], line[4]) << 8) + (uint16_t)convertHexToByte(line[5], line[6]);
+        // check if its data
+        if (line[7] == '0' && line[8] == '0')
+        {
+            // add the data to the array
+            int b = 9;
+            for (int i = 0; i < byteAmount; i++)
+            {
+                data[i] = convertHexToByte(line[b], line[b + 1]);
+                b = b + 2;
+            }
+
+            if (line[b + 2] == '\n')
+            {
+                *address = addressCheck;
+                return true;
+            }
+        //it can also be this, in which case it is the last line
+        } else if (line[7] == '0' && line[8] == '1')
+        {
+            //For now just say you're finished with it
+            //TODO: Get version to go to write state
+            sendChar('X');
+            return false;
+        }
         
-    } else {
-        //error with line, please resend
+    }
+    else
+    {
+        // error with line, please resend
         sendChar('W');
         return false;
     }
 
-    // for now dirty to check
-    for (int i = 0; i < 50; i++)
-    {
-        if (line[i] == '\n')
-        {
-            return true;
-        }
-    }
+    // // for now dirty to check
+    // for (int i = 0; i < 50; i++)
+    // {
+    //     if (line[i] == '\n')
+    //     {
+    //         return true;
+    //     }
+    // }
 
     return false;
 }
@@ -160,7 +193,7 @@ bool readLine(char *line, uint8_t timeout, uint8_t length)
             return true;
         }
     }
-    //timeout error, W is sent here because it is not a general timeout error but specifically one within writing
+    // timeout error, W is sent here because it is not a general timeout error but specifically one within writing
     sendChar('W');
     return false;
 }
