@@ -10,3 +10,4 @@ bool isCharReceived();
 char readChar();
 bool isValidLine(char *line, uint8_t *data, uint16_t *address);
 bool readLine(char *line, uint8_t timeout, uint8_t length);
+bool isDone();

@@ -16,6 +16,7 @@
 #include <Communication.h>
 #include <stdio.h>
 #include <StateMachine.h>
+#include <Write.h>
 // char messagebuffer[50];
 // int bufferpos;
 // int state;
@@ -582,8 +583,9 @@ void receiveHandler()
 		}
 		//when done go to the execute state
 		//TODO: Change this so it happens in the write state
-		else if (receivedchars[0] == 'O')
+		else if (isDone())
 		{
+			sendChar('X');
 			stateMachine.raiseEvent(doneEvent);
 		}
 	}
@@ -607,6 +609,7 @@ void writeHandler()
 	// }
 	// stateMachine.raiseEvent(writeEvent);
 
+	writeToBuffer(addressToWrite, dataToWrite);
 
 	//print code for testing
 	sendString("Address:");
@@ -639,7 +642,8 @@ void executeHandler()
 {
 	char exemes[] = "Message written\n";
 	sendString(exemes);
-	stateMachine.raiseEvent(executeEvent);
+	// stateMachine.raiseEvent(executeEvent);
+	asm("jmp 0x0000");
 }
 
 int main(void)

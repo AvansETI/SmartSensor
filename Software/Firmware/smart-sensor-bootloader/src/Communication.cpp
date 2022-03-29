@@ -7,6 +7,9 @@
 #include <util/delay.h>
 #include <Converter.h>
 
+
+bool isEnd = false;
+
 // char receivedChars[128];
 // int charpos;
 
@@ -105,6 +108,10 @@ char readChar()
     return UDR0;
 }
 
+bool isDone() {
+    return isEnd;
+}
+
 // method for checking if the line is valid
 // Line structure should be for 1 line [:][00][0000][00][DATA][00][\n]
 // representing [start of record][number of bytes][starting address][type][the actual data][checksum][end of line]
@@ -136,11 +143,13 @@ bool isValidLine(char *line, uint8_t *data, uint16_t *address)
                 return true;
             }
         //it can also be this, in which case it is the last line
-        } else if (line[7] == '0' && line[8] == '1')
+        } 
+        else if (line[7] == '0' && line[8] == '1')
         {
             //For now just say you're finished with it
             //TODO: Get version to go to write state
-            sendChar('X');
+            // sendChar('X');
+            isEnd = true;
             return false;
         }
         
