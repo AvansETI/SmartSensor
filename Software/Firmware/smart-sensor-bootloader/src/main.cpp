@@ -614,8 +614,8 @@ void writeHandler()
 	//print code for testing
 	sendString("Address:");
 	char stringarr[2];
-	stringarr[0] = addressToWrite & 0xFF;
-	stringarr[1] = addressToWrite >> 8;
+	stringarr[0] = addressToWrite >> 8;
+	stringarr[1] = addressToWrite & 0xFF;
 	// sendString(stringarr);
 	for (int i = 0; i < 2; i++)
 	{
@@ -643,7 +643,7 @@ void executeHandler()
 	char exemes[] = "Message written\n";
 	sendString(exemes);
 	// stateMachine.raiseEvent(executeEvent);
-	asm("jmp 0x0000");
+	asm("JMP 0x00D0");
 }
 
 int main(void)

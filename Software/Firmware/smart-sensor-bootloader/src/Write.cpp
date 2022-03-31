@@ -36,7 +36,7 @@ bool writeToBuffer(uint32_t pageNo, uint8_t *buf) {
         boot_page_fill (pageNo + i, w);
     }
     boot_page_write (pageNo);     // Store buffer in flash page.
-    boot_spm_busy_wait();       // Wait until the memory is written.
+    boot_spm_busy_wait();       // Wait until the memory is writtesn.
     // Reenable RWW-section again. We need this if we want to jump back
     // to the application after bootloading.
     boot_rww_enable ();

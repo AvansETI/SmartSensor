@@ -71,12 +71,13 @@ while checkgoing:
     recieveresponse(ser.read_all())
     time.sleep(3)
 time.sleep(10)
-result = ser.read_all()
-compare = []
-for i in range (len(result)):
-    compare.append(result[i])
-print(compare)
-print(result)
+# result = ser.read_all()
+# compare = []
+# for i in range (len(result)):
+#     compare.append(result[i])
+# print(compare)
+# print(result)
+print('Done')
 ser.close()
 
 # ser.write(b'HEX')
