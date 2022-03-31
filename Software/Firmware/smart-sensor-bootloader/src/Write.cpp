@@ -50,7 +50,7 @@ bool writeToBuffer(uint16_t pageAddress, uint8_t *buf, uint8_t byteAmount) {
     sreg = SREG;
     cli();
     eeprom_busy_wait();
-    for (uint8_t i = 0; i < (byteAmount*2); i+=2)
+    for (uint8_t i = 0; i < byteAmount; i+=2)
     {
         uint16_t w = buf[i];
         w += (buf[i+1]) << 8;

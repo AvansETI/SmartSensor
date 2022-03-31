@@ -140,6 +140,7 @@ bool isValidLine(char *line, uint8_t *data, uint16_t *address, uint8_t *bytesInD
             if (line[b + 2] == '\n')
             {
                 *address = addressCheck;
+                *bytesInData = byteAmount;
                 return true;
             }
         //it can also be this, in which case it is the last line

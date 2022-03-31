@@ -615,7 +615,7 @@ void writeHandler()
 
 	//address is word oriented not byte so:
 	addressToWrite = addressToWrite/2;
-	// writeToBuffer(addressToWrite, dataToWrite);
+	writeToBuffer(addressToWrite, dataToWrite, bytesToWrite);
 
 	//print code for testing
 	sendString("Address:");
@@ -630,7 +630,7 @@ void writeHandler()
 	
 	sendString("Data:");
 	int i = 0;
-	while (i < 16)
+	while (i < bytesToWrite)
 	{
 		if (dataToWrite[i] != -1)
 		{
