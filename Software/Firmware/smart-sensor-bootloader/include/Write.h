@@ -4,5 +4,5 @@
 #include <avr/pgmspace.h>
 
 char* bootReadBuffer();
-bool writeToBuffer(uint32_t pageNo, uint8_t *buf);
-bool flashBufferToPage();
+bool writeToBuffer(uint16_t pageAddress, uint8_t *buf, uint8_t byteAmount);
+bool flashBufferToPage(uint16_t pageAddress);

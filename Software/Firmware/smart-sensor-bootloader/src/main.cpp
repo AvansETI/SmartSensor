@@ -412,6 +412,7 @@ FiniteStateMachine stateMachine(totalState, totalEvent);
 // int progpos;
 uint8_t dataToWrite[16];
 uint16_t addressToWrite;
+uint8_t bytesToWrite;
 
 // code to check if there was an update in progress, if there was a command should be sent to the updater about it
 // TODO: Actually implement update check
@@ -530,14 +531,15 @@ void receiveHandler()
 	{
 		//variable to hold the gathered data
 		uint8_t data[16];
-		// for (int i = 0; i < 16; i++)
-		// {
-		// 	data[i] = -1;
-		// }
+		for (int i = 0; i < 16; i++)
+		{
+			data[i] = 0;
+		}
 
 		//variable to hold the gotten address
 		uint16_t address;
-		if (isValidLine(receivedchars, data, &address))
+		uint8_t bytesAmount;
+		if (isValidLine(receivedchars, data, &address, &bytesAmount))
 		{
 			// int i = 0;
 			// while (receivedchars[i] != '\n')
@@ -579,6 +581,7 @@ void receiveHandler()
 				dataToWrite[i] = data[i];
 			}
 			addressToWrite = address;
+			bytesToWrite = bytesAmount;
 			stateMachine.raiseEvent(receiveEvent);
 		}
 		//when done go to the execute state
@@ -609,7 +612,10 @@ void writeHandler()
 	// }
 	// stateMachine.raiseEvent(writeEvent);
 
-	writeToBuffer(addressToWrite, dataToWrite);
+
+	//address is word oriented not byte so:
+	addressToWrite = addressToWrite/2;
+	// writeToBuffer(addressToWrite, dataToWrite);
 
 	//print code for testing
 	sendString("Address:");
@@ -643,7 +649,7 @@ void executeHandler()
 	char exemes[] = "Message written\n";
 	sendString(exemes);
 	// stateMachine.raiseEvent(executeEvent);
-	asm("JMP 0x00D0");
+	// asm("JMP 0x0000");
 }
 
 int main(void)

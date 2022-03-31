@@ -8,6 +8,6 @@ void sendChar(char c);
 // void resetArray();
 bool isCharReceived();
 char readChar();
-bool isValidLine(char *line, uint8_t *data, uint16_t *address);
+bool isValidLine(char *line, uint8_t *data, uint16_t *address, uint8_t *bytesInData);
 bool readLine(char *line, uint8_t timeout, uint8_t length);
 bool isDone();

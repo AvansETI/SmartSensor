@@ -116,7 +116,7 @@ bool isDone() {
 // Line structure should be for 1 line [:][00][0000][00][DATA][00][\n]
 // representing [start of record][number of bytes][starting address][type][the actual data][checksum][end of line]
 // TODO: Check the checksum
-bool isValidLine(char *line, uint8_t *data, uint16_t *address)
+bool isValidLine(char *line, uint8_t *data, uint16_t *address, uint8_t *bytesInData)
 {
     // check if the first character is a :
     if (line[0] == ':')
