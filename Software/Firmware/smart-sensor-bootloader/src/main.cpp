@@ -617,27 +617,27 @@ void writeHandler()
 	addressToWrite = addressToWrite/2;
 	writeToBuffer(addressToWrite, dataToWrite, bytesToWrite);
 
-	//print code for testing
-	sendString("Address:");
-	char stringarr[2];
-	stringarr[0] = addressToWrite >> 8;
-	stringarr[1] = addressToWrite & 0xFF;
-	// sendString(stringarr);
-	for (int i = 0; i < 2; i++)
-	{
-		sendChar(stringarr[i]);
-	}
+	// //print code for testing
+	// sendString("Address:");
+	// char stringarr[2];
+	// stringarr[0] = addressToWrite >> 8;
+	// stringarr[1] = addressToWrite & 0xFF;
+	// // sendString(stringarr);
+	// for (int i = 0; i < 2; i++)
+	// {
+	// 	sendChar(stringarr[i]);
+	// }
 	
-	sendString("Data:");
-	int i = 0;
-	while (i < bytesToWrite)
-	{
-		if (dataToWrite[i] != -1)
-		{
-			sendChar(dataToWrite[i]);
-		}
-		i++;
-	}
+	// sendString("Data:");
+	// int i = 0;
+	// while (i < bytesToWrite)
+	// {
+	// 	if (dataToWrite[i] != -1)
+	// 	{
+	// 		sendChar(dataToWrite[i]);
+	// 	}
+	// 	i++;
+	// }
 
 
 	//when done with a line, send X and go back to receivestate

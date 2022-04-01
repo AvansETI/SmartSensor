@@ -23,47 +23,65 @@ char* bootReadBuffer() {
 }
 
 bool writeToBuffer(uint16_t pageAddress, uint8_t *buf, uint8_t byteAmount) {
-    uint16_t i;
-    uint8_t sreg;
-    // Disable interrupts.
-    sreg = SREG;
-    cli();
-    eeprom_busy_wait ();
-    boot_page_erase (pageAddress);
-    boot_spm_busy_wait ();      // Wait until the memory is erased.
-    for (i=0; i<SPM_PAGESIZE; i+=2)
-    {
-        // Set up little-endian word.
-        uint16_t w = *buf++;
-        w += (*buf++) << 8;
-    
-        boot_page_fill (pageAddress + i, w);
-    }
-    boot_page_write (pageAddress);     // Store buffer in flash page.
-    boot_spm_busy_wait();       // Wait until the memory is writtesn.
-    // Reenable RWW-section again. We need this if we want to jump back
-    // to the application after bootloading.
-    boot_rww_enable ();
-    // Re-enable interrupts (if they were ever enabled).
-    SREG = sreg;
+    // uint16_t i;
     // uint8_t sreg;
+    // // Disable interrupts.
     // sreg = SREG;
     // cli();
-    // eeprom_busy_wait();
-    // for (uint8_t i = 0; i < byteAmount; i+=2)
+    // eeprom_busy_wait ();
+    // boot_page_erase (pageAddress);
+    // boot_spm_busy_wait ();      // Wait until the memory is erased.
+    // for (i=0; i<SPM_PAGESIZE; i+=2)
     // {
-    //     uint16_t w = buf[i];
-    //     w += (buf[i+1]) << 8;
-    //     boot_page_fill(pageAddress + i, w);
-    //     //wordpos increase by 2 each time, when it hits page size flash
-    //     wordpos+=2;
-    //     if (wordpos >= SPM_PAGESIZE)
-    //     {
-    //         flashBufferToPage(pageAddress);
-    //         wordpos = 0;
-    //     }
+    //     // Set up little-endian word.
+    //     uint16_t w = *buf++;
+    //     w += (*buf++) << 8;
+    
+    //     boot_page_fill (pageAddress + i, w);
     // }
-    // boot_rww_enable();
+    // boot_page_write (pageAddress);     // Store buffer in flash page.
+    // boot_spm_busy_wait();       // Wait until the memory is writtesn.
+    // // Reenable RWW-section again. We need this if we want to jump back
+    // // to the application after bootloading.
+    // boot_rww_enable ();
+    // // Re-enable interrupts (if they were ever enabled).
+    // SREG = sreg;
+    sendString("Address:");
+    char addrArr[2];
+    addrArr[0] = pageAddress >> 8;
+	addrArr[1] = pageAddress & 0xFF;
+    for (int i = 0; i < 2; i++)
+    {
+        sendChar(addrArr[i]);
+    }
+    
+    uint8_t sreg;
+    sreg = SREG;
+    cli();
+    eeprom_busy_wait();
+    sendString("Data:");
+    for (uint8_t i = 0; i < byteAmount; i+=2)
+    {
+        uint16_t w = buf[i];
+        w += (buf[i+1]) << 8;
+        char dataArr[2];
+        dataArr[0] = w >> 8;
+        dataArr[1] = w & 0xFF;
+        for (int i = 0; i < 2; i++)
+        {
+            sendChar(dataArr[i]);
+        }
+        
+        boot_page_fill(pageAddress + i, w);
+        //wordpos increase by 2 each time, when it hits page size flash
+        wordpos+=2;
+        if (wordpos >= SPM_PAGESIZE)
+        {
+            flashBufferToPage(pageAddress);
+            wordpos = 0;
+        }
+    }
+    boot_rww_enable();
     SREG = sreg;
     
     return true;
