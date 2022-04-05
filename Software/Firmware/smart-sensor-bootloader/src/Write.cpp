@@ -16,6 +16,7 @@
 #include <Communication.h>
 
 uint16_t wordpos = 0;
+uint16_t writeAddress = 0x0000;
 
 char* bootReadBuffer() {
     char temp[] = "NO";
@@ -46,6 +47,8 @@ bool writeToBuffer(uint16_t pageAddress, uint8_t *buf, uint8_t byteAmount) {
     // boot_rww_enable ();
     // // Re-enable interrupts (if they were ever enabled).
     // SREG = sreg;
+
+    //debug print
     sendString("Address:");
     char addrArr[2];
     addrArr[0] = pageAddress >> 8;
@@ -54,16 +57,30 @@ bool writeToBuffer(uint16_t pageAddress, uint8_t *buf, uint8_t byteAmount) {
     {
         sendChar(addrArr[i]);
     }
+
+    //check for the writing of the address
+    if ((writeAddress + 128) <= pageAddress)
+    {
+        flashBufferToPage();
+        writeAddress = pageAddress;
+        // wordpos = 0;
+    }
+    
     
     uint8_t sreg;
     sreg = SREG;
     cli();
     eeprom_busy_wait();
+
+    //debug print
     sendString("Data:");
+
     for (uint8_t i = 0; i < byteAmount; i+=2)
     {
         uint16_t w = buf[i];
         w += (buf[i+1]) << 8;
+
+        //debug print
         char dataArr[2];
         dataArr[0] = w >> 8;
         dataArr[1] = w & 0xFF;
@@ -74,12 +91,12 @@ bool writeToBuffer(uint16_t pageAddress, uint8_t *buf, uint8_t byteAmount) {
         
         boot_page_fill(pageAddress + i, w);
         //wordpos increase by 2 each time, when it hits page size flash
-        wordpos+=2;
-        if (wordpos >= SPM_PAGESIZE)
-        {
-            flashBufferToPage(pageAddress);
-            wordpos = 0;
-        }
+        // wordpos+=2;
+        // if (wordpos >= SPM_PAGESIZE)
+        // {
+        //     flashBufferToPage();
+        //     wordpos = 0;
+        // }
     }
     boot_rww_enable();
     SREG = sreg;
@@ -87,10 +104,15 @@ bool writeToBuffer(uint16_t pageAddress, uint8_t *buf, uint8_t byteAmount) {
     return true;
 }
 
-bool flashBufferToPage(uint16_t pageAddress) {
-    boot_page_erase(pageAddress);
-    boot_spm_busy_wait();
-    boot_page_write(pageAddress);
-    boot_spm_busy_wait();
+bool flashBufferToPage() {
+    sendString("Written");
+    // boot_page_erase(pageAddress);
+    // boot_spm_busy_wait();
+    // boot_page_write(pageAddress);
+    // boot_spm_busy_wait();
+    //take the upper bit which should represent the page
+    uint8_t addressed = (uint8_t)(writeAddress >> 8);
+    boot_page_erase_safe(addressed);
+    boot_page_write_safe(addressed);
     return true;
 }

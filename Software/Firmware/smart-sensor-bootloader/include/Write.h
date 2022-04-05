@@ -5,4 +5,4 @@
 
 char* bootReadBuffer();
 bool writeToBuffer(uint16_t pageAddress, uint8_t *buf, uint8_t byteAmount);
-bool flashBufferToPage(uint16_t pageAddress);
+bool flashBufferToPage();

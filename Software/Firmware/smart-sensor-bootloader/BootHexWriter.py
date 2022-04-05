@@ -1,4 +1,5 @@
 from asyncio.windows_events import NULL
+from audioop import add
 from re import L
 import serial
 import time
@@ -21,6 +22,14 @@ def recieveresponse(recieved):
 
 
     print(recieved)
+
+    # # debug to check if it matches the expected return
+    # expectedCharArray = [x for x in lines[linepos]]
+    # address = "0x" + expectedCharArray[3] + expectedCharArray[4] + expectedCharArray[5] + expectedCharArray[6]
+    # intAddress = hex(int(address,16)/2)
+    # print('Expected: Address: ' + intAddress )
+
+
     #if R start update
     if b'R' in recieved:
         sendstring(lines[linepos])
