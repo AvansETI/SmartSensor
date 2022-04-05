@@ -24,47 +24,15 @@ char* bootReadBuffer() {
 }
 
 bool writeToBuffer(uint16_t pageAddress, uint8_t *buf, uint8_t byteAmount) {
-    // uint16_t i;
-    // uint8_t sreg;
-    // // Disable interrupts.
-    // sreg = SREG;
-    // cli();
-    // eeprom_busy_wait ();
-    // boot_page_erase (pageAddress);
-    // boot_spm_busy_wait ();      // Wait until the memory is erased.
-    // for (i=0; i<SPM_PAGESIZE; i+=2)
+    // //debug print
+    // sendString("Address:");
+    // char addrArr[2];
+    // addrArr[0] = pageAddress >> 8;
+	// addrArr[1] = pageAddress & 0xFF;
+    // for (int i = 0; i < 2; i++)
     // {
-    //     // Set up little-endian word.
-    //     uint16_t w = *buf++;
-    //     w += (*buf++) << 8;
-    
-    //     boot_page_fill (pageAddress + i, w);
+    //     sendChar(addrArr[i]);
     // }
-    // boot_page_write (pageAddress);     // Store buffer in flash page.
-    // boot_spm_busy_wait();       // Wait until the memory is writtesn.
-    // // Reenable RWW-section again. We need this if we want to jump back
-    // // to the application after bootloading.
-    // boot_rww_enable ();
-    // // Re-enable interrupts (if they were ever enabled).
-    // SREG = sreg;
-
-    //debug print
-    sendString("Address:");
-    char addrArr[2];
-    addrArr[0] = pageAddress >> 8;
-	addrArr[1] = pageAddress & 0xFF;
-    for (int i = 0; i < 2; i++)
-    {
-        sendChar(addrArr[i]);
-    }
-
-    //check for the writing of the address
-    if ((writeAddress + 128) <= pageAddress)
-    {
-        flashBufferToPage();
-        writeAddress = pageAddress;
-        // wordpos = 0;
-    }
     
     
     uint8_t sreg;
@@ -72,8 +40,8 @@ bool writeToBuffer(uint16_t pageAddress, uint8_t *buf, uint8_t byteAmount) {
     cli();
     eeprom_busy_wait();
 
-    //debug print
-    sendString("Data:");
+    // // debug print
+    // sendString("Data:");
 
     for (uint8_t i = 0; i < byteAmount; i+=2)
     {
@@ -81,6 +49,7 @@ bool writeToBuffer(uint16_t pageAddress, uint8_t *buf, uint8_t byteAmount) {
         w += (buf[i+1]) << 8;
 
         //debug print
+        sendString("Word:");
         char dataArr[2];
         dataArr[0] = w >> 8;
         dataArr[1] = w & 0xFF;
@@ -89,14 +58,15 @@ bool writeToBuffer(uint16_t pageAddress, uint8_t *buf, uint8_t byteAmount) {
             sendChar(dataArr[i]);
         }
         
-        boot_page_fill(pageAddress + i, w);
+        boot_page_fill_safe(pageAddress + i, w);
         //wordpos increase by 2 each time, when it hits page size flash
-        // wordpos+=2;
-        // if (wordpos >= SPM_PAGESIZE)
-        // {
-        //     flashBufferToPage();
-        //     wordpos = 0;
-        // }
+        wordpos+=2;
+        if (wordpos >= SPM_PAGESIZE)
+        {
+            flashBufferToPage();
+            writeAddress = pageAddress;
+            wordpos = 0;
+        }
     }
     boot_rww_enable();
     SREG = sreg;
@@ -105,13 +75,23 @@ bool writeToBuffer(uint16_t pageAddress, uint8_t *buf, uint8_t byteAmount) {
 }
 
 bool flashBufferToPage() {
-    sendString("Written");
     // boot_page_erase(pageAddress);
     // boot_spm_busy_wait();
     // boot_page_write(pageAddress);
     // boot_spm_busy_wait();
     //take the upper bit which should represent the page
-    uint8_t addressed = (uint8_t)(writeAddress >> 8);
+    // uint8_t addressed = (uint8_t)(writeAddress >> 7);
+    uint8_t addressed = (uint8_t)(writeAddress);
+    sendString("Addressed: ");
+    sendChar(addressed);
+    sendString("AddressRaw:");
+    char addrArr[2];
+    addrArr[0] = writeAddress >> 8;
+	addrArr[1] = writeAddress & 0xFF;
+    for (int i = 0; i < 2; i++)
+    {
+        sendChar(addrArr[i]);
+    }
     boot_page_erase_safe(addressed);
     boot_page_write_safe(addressed);
     return true;
