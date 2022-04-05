@@ -48,15 +48,15 @@ bool writeToBuffer(uint16_t pageAddress, uint8_t *buf, uint8_t byteAmount) {
         uint16_t w = buf[i];
         w += (buf[i+1]) << 8;
 
-        //debug print
-        sendString("Word:");
-        char dataArr[2];
-        dataArr[0] = w >> 8;
-        dataArr[1] = w & 0xFF;
-        for (int i = 0; i < 2; i++)
-        {
-            sendChar(dataArr[i]);
-        }
+        // //debug print
+        // sendString("Word:");
+        // char dataArr[2];
+        // dataArr[0] = w >> 8;
+        // dataArr[1] = w & 0xFF;
+        // for (int i = 0; i < 2; i++)
+        // {
+        //     sendChar(dataArr[i]);
+        // }
         
         boot_page_fill_safe(pageAddress + i, w);
         //wordpos increase by 2 each time, when it hits page size flash
@@ -81,7 +81,7 @@ bool flashBufferToPage() {
     // boot_spm_busy_wait();
     //take the upper bit which should represent the page
     // uint8_t addressed = (uint8_t)(writeAddress >> 7);
-    uint8_t addressed = (uint8_t)(writeAddress);
+    uint8_t addressed = (uint8_t)(writeAddress & 0xFE);
     sendString("Addressed: ");
     sendChar(addressed);
     sendString("AddressRaw:");
