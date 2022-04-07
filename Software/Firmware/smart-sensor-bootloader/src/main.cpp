@@ -68,7 +68,7 @@ void bootHandler()
 	else
 	{
 		// send ID info
-		sendString("BOOTLOADER: V0.9");
+		sendString("BOOT:V0.9");
 
 		// when update char is received go to receivestate
 		// TODO: add timeout when ended
@@ -179,7 +179,7 @@ void executeHandler()
 	char exemes[] = "Message written\n";
 	sendString(exemes);
 	// stateMachine.raiseEvent(executeEvent);
-	asm("jmp 0");
+	// asm("jmp 0");
 }
 
 int main(void)
