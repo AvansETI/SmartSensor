@@ -64,8 +64,8 @@ ser.baudrate = 9600
 
 # Open the file and store its contents in an array, then close it
 lines = []
-# file = open('uploadtest.hex', 'r', encoding='utf-8' )
-file = open('blinkingtest.hex', 'r', encoding='utf-8' )
+file = open('uploadtest.hex', 'r', encoding='utf-8' )
+# file = open('blinkingtest.hex', 'r', encoding='utf-8' )
 lines = file.readlines()
 file.close()
 linepos = 0

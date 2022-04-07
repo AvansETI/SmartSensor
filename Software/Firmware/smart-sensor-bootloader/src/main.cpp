@@ -179,7 +179,7 @@ void executeHandler()
 	char exemes[] = "Message written\n";
 	sendString(exemes);
 	// stateMachine.raiseEvent(executeEvent);
-	// asm("jmp 0");
+	asm("jmp 0");
 }
 
 int main(void)
