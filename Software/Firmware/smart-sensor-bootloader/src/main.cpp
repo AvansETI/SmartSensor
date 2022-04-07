@@ -68,7 +68,7 @@ void bootHandler()
 	else
 	{
 		// send ID info
-		sendString("ID:1234");
+		sendString("BOOTLOADER: V0.9");
 
 		// when update char is received go to receivestate
 		// TODO: add timeout when ended
@@ -144,7 +144,7 @@ void writeHandler()
 	// stateMachine.raiseEvent(writeEvent);
 
 	//address is word oriented not byte so:
-	addressToWrite = addressToWrite/2;
+	// addressToWrite = addressToWrite/2;
 	writeToBuffer(addressToWrite, dataToWrite, bytesToWrite);
 
 	// //print code for testing
@@ -179,7 +179,7 @@ void executeHandler()
 	char exemes[] = "Message written\n";
 	sendString(exemes);
 	// stateMachine.raiseEvent(executeEvent);
-	// asm("JMP 0x0000");
+	asm("jmp 0");
 }
 
 int main(void)
