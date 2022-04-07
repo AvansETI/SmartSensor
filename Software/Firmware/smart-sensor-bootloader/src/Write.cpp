@@ -125,8 +125,13 @@ bool flashBufferToPage() {
         // Set up little-endian word.
         uint16_t w = prog[i];
         w += prog[i+1] << 8;
-        sendChar(prog[i]);
-        sendChar(prog[i+1]);
+        char dataArr[2];
+        dataArr[0] = w >> 8;
+        dataArr[1] = w & 0xFF;
+        for (int i = 0; i < 2; i++)
+        {
+            sendChar(dataArr[i]);
+        }
         boot_page_fill (progAddress + i, w);
     }
 
