@@ -17,372 +17,6 @@
 #include <stdio.h>
 #include <StateMachine.h>
 #include <Write.h>
-// char messagebuffer[50];
-// int bufferpos;
-// int state;
-// int timesincechar;
-// uint8_t prog[1024];
-// int progpos;
-// char inputbuffer[50];
-// int inputpos;
-// char commandbuffer[3];
-// uint32_t pageno;
-
-// void boot_program_page(uint32_t page, uint8_t *buf)
-// {
-// 	uint16_t i;
-// 	uint8_t sreg;
-
-// 	// Disable interrupts.
-
-// 	sreg = SREG;
-// 	cli();
-
-// 	eeprom_busy_wait();
-
-// 	boot_page_erase(page);
-// 	boot_spm_busy_wait(); // Wait until the memory is erased.
-
-// 	for (i = 0; i < SPM_PAGESIZE; i += 2)
-// 	{
-// 		// Set up little-endian word.
-
-// 		uint16_t w = *buf++;
-// 		w += (*buf++) << 8;
-
-// 		boot_page_fill(page + i, w);
-// 	}
-
-// 	boot_page_write(page); // Store buffer in flash page.
-// 	boot_spm_busy_wait();  // Wait until the memory is written.
-
-// 	// Reenable RWW-section again. We need this if we want to jump back
-// 	// to the application after bootloading.
-
-// 	boot_rww_enable();
-
-// 	// Re-enable interrupts (if they were ever enabled).
-
-// 	SREG = sreg;
-// }
-
-// void USART_Transmit( unsigned char data )
-// {
-//  /* Wait for empty transmit buffer */
-//  while ( !( UCSR0A & (1<<UDRE)) )
-//  ;
-//  /* Put data into buffer, sends the data */
-//  UDR0 = data;
-// }
-
-// /* When a character is received on the serial bus, this interrupt is called. */
-// ISR(USART0_RX_vect)
-// {
-// 	char c = UDR0;
-// 	timesincechar = 0;
-// 	/*For proper use of recieving hex file a delay should be added after every sent character to prevent data loss*/
-// 	if (state == 1)
-// 	{
-// 		bool endmes = false;
-// 		if (c == 'O')
-// 		{
-// 			endmes = true;
-// 		}
-// 		else if (c != ':' & c != '\n' & endmes == false)
-// 		{
-// 			//in current version if a single line is too long (should not happen with standard file generation) then it is not properly input
-// 			if (!(inputpos >= sizeof(inputbuffer)))
-// 			{
-// 				inputbuffer[inputpos] = c;
-// 			}
-// 			inputpos++;
-// 		}
-// 		if (c == '\n')
-// 		{
-// 			//due to hex file structure begin at position 8 with actually taking data and do not take the last few characters, these are for a better check but currently focused on functional
-// 			inputpos = 8;
-// 			while ((inputbuffer[inputpos] != 'Z') & !(inputpos >= (sizeof(inputbuffer) - 2)))
-// 			{
-// 				//convert to bytes and move by 2
-// 				uint8_t progput = convertHexToByte(inputbuffer[inputpos], inputbuffer[inputpos + 1]);
-// 				// while (!(UCSR0A & (1 << UDRE)))
-// 				// 	;
-// 				// UDR0 = inputbuffer[inputpos];
-// 				// UDR0 = inputbuffer[inputpos+1];
-// 				// USART_Transmit(progput);
-
-// 				inputpos = inputpos + 2;
-// 				//put converted bytes in array
-// 				prog[progpos] = progput;
-// 				USART_Transmit(prog[progpos]);
-
-// 				progpos++;
-// 				// if (progpos >= 128)
-// 				// {
-// 				// 	boot_program_page(pageno * SPM_PAGESIZE, prog);
-// 				// 	pageno++;
-// 				// 	progpos = 0;
-// 				// }
-// 			}
-// 			inputpos = 0;
-// 			for (int i = 0; i < sizeof(inputbuffer); i++)
-// 			{
-// 				inputbuffer[i] = 'Z';
-// 			}
-// 		}
-
-// 		if (endmes == true)
-// 		{
-// 			// //as a test print the prog array
-// 			// unsigned char progmessage[] = "Printing the prog array\n";
-// 			// int i = 0;
-// 			// while (progmessage[i] != 0)
-// 			// {
-// 			// 	while (!(UCSR0A & (1 << UDRE)))
-// 			// 		;
-// 			// 	UDR0 = progmessage[i];
-// 			// 	i++;
-// 			// }
-
-// 			// int b = 0;
-// 			// int d = 0;
-// 			// while (!(b >= sizeof(prog)))
-// 			// {
-// 			// 	while (!(UCSR0A & (1 << UDRE)))
-// 			// 		;
-// 			// 	UDR0 = '0x';
-// 			// 	while (!(UCSR0A & (1 << UDRE)))
-// 			// 		;
-// 			// 	UDR0 = prog[b];
-// 			// 	while (!(UCSR0A & (1 << UDRE)))
-// 			// 		;
-// 			// 	UDR0 = ' ';
-// 			// 	b++;
-// 			// 	d++;
-// 			// 	if (d == 10)
-// 			// 	{
-// 			// 		while (!(UCSR0A & (1 << UDRE)))
-// 			// 			;
-// 			// 		UDR0 = '\n\r';
-// 			// 		d = 0;
-// 			// 	}
-// 			// }
-
-// 			//do check and program page
-// 			//earlier attempt
-// 			// boot_program_page(pageno * SPM_PAGESIZE, prog);
-
-// 			//hopefully this works
-// 			uint8_t *prog_ptr = prog;
-// 			for (int i = 0; i < 5; i++)
-// 			{
-// 				USART_Transmit(prog[i]);
-// 			}
-
-// 			for (int i = 0; i < 8; i++)
-// 			{
-// 				boot_program_page(pageno, prog_ptr);
-// 				pageno += SPM_PAGESIZE;
-// 				prog_ptr += SPM_PAGESIZE;
-// 			}
-
-// 			asm("jmp 0");
-
-// 			//state back to 0
-// 			state = 0;
-// 		}
-// 	}
-
-// 	if (state == 0)
-// 	{
-// 		//in current version the character Z is used as a control character and thus cannot be used in commands or input files
-// 		//The character P is used to print the current message
-// 		//normal state for recieving commands is 0
-// 		if (!(bufferpos >= sizeof(messagebuffer)) & c != 'P')
-// 		{
-// 			messagebuffer[bufferpos] = c;
-// 			bufferpos++;
-// 		}
-// 		else if (c != 'P')
-// 		{
-// 			bufferpos = 0;
-// 			for (int i = 0; i < sizeof(messagebuffer); i++)
-// 			{
-// 				messagebuffer[i] = 'Z';
-// 			}
-// 		}
-
-// 		//command for moving to other program, state 2
-// 		if (commandbuffer[0] == 'O')
-// 		{
-// 			//command for moving to other program
-// 			if (c == 'F')
-// 			{
-// 				if (commandbuffer[1] == 'F')
-// 				{
-// 					for (int i = 0; i < sizeof(commandbuffer); i++)
-// 					{
-// 						commandbuffer[i] = 'Z';
-// 					}
-
-// 					state = 2;
-// 				}
-// 				else
-// 				{
-// 					commandbuffer[1] = c;
-// 				}
-// 			}
-// 			else
-// 			{
-// 				for (int i = 0; i < sizeof(commandbuffer); i++)
-// 				{
-// 					commandbuffer[i] = 'Z';
-// 				}
-// 			}
-// 		}
-// 		else if (c == 'O')
-// 		{
-// 			commandbuffer[0] = c;
-// 		}
-
-// 		//command to go into hex mode, hex mode is state 1
-// 		if (commandbuffer[0] == 'H')
-// 		{
-// 			if (commandbuffer[1] == 'E')
-// 			{
-// 				if (c == 'X')
-// 				{
-// 					state = 1;
-// 				}
-// 				for (int i = 0; i < sizeof(commandbuffer); i++)
-// 				{
-// 					commandbuffer[i] = 'Z';
-// 				}
-// 			}
-// 			else if (c == 'E')
-// 			{
-// 				commandbuffer[1] = c;
-// 			}
-// 			else
-// 			{
-// 				for (int i = 0; i < sizeof(commandbuffer); i++)
-// 				{
-// 					commandbuffer[i] = 'Z';
-// 				}
-// 			}
-// 		}
-// 		else if (c == 'H')
-// 		{
-// 			commandbuffer[0] = c;
-// 		}
-
-// 		//prints contents of messagebuffer, keeps a limited buffer to lower memory usage
-// 		if (c == 'P')
-// 		{
-// 			int i = 0;
-// 			while (messagebuffer[i] != 'Z')
-// 			{
-// 				//wait until channel is free
-// 				while (!(UCSR0A & (1 << UDRE)))
-// 					;
-// 				//print char
-// 				UDR0 = messagebuffer[i];
-// 				i++;
-// 			}
-// 			//wait until channel is free
-// 			while (!(UCSR0A & (1 << UDRE)))
-// 				;
-// 			UDR0 = '\n\r';
-// 			for (int i = 0; i < sizeof(messagebuffer); i++)
-// 			{
-// 				messagebuffer[i] = 'Z';
-// 			}
-// 			bufferpos = 0;
-// 		}
-// 	}
-// }
-
-// int main(void)
-// {
-
-// 	timesincechar = 0;
-// uint32_t baudrate = 9600;
-// uint32_t ubrr = 20000000 / 16 / 9600 - 1;
-// // uint32_t ubrr = ((20000000 -((baudrate) * 8L)) / ((baudrate) * 16UL));
-// pageno = 0;
-
-// UBRR0H = (unsigned char)(ubrr >> 8); // Configuration of the baudrate
-// UBRR0L = (unsigned char)ubrr;
-// UCSR0A = 0x00;
-// UCSR0B = (1 << RXEN) | (1 << TXEN) | (1 << RXCIE);	 // Enable TX and RX and receive interrupt
-// UCSR0C = (1 << UCPOL) | (1 << UCSZ0) | (1 << UCSZ1); // 8 data and 1 stop
-// sei();
-
-// 	for (int b = 0; b < sizeof(messagebuffer); b++)
-// 	{
-// 		messagebuffer[b] = 'Z';
-// 	}
-// 	for (int b = 0; b < sizeof(commandbuffer); b++)
-// 	{
-// 		commandbuffer[b] = 'Z';
-// 	}
-// 	for (int b = 0; b < sizeof(prog); b++)
-// 	{
-// 		prog[b] = 0xFF;
-// 	}
-
-// 	bufferpos = 0;
-// 	inputpos = 0;
-// 	progpos = 0;
-// 	state = 0;
-
-// 	while (1) /* Loop the messsage continously */
-// 	{
-// 		if (state == 0)
-// 		{
-// 		}
-// 		else if (state == 2)
-// 		{
-// 			int i = 0;
-// 			unsigned char shutdown[] = "Jumping to other program. \n";
-// 			while (shutdown[i] != 0)
-// 			{
-// 				while (!(UCSR0A & (1 << UDRE)))
-// 					;
-// 				{
-// 					UDR0 = shutdown[i];
-// 					i++;
-// 				}
-// 			}
-// 			asm("jmp 0");
-// 		}
-// 		//end if timed out
-// 		timesincechar++;
-// 		if (timesincechar >= 250 & state == 1)
-// 		{
-// 			for (int i = 0; i < sizeof(messagebuffer); i++)
-// 			{
-// 				while (!(UCSR0A & (1 << UDRE)))
-// 					;
-// 				{
-// 					if (messagebuffer[i] != 'H')
-// 					{
-// 						UDR0 = messagebuffer[i];
-// 					}
-// 				}
-// 				messagebuffer[i] = 'H';
-// 			}
-// 			while (!(UCSR0A & (1 << UDRE)))
-// 				;
-// 			UDR0 = ' \n\r';
-// 			state = 0;
-// 			// page = 0;
-// 			bufferpos = 0;
-// 		}
-
-// 		_delay_ms(100);
-// 	}
-// }
 
 typedef enum
 {
@@ -405,11 +39,6 @@ typedef enum
 } events;
 
 FiniteStateMachine stateMachine(totalState, totalEvent);
-// variable to store the inputs for conversion
-// char progbuf[2];
-// temp variable for testing communication
-// uint8_t progtemp[1024];
-// int progpos;
 uint8_t dataToWrite[16];
 uint16_t addressToWrite;
 uint8_t bytesToWrite;
@@ -420,26 +49,6 @@ bool checkForUpdateInProgress()
 {
 	return false;
 }
-
-// void resetProgBuf()
-// {
-// 	for (int i = 0; i < 2; i++)
-// 	{
-// 		progbuf[i] = 'Z';
-// 	}
-// }
-
-// void addToProgBuf(char input)
-// {
-// 	if (progbuf[0] == 'Z')
-// 	{
-// 		progbuf[0] = input;
-// 	}
-// 	else
-// 	{
-// 		progbuf[1] = input;
-// 	}
-// }
 
 // handlers for various events
 // raiseevents in the handlers were there for testing and are currently commented out
@@ -467,6 +76,7 @@ void bootHandler()
 		{
 			if (readChar() == 'U')
 			{
+				resetProg();
 				sendChar('R');
 				stateMachine.raiseEvent(bootEvent);
 			}
@@ -474,52 +84,11 @@ void bootHandler()
 	}
 }
 
+//temp for prog test
+#define PAGE_SIZE_BYTES 128
 // handler for the receive state, handles the receiving of updates and other characters, can go to the write state
 void receiveHandler()
 {
-	// char recmes[] = "receive\n";
-	// sendString(recmes);
-	// stateMachine.raiseEvent(receiveEvent);
-	// char *input = getreceived();
-	// for (int i = 0; i < 128; i++)
-	// {
-	// 	if (input[i] != 'Z')
-	// 	{
-	// 		switch (input[i])
-	// 		{
-	// 		case 'U':
-	// 			sendChar('R');
-	// 			progpos = 0;
-	// 			for (int i = 0; i < 1024; i++)
-	// 			{
-	// 				progtemp[i] = 0x00;
-	// 			}
-
-	// 			break;
-	// 		case '\n':
-	// 			sendChar('X');
-	// 			break;
-	// 		case 'O':
-	// 			stateMachine.raiseEvent(receiveEvent);
-	// 			break;
-	// 		default:
-	// 			if (input[i] != ':')
-	// 			{
-	// 				addToProgBuf(input[i]);
-	// 				sendChar(input[i]);
-	// 				if (progbuf[1] != 'Z')
-	// 				{
-	// 					progtemp[progpos] = convertHexToByte(progbuf[0], progbuf[1]);
-	// 					progpos++;
-	// 					resetProgBuf();
-	// 				}
-	// 			}
-
-	// 			break;
-	// 		}
-	// 	}
-	// }
-	// resetArray();
 
 	//Array for holding the received chars, probably won't exceed 45-ish
 	char receivedchars[50];
@@ -541,40 +110,6 @@ void receiveHandler()
 		uint8_t bytesAmount;
 		if (isValidLine(receivedchars, data, &address, &bytesAmount))
 		{
-			// int i = 0;
-			// while (receivedchars[i] != '\n')
-			// {
-			// 	sendChar(receivedchars[i]);
-			// 	if (receivedchars[i] != ':')
-			// 	{
-			// 		addToProgBuf(receivedchars[i]);
-			// 		if (progbuf[1] != 'Z')
-			// 		{
-			// 			progtemp[progpos] = convertHexToByte(progbuf[0], progbuf[1]);
-			// 			progpos++;
-			// 			resetProgBuf();
-			// 		}
-			// 	}
-			// 	i++;
-			// }
-
-			// sendString("Address:");
-			// char stringarr[2];
-			// stringarr[0] = address & 0xFF;
-			// stringarr[1] = address >> 8;
-			// sendString(stringarr);
-			// sendString("Data:");
-			// while (i < 16)
-			// {
-			// 	if (data[i] != -1)
-			// 	{
-			// 		sendChar(data[i]);
-			// 	}
-
-			// 	i++;
-			// }
-
-			// sendChar('X');
 			//if the line is valid, put the gathered data and address in their variables and go to the write state
 			for (int i = 0; i < 16; i++)
 			{
@@ -588,6 +123,7 @@ void receiveHandler()
 		//TODO: Change this so it happens in the write state
 		else if (isDone())
 		{
+			flashBufferToPage();
 			sendChar('X');
 			stateMachine.raiseEvent(doneEvent);
 		}
@@ -597,6 +133,7 @@ void receiveHandler()
 		// error with Processing line
 		sendChar('W');
 	}
+
 }
 
 //method for handling the writing to the buffer and the flashing of the buffer
@@ -605,13 +142,6 @@ void writeHandler()
 	// char wrimes[] = "Write\n";
 	// sendString(wrimes);
 	// stateMachine.raiseEvent(writeEvent);
-
-	// for (int i = 0; i < 1024; i++)
-	// {
-	// 	sendChar(progtemp[i]);
-	// }
-	// stateMachine.raiseEvent(writeEvent);
-
 
 	//address is word oriented not byte so:
 	addressToWrite = addressToWrite/2;
@@ -661,8 +191,6 @@ int main(void)
 	PORTD &= ~(1 << PD4);
 	_delay_ms(1000);
 	initSerial();
-	char message[] = "Hello from Serial\n";
-	int testint = 0;
 
 	// add necessary data to state machine
 	// add states to machine
