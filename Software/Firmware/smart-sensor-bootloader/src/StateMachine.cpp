@@ -61,7 +61,7 @@ void FiniteStateMachine::raiseEvent(int event)
 }
 
 //Method used for setup of the State Machine, should be called once all states and transitions are added
-void FiniteStateMachine::setup(int startState, int eventToRaise)
+void FiniteStateMachine::setup(int startState)
 {
     //If the startstate does not exceed the amount of states it is set as the current state
     if (startState < this->totalStates)

@@ -35,6 +35,7 @@ typedef enum
 	flashEvent,
 	executeEvent,
 	doneEvent,
+	timeoutEvent,
 	totalEvent
 } events;
 
@@ -42,6 +43,7 @@ FiniteStateMachine stateMachine(totalState, totalEvent);
 uint8_t dataToWrite[16];
 uint16_t addressToWrite;
 uint8_t bytesToWrite;
+uint8_t updatedelay;
 
 // code to check if there was an update in progress, if there was a command should be sent to the updater about it
 // TODO: Actually implement update check
@@ -81,36 +83,44 @@ void bootHandler()
 				stateMachine.raiseEvent(bootEvent);
 			}
 		}
+		else
+		{
+			// if there is no update for some time it should go the main program
+			updatedelay++;
+			if (updatedelay >= 20)
+			{
+				sendChar('T');
+				stateMachine.raiseEvent(timeoutEvent);
+			}
+		}
 	}
 }
 
-//temp for prog test
-#define PAGE_SIZE_BYTES 128
 // handler for the receive state, handles the receiving of updates and other characters, can go to the write state
 void receiveHandler()
 {
 
-	//Array for holding the received chars, probably won't exceed 45-ish
+	// Array for holding the received chars, probably won't exceed 45-ish
 	char receivedchars[50];
-	//timeout variable, do not put it too low or the code won't work
+	// timeout variable, do not put it too low or the code won't work
 	uint8_t timeout = 250;
-	//length of the array, should always be the same as receivedchars length
+	// length of the array, should always be the same as receivedchars length
 	uint8_t length = 50;
 	if (readLine(receivedchars, timeout, length))
 	{
-		//variable to hold the gathered data
+		// variable to hold the gathered data
 		uint8_t data[16];
 		for (int i = 0; i < 16; i++)
 		{
 			data[i] = 0;
 		}
 
-		//variable to hold the gotten address
+		// variable to hold the gotten address
 		uint16_t address;
 		uint8_t bytesAmount;
 		if (isValidLine(receivedchars, data, &address, &bytesAmount))
 		{
-			//if the line is valid, put the gathered data and address in their variables and go to the write state
+			// if the line is valid, put the gathered data and address in their variables and go to the write state
 			for (int i = 0; i < 16; i++)
 			{
 				dataToWrite[i] = data[i];
@@ -119,8 +129,7 @@ void receiveHandler()
 			bytesToWrite = bytesAmount;
 			stateMachine.raiseEvent(receiveEvent);
 		}
-		//when done go to the execute state
-		//TODO: Change this so it happens in the write state
+		// when done go to the execute state
 		else if (isDone())
 		{
 			flashBufferToPage();
@@ -133,31 +142,30 @@ void receiveHandler()
 		// error with Processing line
 		sendChar('W');
 	}
-
 }
 
-//method for handling the writing to the buffer and the flashing of the buffer
+// method for handling the writing to the buffer and the flashing of the buffer
 void writeHandler()
 {
 	// char wrimes[] = "Write\n";
 	// sendString(wrimes);
 	// stateMachine.raiseEvent(writeEvent);
 
-	//address is word oriented not byte so:
-	// addressToWrite = addressToWrite/2;
+	// address is actually full intelhex address and as such is simply passed along
 	writeToBuffer(addressToWrite, dataToWrite, bytesToWrite);
 
-	// //print code for testing
-	// sendString("Address:");
-	// char stringarr[2];
-	// stringarr[0] = addressToWrite >> 8;
-	// stringarr[1] = addressToWrite & 0xFF;
-	// // sendString(stringarr);
-	// for (int i = 0; i < 2; i++)
-	// {
-	// 	sendChar(stringarr[i]);
-	// }
-	
+	// DEBUG
+	//  //print code for testing
+	//  sendString("Address:");
+	//  char stringarr[2];
+	//  stringarr[0] = addressToWrite >> 8;
+	//  stringarr[1] = addressToWrite & 0xFF;
+	//  // sendString(stringarr);
+	//  for (int i = 0; i < 2; i++)
+	//  {
+	//  	sendChar(stringarr[i]);
+	//  }
+
 	// sendString("Data:");
 	// int i = 0;
 	// while (i < bytesToWrite)
@@ -169,11 +177,11 @@ void writeHandler()
 	// 	i++;
 	// }
 
-
-	//when done with a line, send X and go back to receivestate
+	// when done with a line, send X and go back to receivestate
 	sendChar('X');
 	stateMachine.raiseEvent(flashEvent);
 }
+// handler for execution of program, simply jumps to address 0x0000
 void executeHandler()
 {
 	char exemes[] = "Message written\n";
@@ -191,6 +199,8 @@ int main(void)
 	PORTD &= ~(1 << PD4);
 	_delay_ms(1000);
 	initSerial();
+	updatedelay = 0;
+	resetAddress();
 
 	// add necessary data to state machine
 	// add states to machine
@@ -206,88 +216,14 @@ int main(void)
 	stateMachine.addTransition(executeState, executeEvent, bootState);
 	stateMachine.addTransition(writeState, flashEvent, receiveState);
 	stateMachine.addTransition(receiveState, doneEvent, executeState);
+	stateMachine.addTransition(bootState, timeoutEvent, executeState);
 
 	// setup state machine
-	stateMachine.setup(bootState, totalEvent);
-	// resetProgBuf();
-	// for (int i = 0; i < 1024; i++)
-	// {
-	// 	progtemp[i] = 0x00;
-	// }
-	// progpos = 0;
+	stateMachine.setup(bootState);
 
-	// bool inreceive = false;
 	while (1)
 	{
-		// if (!inreceive)
-		// {
-		// 	stateMachine.raiseEvent(bootEvent);
-		// 	inreceive = true;
-		// }
-
-		// // sendString(message);
-		// testint++;
-		// if (testint == 1)
-		// {
-		// 	// simulating event to change state, will be worked on further
-		// 	// for now just test cycling through states with some testing of errors
-		// 	stateMachine.raiseEvent(bootEvent);
-		// 	sendString("yes");
-		// }
-		// else if (testint == 2)
-		// {
-		// 	stateMachine.raiseEvent(receiveEvent);
-		// 	sendString("yes");
-		// }
-		// else if (testint == 3)
-		// {
-		// 	stateMachine.raiseEvent(writeEvent);
-		// 	sendString("yes");
-		// }
-		// else if (testint == 4)
-		// {
-		// 	stateMachine.raiseEvent(executeEvent);
-		// 	sendString("yes");
-		// }
-		// else if (testint == 5)
-		// {
-		// 	stateMachine.raiseEvent(writeEvent);
-		// 	sendString("no");
-		// }
-		// else if (testint == 6)
-		// {
-		// 	stateMachine.raiseEvent(receiveEvent);
-		// 	sendString("no");
-		// 	testint = 0;
-		// }
 		stateMachine.loop();
-
-		// code for testing communication
-		//  const char* input = getreceived();
-		//  char *input = getreceived();
-		//  for (int i = 0; i < 128; i++)
-		//  {
-		//  	if (input[i] != 'Z')
-		//  	{
-		//  		switch (input[i])
-		//  		{
-		//  		case 'U':
-		//  			sendChar('R');
-		//  			break;
-		//  		case '\n':
-		//  			sendChar('X');
-		//  			break;
-		//  		case 'O':
-		//  			break;
-		//  		default:
-		//  			// sendChar(input[i]);
-		//  			break;
-		//  		}
-		//  	}
-
-		// }
-		// resetArray();
-
 		_delay_ms(1000);
 	}
 }

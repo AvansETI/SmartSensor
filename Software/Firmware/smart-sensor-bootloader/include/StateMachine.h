@@ -4,7 +4,7 @@
 #define AMOUNT_OF_STATES 4
 
 //Define used for the amountn of transitions to be added to the statemachine
-#define AMOUNT_OF_TRANSITIONS 6
+#define AMOUNT_OF_TRANSITIONS 7
 
 //Struct made for the calling of methods that will be added to the states
 struct methodCall
@@ -54,7 +54,7 @@ class FiniteStateMachine {
         void raiseEvent(int event);
 
         //sets up state machine with input data
-        void setup(int startState, int eventToRaise);
+        void setup(int startState);
 
         //method to call to loop
         void loop();

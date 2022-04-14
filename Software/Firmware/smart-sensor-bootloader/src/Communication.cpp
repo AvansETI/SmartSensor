@@ -10,21 +10,6 @@
 
 bool isEnd = false;
 
-// char receivedChars[128];
-// int charpos;
-
-// method to handle the recieving of chars, received chars are added to array and can be retrieved to be handled
-// Interrupt appears to be necessary for funtion even when empty
-// ISR(USART0_RX_vect)
-// {
-//     // char c = UDR0;
-//     // receivedChars[charpos] = c;
-//     // charpos++;
-
-//     // test for checking if function worked
-//     //  sendChar(c);
-// }
-
 // method for initializing the serial connection
 // TODO: Remove reliance on hardcoded data
 void initSerial()
@@ -36,16 +21,9 @@ void initSerial()
     UBRR0H = (unsigned char)(ubrr >> 8); // Configuration of the baudrate
     UBRR0L = (unsigned char)ubrr;
     UCSR0A = 0x00;
-    UCSR0B = (1 << RXEN) | (1 << TXEN);                  // Enable TX and RX and recieve interrupt
+    UCSR0B = (1 << RXEN) | (1 << TXEN);                  // Enable TX and RX
     UCSR0C = (1 << UCPOL) | (1 << UCSZ0) | (1 << UCSZ1); // 8 data and 1 stop
     sei();
-
-    // for (int i = 0; i < 128; i++)
-    // {
-    //     receivedChars[i] = 'Z';
-    // }
-
-    // charpos = 0;
 }
 
 // method for sending individual chars, if more chars are required use sendstring instead
@@ -70,31 +48,6 @@ void sendString(const char *input)
         sendChar(*input++);
     }
 }
-
-// // method for retrieving received chars, Z should mean empty
-// char *getreceived()
-// {
-//     // char *retrieval;
-
-//     // for (int i = 0; i < 128; i++)
-//     // {
-//     //     retrieval[i] = receivedChars[i];
-//     //     receivedChars[i] = 'Z';
-//     // }
-//     // charpos = 0;
-
-//     return receivedChars;
-// }
-
-// // dirty fix, feels like this should be able to be done better
-// void resetArray()
-// {
-//     for (int i = 0; i < 128; i++)
-//     {
-//         receivedChars[i] = 'Z';
-//     }
-//     charpos = 0;
-// }
 
 // method to check if there is a char recieved
 bool isCharReceived()
@@ -161,15 +114,6 @@ bool isValidLine(char *line, uint8_t *data, uint16_t *address, uint8_t *bytesInD
         sendChar('W');
         return false;
     }
-
-    // // for now dirty to check
-    // for (int i = 0; i < 50; i++)
-    // {
-    //     if (line[i] == '\n')
-    //     {
-    //         return true;
-    //     }
-    // }
 
     return false;
 }

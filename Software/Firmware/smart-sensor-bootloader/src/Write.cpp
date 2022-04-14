@@ -17,15 +17,9 @@
 #define PAGE_SIZE_BYTES 128
 
 uint16_t wordpos = 0;
-// uint16_t writeAddress = 0x0000;
+// uint32_t writeAddress = 0x0000;
 uint8_t prog[SPM_PAGESIZE];
 uint32_t progAddress = 0;
-
-char *bootReadBuffer()
-{
-    char temp[] = "NO";
-    return temp;
-}
 
 // code to reset the prog, this is to make sure there is always some data at every point
 void resetProg()
@@ -36,22 +30,17 @@ void resetProg()
     }
 }
 
+void resetAddress() {
+    progAddress = 0;
+}
+
+//TODO: Implement writing to specific addresses so it can work with offsets
 bool writeToBuffer(uint16_t pageAddress, uint8_t *buf, uint8_t byteAmount)
 {
-    // //debug print
-    // sendString("Address:");
-    // char addrArr[2];
-    // addrArr[0] = pageAddress >> 8;
-    // addrArr[1] = pageAddress & 0xFF;
-    // for (int i = 0; i < 2; i++)
-    // {
-    //     sendChar(addrArr[i]);
-    // }
-
-    uint8_t sreg;
-    sreg = SREG;
-    cli();
-    eeprom_busy_wait();
+    // uint8_t sreg;
+    // sreg = SREG;
+    // cli();
+    // eeprom_busy_wait();
 
     // // debug print
     // sendString("Data:");
@@ -83,32 +72,14 @@ bool writeToBuffer(uint16_t pageAddress, uint8_t *buf, uint8_t byteAmount)
             wordpos = 0;
         }
     }
-    boot_rww_enable();
-    SREG = sreg;
+    // boot_rww_enable();
+    // SREG = sreg;
 
     return true;
 }
 
 bool flashBufferToPage()
 {
-    // boot_page_erase(pageAddress);
-    // boot_spm_busy_wait();
-    // boot_page_write(pageAddress);
-    // boot_spm_busy_wait();
-    // take the upper bit which should represent the page
-    // uint8_t addressed = (uint8_t)(writeAddress >> 7);
-
-    // uint16_t addressed = writeAddress;
-    // sendString("Addressed: ");
-    // sendChar(addressed);
-    // sendString("AddressRaw:");
-    // char addrArr[2];
-    // addrArr[0] = writeAddress >> 8;
-    // addrArr[1] = writeAddress & 0xFF;
-    // for (int i = 0; i < 2; i++)
-    // {
-    //     sendChar(addrArr[i]);
-    // }
 
     uint16_t i;
     uint8_t sreg;
@@ -147,8 +118,6 @@ bool flashBufferToPage()
     // Re-enable interrupts (if they were ever enabled).
     SREG = sreg;
 
-    // boot_page_erase_safe(addressed);
-    // boot_page_write_safe(addressed);
     resetProg();
     progAddress += PAGE_SIZE_BYTES;
     return true;
