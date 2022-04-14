@@ -70,7 +70,7 @@ void bootHandler()
 	else
 	{
 		// send ID info
-		sendString("BOOT:V0.9");
+		sendString("V0.9");
 
 		// when update char is received go to receivestate
 		// TODO: add timeout when ended
