@@ -32,6 +32,8 @@
 #include <drivers/CCS811.h>
 #include <drivers/XBeeProS2C.h>
 
+#include <drivers/MAX4466Driver.h>
+
 #include <tasks/Atmega324PBSerial0.h>
 #include <tasks/Atmega324PBSerial1.h>
 #include <tasks/Atmega324PBI2C0.h>
@@ -67,8 +69,12 @@ private:
     /* The class that handles the XBeeProS2C communication and configuration. */
     XBeeProS2C* xbeeProS2CDriver;
 
+    /* Driver for the MAX4466 sound detector driver */
+    MAX4466Driver *max4466Driver;
+
     SerialBuffer<MESSAGE_LENGTH> serialBuffer;
-        
+
+
 public:
     SmartSensorBoardV1_2() { }
 

@@ -2,7 +2,7 @@
 
 /**
  * @brief      : Driver for the Sparkfun sound detector
- * @file       : SparkfunSoundDetector.h
+ * @file       : MAX4466Driver.h
  * @description: This driver handles the input from the sparkfun sound detector
  * @date       : 21-04-2022
  * @author     : Sem van der Hoeven
@@ -23,12 +23,15 @@
 class MAX4466Driver : public Driver
 {
 private:
-    /*envelope value that represents the loudness of the sound measured*/
-    int envelope; 
+    /* envelope value that represents the loudness of the sound measured */
+    int envelope;
+
+    /* Boolean to keep track of if this driver is sleeping or not */
+    bool sleeping = false;
 
 protected:
     /* Protected constructor in order to create a singleton class. */
-    MAX4466Driver() {}
+    MAX4466Driver(MessageInterface* messageInterface) : Driver(messageInterface) {}
 
 public:
     /**
@@ -36,13 +39,12 @@ public:
      * 
      * @return SparkfunDoundDetectorDriver* : the singleton instance to this class.
      */
-    static MAX4466Driver *getInstance()
+    static MAX4466Driver *getInstance(MessageInterface* messageInterface)
     {
-        static MAX4466Driver _soundDetectorDriver;
+        static MAX4466Driver _soundDetectorDriver(messageInterface);
         return &_soundDetectorDriver;
     }
 
-    /* Interface Task methods. */
     /**
      * @brief setup method to initialize the driver
      * 
