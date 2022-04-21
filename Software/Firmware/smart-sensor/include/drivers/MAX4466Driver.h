@@ -20,7 +20,7 @@
  * @brief driver class for the sound detector
  * 
  */
-class SparkfunDoundDetectorDriver : public Driver
+class MAX4466Driver : public Driver
 {
 private:
     /*envelope value that represents the loudness of the sound measured*/
@@ -28,7 +28,7 @@ private:
 
 protected:
     /* Protected constructor in order to create a singleton class. */
-    SparkfunDoundDetectorDriver() {}
+    MAX4466Driver() {}
 
 public:
     /**
@@ -36,9 +36,9 @@ public:
      * 
      * @return SparkfunDoundDetectorDriver* : the singleton instance to this class.
      */
-    static SparkfunDoundDetectorDriver *getInstance()
+    static MAX4466Driver *getInstance()
     {
-        static SparkfunDoundDetectorDriver _soundDetectorDriver;
+        static MAX4466Driver _soundDetectorDriver;
         return &_soundDetectorDriver;
     }
 
