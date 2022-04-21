@@ -45,7 +45,7 @@ private:
     uint8_t data[6];
 
     /* Set the sampling interval of the sensor in seconds. */
-    uint16_t samplingInterval;
+    uint16_t  samplingInterval;
 
     /* Hold the timestamp in seconds where we have started the sampling. */
     uint16_t samplingTimestamp;

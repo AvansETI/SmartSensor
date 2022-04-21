@@ -12,9 +12,13 @@
  *
  */
 
-#include <drivers/Driver.h>
 
-#define ENVELOPE_PIN PA0
+#include <drivers/Driver.h>
+#include <boards/Board.h>
+
+#define MAX4466_ENVELOPE_PIN PA0
+#define MAX4466_ENVELOPE_DDR DDRA
+#define MAX4466_ENVELOPE_PORT PORTA
 
 /**
  * @brief driver class for the sound detector
@@ -28,6 +32,23 @@ private:
 
     /* Boolean to keep track of if this driver is sleeping or not */
     bool sleeping = false;
+
+    uint32_t samplingInterval;
+    uint32_t samplingTimestamp;
+
+    /**
+     * @brief Samples the sensor and puts the value in the envelope variable
+     * 
+     * @return uint8_t a status code of 0 if sampling went successful, nonzero if something went wrong
+     */
+    uint8_t sample();
+
+    /**
+     * @brief Prints debug messages to the board with driver prefix and newline
+     * 
+     * @param message the message to print
+     */
+    void debug_println(const char *message);
 
 protected:
     /* Protected constructor in order to create a singleton class. */
