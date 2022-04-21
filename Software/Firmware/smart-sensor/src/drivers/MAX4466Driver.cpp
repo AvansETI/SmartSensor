@@ -41,10 +41,9 @@ uint8_t MAX4466Driver::loop(uint32_t millis)
             this->samplingTimestamp = millis;
 
             this->sample();
-
         }
-        return 0;
     }
+    return 0;
 }
 
 uint8_t MAX4466Driver::sleep()

@@ -33,7 +33,10 @@ private:
     /* Boolean to keep track of if this driver is sleeping or not */
     bool sleeping = false;
 
+    /* Interval to specify the interval in which the sensor should sample */
     uint32_t samplingInterval;
+
+    /* Variable to hold the timestamp of the milliseconds elapsed in the loop */
     uint32_t samplingTimestamp;
 
     /**
@@ -44,7 +47,7 @@ private:
     uint8_t sample();
 
     /**
-     * @brief Prints debug messages to the board with driver prefix and newline
+     * @brief Prints debug messages to the board with driver prefix ( [MAX4466] ) and newline
      * 
      * @param message the message to print
      */
