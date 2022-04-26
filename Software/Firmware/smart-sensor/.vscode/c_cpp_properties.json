@@ -36,7 +36,8 @@
             "compilerArgs": [
                 "-mmcu=atmega324pb",
                 ""
-            ]
+            ],
+            "configurationProvider": "ms-vscode.cmake-tools"
         }
     ],
     "version": 4

@@ -15,6 +15,7 @@ uint8_t MAX4466Driver::setup()
     this->sleeping = false;
     this->samplingInterval = 1000 * 1; /* 1 second interval */
     this->samplingTimestamp = 0;
+    this->samplingAmount = 10; /*Take 10 measurements*/
 
     this->debug_println("Initialized");
 
@@ -61,7 +62,11 @@ uint8_t MAX4466Driver::wakeup()
 uint8_t MAX4466Driver::sample()
 {
 
-    this->debug_println("sampling! (not doing anything yet but eh)");
+    int average = 0;
+    for (int i = 0; i < this->samplingAmount; i++)
+    {
+        this->debug_println("sampling! (not doing anything yet but eh)");
+    }
 
     return 0;
 }

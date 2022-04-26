@@ -39,6 +39,9 @@ private:
     /* Variable to hold the timestamp of the milliseconds elapsed in the loop */
     uint32_t samplingTimestamp;
 
+    /* Amount of samples the sensor should take to get the average */
+    uint32_t samplingAmount;
+
     /**
      * @brief Samples the sensor and puts the value in the envelope variable
      * 
