@@ -16,9 +16,11 @@
 #include <drivers/Driver.h>
 #include <boards/Board.h>
 
-#define MAX4466_ENVELOPE_PIN PA0
-#define MAX4466_ENVELOPE_DDR DDRA
-#define MAX4466_ENVELOPE_PORT PORTA
+#define MAX4466_PIN PA0
+#define MAX4466_DDR DDRA
+#define MAX4466_PORT PORTA
+
+#define MAX4466_SAMPLING_INTERVAL 1000
 
 /**
  * @brief driver class for the sound detector
@@ -40,7 +42,7 @@ private:
     uint32_t samplingTimestamp;
 
     /* Amount of samples the sensor should take to get the average */
-    uint32_t samplingAmount;
+    uint8_t samplingAmount;
 
     /**
      * @brief Samples the sensor and puts the value in the envelope variable
@@ -48,6 +50,13 @@ private:
      * @return uint8_t a status code of 0 if sampling went successful, nonzero if something went wrong
      */
     uint8_t sample();
+
+    /**
+     * @brief Takes an audio measurement by setting the ADSC bit high and waiting for it to go lowmeasurement 
+     * 
+     * @return int the measured value
+     */
+    uint32_t take_measurement();
 
     /**
      * @brief Prints debug messages to the board with driver prefix ( [MAX4466] ) and newline
