@@ -20,7 +20,7 @@
 #define MAX4466_DDR DDRA
 #define MAX4466_PORT PORTA
 
-#define MAX4466_SAMPLING_INTERVAL 1000
+#define MAX4466_SAMPLING_INTERVAL 100
 
 /**
  * @brief driver class for the sound detector
