@@ -13,7 +13,7 @@
  */
 
 
-#include <drivers/Driver.h>
+#include <drivers/AnalogDriver.h>
 #include <boards/Board.h>
 
 #define MAX4466_PIN PA0
@@ -26,37 +26,11 @@
  * @brief driver class for the sound detector
  * 
  */
-class MAX4466Driver : public Driver
+class MAX4466Driver : public AnalogDriver
 {
 private:
     /* envelope value that represents the loudness of the sound measured */
     int envelope;
-
-    /* Boolean to keep track of if this driver is sleeping or not */
-    bool sleeping = false;
-
-    /* Interval to specify the interval in which the sensor should sample */
-    uint32_t samplingInterval;
-
-    /* Variable to hold the timestamp of the milliseconds elapsed in the loop */
-    uint32_t samplingTimestamp;
-
-    /* Amount of samples the sensor should take to get the average */
-    uint8_t samplingAmount;
-
-    /**
-     * @brief Samples the sensor and puts the value in the envelope variable
-     * 
-     * @return uint8_t a status code of 0 if sampling went successful, nonzero if something went wrong
-     */
-    uint8_t sample();
-
-    /**
-     * @brief Takes an audio measurement by setting the ADSC bit high and waiting for it to go lowmeasurement 
-     * 
-     * @return int the measured value
-     */
-    uint32_t take_measurement();
 
     /**
      * @brief Prints debug messages to the board with driver prefix ( [MAX4466] ) and newline
@@ -67,7 +41,7 @@ private:
 
 protected:
     /* Protected constructor in order to create a singleton class. */
-    MAX4466Driver(MessageInterface* messageInterface) : Driver(messageInterface) {}
+    MAX4466Driver(MessageInterface* messageInterface) : AnalogDriver(messageInterface) {}
 
 public:
     /**
@@ -82,38 +56,33 @@ public:
     }
 
     /**
-     * @brief setup method to initialize the driver
-     * 
-     * @return uint8_t return code, 0 if successful, nonzero if not successful
-     */
-    uint8_t setup();
-
-    /**
      * @brief loop method that facilitates the functionality of the driver
      * 
      * @param millis the loop time
      * @return uint8_t return code, 0 if successful, nonzero if not successful
      */
-    uint8_t loop(uint32_t millis);
+    uint8_t late_loop(uint32_t millis);
 
     /**
      * @brief resets the driver
      * 
      * @return uint8_t return code, 0 if successful, nonzero if not successful
      */
-    uint8_t reset();
+    uint8_t late_reset();
 
     /**
      * @brief Puts the driver to sleep and if possible in low power consumption mode.
      * 
      * @return uint8_t return code, 0 if successful, nonzero if not successful
      */
-    uint8_t sleep();
+    uint8_t late_sleep();
 
     /**
      * @brief Wakes the driver up so it can continue working.
      * 
      * @return uint8_t return code, 0 if successful, nonzero if not successful
      */
-    uint8_t wakeup();
+    uint8_t late_wakeup();
+
+    uint8_t initialize();
 };

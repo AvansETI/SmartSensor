@@ -53,7 +53,7 @@ void SmartSensorBoardV1_2::setup() {
     this->addTask(this->xbeeProS2CDriver, PSTR("XbeeProS2CDriver"));
 
     this->max4466Driver = MAX4466Driver::getInstance(this);
-    this->addTask(this->max4466Driver, PSTR("MAX4466Driver"));
+    this->addTask(this->max4466Driver, PSTR("MAX4466Driver"));    
 
     SmartSensorBoard::setup(); // Base class setup() when everything is loaded.
 
