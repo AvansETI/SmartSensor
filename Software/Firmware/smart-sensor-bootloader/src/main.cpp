@@ -193,6 +193,7 @@ void executeHandler()
 int main(void)
 {
 
+	//setup for bootloader
 	DDRD |= 1 << PD4;
 	PORTD |= 1 << PD4;
 	_delay_ms(100);

@@ -148,6 +148,6 @@ bool readLine(char *line, uint8_t timeout, uint8_t length)
         }
     }
     // timeout error, W is sent here because it is not a general timeout error but specifically one within writing
-    sendChar('W');
+    // sendChar('W');
     return false;
 }
