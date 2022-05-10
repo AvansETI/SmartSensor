@@ -17,7 +17,7 @@ uint8_t AnalogDriver::setup()
     ADCSRA |= 1 << ADEN; /* enable ADC */
 
     // /* prescaler of 128, Datasheet ATmega324PB page 306 */
-    ADCSRA |= 1 << ADPS2;
+    // ADCSRA |= 1 << ADPS2;
     ADCSRA |= 1 << ADPS1;
     ADCSRA |= 1 << ADPS0;
 
