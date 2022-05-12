@@ -1,92 +1,50 @@
 /**
  * @file       : PotMeterDriver.cpp
- * @date       : 28-4-2022
+ * @date       : 12-5-2022
  * @author     : Sebastiaan Colijn
  * @description: This driver handles the measuring of data from a standard 10 k slide potentiometer
- * @version    : 0.1
+ * @version    : 0.2
  * @license    : GNU version 3.0
  * @todo       : 
+ * 
  * @changes
  */
 
 #include "drivers/PotMeterDriver.h"
 
-uint8_t PotMeterDriver::setup()
+uint8_t PotMeterDriver::initialize()
 {
-    //Enable ADC
-    ADCSRA = ADCSRA | 1 << ADEN;
-    this->samplingInterval = 10; //time in seconds
-    this->samplingTimestamp = 0;
-
-//
+    this->analog_pin = 1; 
+    this->samplingInterval = 1000; 
     return 0;
 }
-uint8_t PotMeterDriver::loop(uint32_t millis)
+uint8_t PotMeterDriver::late_loop(uint32_t millis)
 {
-    //if timer has passed, start conversion
-    //if conversion is ongoing, do nothing
-    //if conversion has finished, retrieve results
-
-    if ( this->samplingTimestamp == 0 ) {
-        this->samplingTimestamp = millis/1000;
-    }
-
-    if (!isMeasuring && (millis/1000) - this->samplingTimestamp > this->samplingInterval ) {
-        this->samplingTimestamp = millis/1000;
-        this->measure(); 
-    }
-
-    if(isMeasuring && (ADCSRA & 1 << ADSC == 1 << ADSC))
-    {
-        isMeasuring = false;
-        // TODO disable interrupt for safety while reading 2 registers in sequence
-
-        //read adcl
-        uint8_t low = ADCL;
-        //read adch
-        uint8_t high = ADCH;
-
-        //TODO reenable interrupt   
-
-        //combine bytes into 16-bit value
-        uint16_t result = ADCH << 8;
-        result = result | ADCL;
-        //send message with result in it
-
-        char m[30];
-
-        sprintf_P(m, PSTR("pot:%d"), result);
-
-        this->getMessageInterface()->addMessage(Message(MessageType::MEASUREMENT, m));
-
-    }
-
-
-
+    sample();
     return 0;
-
 }
-uint8_t PotMeterDriver::reset() 
+uint8_t PotMeterDriver::late_reset() 
 {
     return 0;
 
 }
-uint8_t PotMeterDriver::sleep()
+uint8_t PotMeterDriver::late_sleep()
 {
     return 0;
 
 }
-uint8_t PotMeterDriver::wakeup()
+uint8_t PotMeterDriver::late_wakeup()
 {
     return 0;
 
 }
 
-void PotMeterDriver::measure()
+void PotMeterDriver::sample()
 {
-    ADMUX = 1 << MUX0;    //set ADC channel to 0, Ref = AREF, Internal Vref turned off, Results is Right Adjusted
-    PRR0 = PRR0 | 1 << PRADC; //set Power Reduction bit
-    ADCSRA = ADCSRA | 1 << ADSC; // set Start Conversion bit
-    isMeasuring = true;
+    this->lastMeasurement = this->measure_analog_value();
+    //SmartSensorBoard::getBoard()->debugf_P(PSTR("[PotMeterDriver] : slider is %d of 1024\n"), lastMeasurement); //use for debugging via serial
+    
+    char message[30];
+    sprintf_P(message, PSTR("pot:%u"), lastMeasurement);
+    this->getMessageInterface()->addMessage(Message(MessageType::MEASUREMENT, message));
 }
-
