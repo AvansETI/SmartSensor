@@ -16,6 +16,15 @@
 
 #define MAX_ANALOG_PIN 4
 
+/* Datasheet ATmega324P page 321 */
+#define PRESCALER_SET_DIVISION_FACTOR_2 (ADCSRA |= (1 << ADPS0))
+#define PRESCALER_SET_DIVISION_FACTOR_4 (ADCSRA |= (1 << ADPS1))
+#define PRESCALER_SET_DIVISION_FACTOR_8 (ADCSRA |= ((1 << ADPS0) | (1 << ADPS1)))
+#define PRESCALER_SET_DIVISION_FACTOR_16 (ADCSRA |= (1 << ADPS2))
+#define PRESCALER_SET_DIVISION_FACTOR_32 (ADCSRA |= ((1 << ADPS0) | (1 << ADPS2)))
+#define PRESCALER_SET_DIVISION_FACTOR_64 ((ADCSRA |= ((1 << ADPS1) | (1 << ADPS2))))
+#define PRESCALER_SET_DIVISION_FACTOR_128 ((ADCSRA |= (((1 << ADPS1) | (1 << ADPS2)) | (1 << ADPS0))))
+
 /**
  * @brief Analog Driver class that facilitates functionality for sensors that read from an analog pin.
  * The analog pin can be set with the analog_pin variable. To implement the methods of the Driver class, 
@@ -26,6 +35,7 @@
 class AnalogDriver : public Driver
 {
 private:
+
 protected:
     // /* Protected constructor in order to create a singleton class. */
     AnalogDriver(MessageInterface *messageInterface) : Driver(messageInterface) {}
