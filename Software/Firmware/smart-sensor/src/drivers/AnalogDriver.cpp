@@ -7,19 +7,22 @@ uint8_t AnalogDriver::setup()
     this->samplingInterval = 0;
     this->samplingTimestamp = 0;
 
+    uint8_t retval = this->initialize();
+
+    if (retval != 0)
+        return retval;
+
     /* init ADC */
-    if (this->analog_pin > MAX_ANALOG_PIN || this->analog_pin < 0)
+    if (this->analog_pin > MAX_ANALOG_PIN)
     {
         SmartSensorBoard::getBoard()->debug_P("[AnalogDriver] ERROR! : selected pin invalid!");
-        return -1;
+        return 100;
     }
     DDRA &= ~(1 << this->analog_pin);
     ADCSRA |= 1 << ADEN; /* enable ADC */
 
-    // /* prescaler of 128, Datasheet ATmega324PB page 306 */
-    // ADCSRA |= 1 << ADPS2;
-    ADCSRA |= 1 << ADPS1;
-    ADCSRA |= 1 << ADPS0;
+    // /* prescaler of 128, Datasheet ATmega324PB page 306, ATmega324P page 321 */
+    PRESCALER_SET_DIVISION_FACTOR_128;
 
     PRR0 &= ~(1 << PRADC); /* write 0 to power reduction ADC bit, datasheet Atmega324P page 305 */
 
@@ -27,8 +30,7 @@ uint8_t AnalogDriver::setup()
     ADMUX |= 1 << REFS0;
 
     SmartSensorBoard::getBoard()->debug_P("[AnalogDriver] done init");
-
-    return this->initialize();
+    return 0;
 }
 
 uint32_t AnalogDriver::measure_analog_value()
