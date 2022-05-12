@@ -13,7 +13,7 @@ uint8_t MAX4466Driver::initialize()
     this->envelope = 0;
     this->samplingInterval = MAX4466_SAMPLING_INTERVAL; /* 1 second interval */
     this->samplingTimestamp = 0;
-    this->samplingAmount = 10;
+    this->samplingAmount = MAX4466_SAMPLING_AMOUNT;
 
     this->debug_println("Initialized");
 
@@ -25,8 +25,8 @@ uint8_t MAX4466Driver::late_reset()
 
     this->envelope = 0;
     this->samplingInterval = MAX4466_SAMPLING_INTERVAL; /* 1 second interval */
-    this->samplingTimestamp = 0;
-    this->samplingAmount = 1;
+    this->samplingTimestamp = 0; 
+    this->samplingAmount = MAX4466_SAMPLING_AMOUNT;
     return 0;
 }
 
