@@ -45,9 +45,6 @@ void SmartSensorBoardV1_2::setup() {
     //this->ccs811Driver = CCS811Driver::getInstance(this); // When enabled, the sensor starts twice, something goes wrong? Watchdog?
     //this->addTask(this->ccs811Driver, PSTR("CCS811Driver"));
 
-    //this->potMeterDriver = PotMeterDriver::getInstance(this);
-    //this->addTask(this->potMeterDriver, PSTR("PotMeterDriver"));
-    
     this->xbeeProS2CDriver = XBeeProS2C::getInstance(this);
     if ( !this->adapterInUse() ) { // The test has the node at the power and the coordinator to the computer.
         this->xbeeProS2CDriver->enableCoordinator(); // TODO: Must be switched on when adapter is in use and wemos is connected. Print it to the serial
