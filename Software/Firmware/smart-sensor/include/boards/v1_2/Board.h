@@ -100,6 +100,10 @@ public:
     uint8_t sendDataString_P(const char* data);
     uint8_t sendDataStringAvailable();
 
+    /* check if the Xbee module is available for sending */
+    bool sendXbeeStringAvailable();
+    uint8_t sendXbeeString(const char *data);
+
     uint8_t processCommand(const char* data);
 
     void recievedCharacter(char c);

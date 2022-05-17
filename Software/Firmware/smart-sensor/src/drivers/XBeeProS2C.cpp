@@ -82,7 +82,7 @@ uint8_t XBeeProS2C::loop(uint32_t millis)
         {
             if (this->checkResultOk())
             {
-                SmartSensorBoard::getBoard()->debug_P(PSTR("XBeeProS2C: Found\n"));
+                // SmartSensorBoard::getBoard()->debug_P(PSTR("XBeeProS2C: Found\n"));
                 this->state++;
             }
             else
@@ -493,24 +493,23 @@ void XBeeProS2C::sendToNode()
     Atmega324PBSerial1::getInstance()->transmitChar(0x99);
 }
 
-void XBeeProS2C::transmitAndChecksum(char transmitChar, char *checksum)
+void XBeeProS2C::transmitAndChecksum(char transmitChar, int *checksum)
 {
     *checksum -= transmitChar;
     Atmega324PBSerial1::getInstance()->transmitChar(transmitChar);
 }
 
-void XBeeProS2C::sendMessageToNode(char *message)
+void XBeeProS2C::sendMessageToCoordinator(const char *message)
 {
-    char checksum = 0xFF;
-    char transmitChar = 0;
-    Atmega324PBSerial1::getInstance()->transmitChar(0x7E);                      /* start delimiter */
-    uint16_t length = 11 + (sizeof(message) / sizeof(message[0]));              /* length, length of message + 8 bytes address + 1 byte Frame ID + 1 byte Frame type + 1 byte options*/
-    Atmega324PBSerial1::getInstance()->transmitChar((char)(length & (8 << 8))); /* length first byte */
-    Atmega324PBSerial1::getInstance()->transmitChar((char)(length & 8));        /* length second byte */
-    this->transmitAndChecksum(0x00, &checksum);                                 /* frame type */
-    this->transmitAndChecksum(0x01, &checksum);                                 /* frame ID */
+    int checksum = 0xFF;
+    Atmega324PBSerial1::getInstance()->transmitChar(0x7E);                    /* start delimiter */
+    uint16_t length = 11 + (sizeof(message) / sizeof(message[0]));            /* length: length of message + 8 bytes address + 1 byte Frame ID + 1 byte Frame type + 1 byte options*/
+    Atmega324PBSerial1::getInstance()->transmitChar((char)(length & 0xFF00)); /* length first byte */
+    Atmega324PBSerial1::getInstance()->transmitChar((char)(length & 0xFF));   /* length second byte */
+    this->transmitAndChecksum(0x00, &checksum);                               /* frame type */
+    this->transmitAndChecksum(0x01, &checksum);                               /* frame ID */
 
-    char i;
+    int i;
     for (i = 0; i < 8; i++) /* transmit 8 bytes of 0 to make the 64 bit address of the coordinator. We don't need to substract this from the checksum as it's all 0 */
     {
         Atmega324PBSerial1::getInstance()->transmitChar(0x00);
@@ -530,7 +529,7 @@ void XBeeProS2C::sendMessageToNode(char *message)
         Keep only the lowest 8 bits from the result.
         Subtract this quantity from 0xFF.
      */
-    Atmega324PBSerial1::getInstance()->transmitChar(checksum);
+    Atmega324PBSerial1::getInstance()->transmitChar((char)(checksum & 0xFF));
 }
 
 void XBeeProS2C::enableCoordinator()

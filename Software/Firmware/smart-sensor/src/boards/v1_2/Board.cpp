@@ -150,6 +150,16 @@ uint8_t SmartSensorBoardV1_2::processCommand(const char* data) {
     return 0;
 }
 
+bool SmartSensorBoardV1_2::sendXbeeStringAvailable()
+{
+    return this->xbeeProS2CDriver->isSendAvailable();
+}
+
+uint8_t SmartSensorBoardV1_2::sendXbeeString(const char *data) 
+{
+    this->xbeeProS2CDriver->sendMessageToCoordinator(data);
+    return 0;
+}
 
 void SmartSensorBoardV1_2::recievedCharacter(char c) {
     if ( c != '\n' ) {

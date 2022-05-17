@@ -90,6 +90,21 @@ void SmartSensorBoard::loop() {
         }
     }
 
+    if (this->queueXbeeMessages.size() > 0) // handle the xbee messages
+    {
+        Message *xbeeMessage = this->queueXbeeMessages.peek();
+        if (xbeeMessage->getType() == MessageType::MEASUREMENT) {
+            if (this->sendXbeeStringAvailable())
+            {
+                this->measurementReceivedTimestamp = this->millis() / 100;
+                sprintf(data, "%s:%s\n", this->getID(), this->queueXbeeMessages.pop()->getMessage());
+                this->sendXbeeString(data);
+            }
+        } else {
+            this->queueXbeeMessages.pop();
+        }
+    }
+
     // When no measurements pop in after 500ms, request the timestamp
     if ( this->measurementReceivedTimestamp != 0 && (this->millis()/100) - this->measurementReceivedTimestamp > 5 ) {
         this->getActualTimestamp();
@@ -138,7 +153,18 @@ void SmartSensorBoard::addMessage(Message  message) {
     this->queueMessages.add(message);
 }
 
+void SmartSensorBoard::addXbeeMessage(Message message) {
+    this->queueXbeeMessages.add(message);
+}
+
 void SmartSensorBoard::waitOnSendDataStringAvailable() {
     while ( !this->sendDataStringAvailable() ) {}
 }
+
+void SmartSensorBoard::waitOnSendXbeeStringAvailable()
+{
+    while (!this->sendXbeeStringAvailable()) {}
+}
+
+
 

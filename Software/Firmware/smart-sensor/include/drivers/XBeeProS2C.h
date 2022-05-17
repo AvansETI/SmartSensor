@@ -30,8 +30,8 @@
 enum XBeeProS2CStateReciever {
     IDLE, // Nothing todo...
     BUSY, // Started recieving something that is not an API request.
-    BUSY_API_LENGTH_H, // Busy with processing an API message length
-    BUSY_API_LENGTH_L, // Busy with processing an API message length
+    BUSY_API_LENGTH_H, // Busy with processing an received API message length
+    BUSY_API_LENGTH_L, // Busy with processing an received API message length
     BUSY_API_DATA,
     PROCESSING_API,
     PROCESSING // Processing the recieved data
@@ -56,7 +56,7 @@ private:
     uint16_t apiLength;
     uint16_t counter;
 
-    void transmitAndChecksum(char transmitChar, char *checksum);
+    void transmitAndChecksum(char transmitChar, int *checksum);
 
 protected:
     /* Protected constructor in order to create a singleton class. */
@@ -101,12 +101,15 @@ public:
 
     bool isInstalled() { return (this->state != XBEEPROS2C_STATE_NOTFOUND); }
 
+    
+    bool isSendAvailable() { return this->state == XBEEPROS2C_STATE_RUNNING; }
+
     /**
-     * @brief converts the given message to bytes and sends it to the node
+     * @brief converts the given message to bytes and sends it to the coordinator
      * 
-     * @param message 
+     * @param message the message to send
      */
-    void sendMessageToNode(char *message);
+    void sendMessageToCoordinator(const char *message);
 
     void sendToNode();
 
