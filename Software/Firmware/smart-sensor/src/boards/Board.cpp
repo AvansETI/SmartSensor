@@ -96,7 +96,7 @@ void SmartSensorBoard::loop() {
         if (xbeeMessage->getType() == MessageType::MEASUREMENT) {
             if (this->sendXbeeStringAvailable())
             {
-                this->measurementReceivedTimestamp = this->millis() / 100;
+                // this->measurementReceivedTimestamp = this->millis() / 100;
                 sprintf(data, "%s:%s\n", this->getID(), this->queueXbeeMessages.pop()->getMessage());
                 this->sendXbeeString(data);
             }

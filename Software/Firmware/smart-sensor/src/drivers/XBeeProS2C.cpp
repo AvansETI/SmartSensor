@@ -501,6 +501,7 @@ void XBeeProS2C::transmitAndChecksum(char transmitChar, int *checksum)
 
 void XBeeProS2C::sendMessageToCoordinator(const char *message)
 {
+    SmartSensorBoard::getBoard()->debug("sending msg to coordinator");
     int checksum = 0xFF;
     Atmega324PBSerial1::getInstance()->transmitChar(0x7E);                    /* start delimiter */
     uint16_t length = 11 + (sizeof(message) / sizeof(message[0]));            /* length: length of message + 8 bytes address + 1 byte Frame ID + 1 byte Frame type + 1 byte options*/
@@ -509,14 +510,14 @@ void XBeeProS2C::sendMessageToCoordinator(const char *message)
     this->transmitAndChecksum(0x00, &checksum);                               /* frame type */
     this->transmitAndChecksum(0x01, &checksum);                               /* frame ID */
 
-    int i;
+    uint16_t i;
     for (i = 0; i < 8; i++) /* transmit 8 bytes of 0 to make the 64 bit address of the coordinator. We don't need to substract this from the checksum as it's all 0 */
     {
         Atmega324PBSerial1::getInstance()->transmitChar(0x00);
     }
     this->transmitAndChecksum(0x00, &checksum); /* options */
 
-    for (i = 0; i < sizeof(message) / sizeof(message[0]); i++) /* transmit all bytes of the message */
+    for (i = 0; i < (sizeof(message) / sizeof(message[0])); i++) /* transmit all bytes of the message */
     {
         this->transmitAndChecksum(message[i], &checksum);
     }
