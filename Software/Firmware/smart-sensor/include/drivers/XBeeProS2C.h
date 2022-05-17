@@ -55,7 +55,9 @@ private:
 
     uint16_t apiLength;
     uint16_t counter;
-    
+
+    void transmitAndChecksum(char transmitChar, char *checksum);
+
 protected:
     /* Protected constructor in order to create a singleton class. */
     XBeeProS2C(MessageInterface* messageInterface): Driver(messageInterface), state(0), stateReciever(XBeeProS2CStateReciever::IDLE), recieveBufferPointer(0), isCoordinator(false), timestamp(0) {}
@@ -82,6 +84,8 @@ public:
 
     void enableCoordinator(); 
 
+    /* methods for AT commands */
+
     void atStart();
     void atGetPanId();
     void atGetCoordinatorEnable();
@@ -97,7 +101,16 @@ public:
 
     bool isInstalled() { return (this->state != XBEEPROS2C_STATE_NOTFOUND); }
 
+    /**
+     * @brief converts the given message to bytes and sends it to the node
+     * 
+     * @param message 
+     */
+    void sendMessageToNode(char *message);
+
     void sendToNode();
+
+
 
 private:
 
