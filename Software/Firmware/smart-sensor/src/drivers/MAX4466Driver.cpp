@@ -25,7 +25,7 @@ uint8_t MAX4466Driver::late_reset()
 
     this->envelope = 0;
     this->samplingInterval = MAX4466_SAMPLING_INTERVAL; /* 1 second interval */
-    this->samplingTimestamp = 0; 
+    this->samplingTimestamp = 0;
     this->samplingAmount = MAX4466_SAMPLING_AMOUNT;
     return 0;
 }
@@ -40,7 +40,15 @@ uint8_t MAX4466Driver::late_loop(uint32_t millis)
         average += measurement;
     }
     this->envelope = (int)((float)average / this->samplingAmount);
-    SmartSensorBoard::getBoard()->debugf_P(PSTR("[MAX4466] : envelope is %d\n"), this->envelope);
+
+    // send the message over zigbee
+    char message[10];
+    sprintf_P(message, PSTR("so:%d"), this->envelope);
+    this->getMessageInterface()->addMessage(Message(MessageType::MEASUREMENT, message));
+
+    char m[50];
+    sprintf_P(m,PSTR("[MAX4466] : envelope is %d\n"), this->envelope);
+    this->debug_println(m);
 
     return 0;
 }
@@ -57,7 +65,9 @@ uint8_t MAX4466Driver::late_wakeup()
 
 void MAX4466Driver::debug_println(const char *message)
 {
+#if DEBUG_MODE == 1
     SmartSensorBoard::getBoard()->debug("[MAX4466] : ");
     SmartSensorBoard::getBoard()->debug(message);
     SmartSensorBoard::getBoard()->debug("\n");
+#endif
 }

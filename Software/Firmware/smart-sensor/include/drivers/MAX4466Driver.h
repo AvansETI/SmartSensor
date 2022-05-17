@@ -23,6 +23,9 @@
 #define MAX4466_SAMPLING_INTERVAL 1000
 #define MAX4466_SAMPLING_AMOUNT 1
 
+/* set this to 1 if debug messages need to be printed */
+#define DEBUG_MODE 0
+
 /**
  * @brief driver class for the sound detector
  * 
