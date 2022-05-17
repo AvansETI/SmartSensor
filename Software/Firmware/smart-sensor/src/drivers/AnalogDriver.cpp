@@ -21,8 +21,8 @@ uint8_t AnalogDriver::setup()
     DDRA &= ~(1 << this->analog_pin);
     ADCSRA |= 1 << ADEN; /* enable ADC */
 
-    // /* prescaler of 128, Datasheet ATmega324PB page 306, ATmega324P page 321 */
-    PRESCALER_SET_DIVISION_FACTOR_128;
+    // /* prescaler of 8, Datasheet ATmega324PB page 306, ATmega324P page 321 */
+    PRESCALER_SET_DIVISION_FACTOR_8;
 
     PRR0 &= ~(1 << PRADC); /* write 0 to power reduction ADC bit, datasheet Atmega324P page 305 */
 
