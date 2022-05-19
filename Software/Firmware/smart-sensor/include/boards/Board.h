@@ -54,7 +54,6 @@ protected:
     ITask* drivers[SMARTSENSOR_MAX_TASKS]; // Maybe later having a split in resources? Or a resources class that can.
 
     Queue<Message, SMARTSENSOR_MESSAGE_QUEUE_LENGTH> queueMessages; /* queue for serial messages to print to the console */
-    Queue<Message, SMARTSENSOR_MESSAGE_QUEUE_LENGTH> queueXbeeMessages; /* queue for messages that need to be sent over Xbee */
 
     /* Holds the timestampe of the loop, so the total loop time can be calculated. */
     uint32_t loopTimstamp;
@@ -118,19 +117,12 @@ public:
 
     virtual uint8_t sendDataString(const char* data) = 0;
     virtual uint8_t sendDataStringAvailable() = 0;
-    virtual void waitOnSendDataStringAvailable();
-
-    virtual uint8_t sendXbeeString(const char *data) = 0;
-    virtual bool sendXbeeStringAvailable() = 0;
-    virtual void waitOnSendXbeeStringAvailable();
+    // virtual void waitOnSendDataStringAvailable();
 
     virtual uint8_t processCommand(const char* data) = 0;
 
     // MessageInterface: addMessage
     virtual void addMessage(Message  message);
-
-    // MessageInterface: add xbee message
-    virtual void addXbeeMessage(Message message);
 
     virtual void sendInitMessage() = 0;
 };

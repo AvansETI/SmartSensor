@@ -44,7 +44,7 @@ uint8_t MAX4466Driver::late_loop(uint32_t millis)
     // send the message over zigbee
     char message[10];
     sprintf_P(message, PSTR("so:%d"), this->envelope);
-    this->getMessageInterface()->addXbeeMessage(Message(MessageType::MEASUREMENT, message));
+    this->getXBeeMessageDeliverer()->addXBeeMessage(Message(MessageType::MEASUREMENT, message));
 
     //and print it to the console
     this->getMessageInterface()->addMessage(Message(MessageType::MEASUREMENT, message));

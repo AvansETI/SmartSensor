@@ -39,7 +39,7 @@
 #include <tasks/Atmega324PBI2C0.h>
 
 /* Class SmartSensorBoardV1_2 implements the specific hardware for the board version 1.2. */ 
-class SmartSensorBoardV1_2: public SmartSensorBoard, public SerialRecievedCharacter {
+class SmartSensorBoardV1_2: public SmartSensorBoard, public SerialRecievedCharacter, public XBeeMessageDeliverer {
 private:
     /* The timing class that implements millis(). */
     Timing* timing;
@@ -100,9 +100,12 @@ public:
     uint8_t sendDataString_P(const char* data);
     uint8_t sendDataStringAvailable();
 
-    /* check if the Xbee module is available for sending */
-    bool sendXbeeStringAvailable();
-    uint8_t sendXbeeString(const char *data);
+    /**
+     * @brief Adds a message to the zigbee driver to be sent over zigbee when available
+     * 
+     * @param message the message to send
+     */
+    void addXBeeMessage(Message message);
 
     uint8_t processCommand(const char* data);
 

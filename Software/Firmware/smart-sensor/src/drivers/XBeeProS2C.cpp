@@ -80,9 +80,10 @@ uint8_t XBeeProS2C::loop(uint32_t millis)
     case 1:
         if (this->stateReciever == XBeeProS2CStateReciever::PROCESSING)
         {
+            SmartSensorBoard::getBoard()->debug_P(PSTR("XBeeProS2C: processing\n"));
             if (this->checkResultOk())
             {
-                // SmartSensorBoard::getBoard()->debug_P(PSTR("XBeeProS2C: Found\n"));
+                SmartSensorBoard::getBoard()->debug_P(PSTR("XBeeProS2C: Found\n"));
                 this->state++;
             }
             else
@@ -277,80 +278,98 @@ uint8_t XBeeProS2C::loop(uint32_t millis)
         {
             if (!Atmega324PBSerial1::getInstance()->isBusy() && millis - this->timestamp > 5000)
             {
-                // SmartSensorBoard::getBoard()->debug_P(PSTR("XBEE SEND\n"));
+                
                 // Atmega324PBSerial1::getInstance()->printAsync_P(PSTR("temperature:24.5\r"));
                 this->timestamp = millis;
 
-                Atmega324PBSerial1::getInstance()->transmitChar(0x7E);
-                Atmega324PBSerial1::getInstance()->transmitChar(0x00);
-                Atmega324PBSerial1::getInstance()->transmitChar(0x0F);
-                Atmega324PBSerial1::getInstance()->transmitChar(0x10);
-                Atmega324PBSerial1::getInstance()->transmitChar(0x01);
-                Atmega324PBSerial1::getInstance()->transmitChar(0x00);
-                Atmega324PBSerial1::getInstance()->transmitChar(0x00);
-                Atmega324PBSerial1::getInstance()->transmitChar(0x00);
-                Atmega324PBSerial1::getInstance()->transmitChar(0x00);
-                Atmega324PBSerial1::getInstance()->transmitChar(0x00);
-                Atmega324PBSerial1::getInstance()->transmitChar(0x00);
-                Atmega324PBSerial1::getInstance()->transmitChar(0x00);
-                Atmega324PBSerial1::getInstance()->transmitChar(0x00);
-                Atmega324PBSerial1::getInstance()->transmitChar(0xFF);
-                Atmega324PBSerial1::getInstance()->transmitChar(0xFE);
-                Atmega324PBSerial1::getInstance()->transmitChar(0x00);
-                Atmega324PBSerial1::getInstance()->transmitChar(0x00);
-                Atmega324PBSerial1::getInstance()->transmitChar(0x31);
-                Atmega324PBSerial1::getInstance()->transmitChar(0xC0);
-                // 7E 00 0F 10 01 0000 0000 0000 0000 FFFE 00 00 31 C0
-            }
-        }
-        else
-        {
-            if (this->stateReciever == XBeeProS2CStateReciever::PROCESSING)
-            {
-                // SmartSensorBoard::getBoard()->debugf_P(PSTR("XBeeProS2C Message: %s\n"), this->recieveBuffer);
-                this->stateReciever = XBeeProS2CStateReciever::IDLE;
-            }
+                // Atmega324PBSerial1::getInstance()->transmitChar(0x7E);
+                // Atmega324PBSerial1::getInstance()->transmitChar(0x00);
+                // Atmega324PBSerial1::getInstance()->transmitChar(0x0F);
+                // Atmega324PBSerial1::getInstance()->transmitChar(0x10);
+                // Atmega324PBSerial1::getInstance()->transmitChar(0x01);
+                // Atmega324PBSerial1::getInstance()->transmitChar(0x00);
+                // Atmega324PBSerial1::getInstance()->transmitChar(0x00);
+                // Atmega324PBSerial1::getInstance()->transmitChar(0x00);
+                // Atmega324PBSerial1::getInstance()->transmitChar(0x00);
+                // Atmega324PBSerial1::getInstance()->transmitChar(0x00);
+                // Atmega324PBSerial1::getInstance()->transmitChar(0x00);
+                // Atmega324PBSerial1::getInstance()->transmitChar(0x00);
+                // Atmega324PBSerial1::getInstance()->transmitChar(0x00);
+                // Atmega324PBSerial1::getInstance()->transmitChar(0xFF);
+                // Atmega324PBSerial1::getInstance()->transmitChar(0xFE);
+                // Atmega324PBSerial1::getInstance()->transmitChar(0x00);
+                // Atmega324PBSerial1::getInstance()->transmitChar(0x00);
+                // Atmega324PBSerial1::getInstance()->transmitChar(0x31);
+                // Atmega324PBSerial1::getInstance()->transmitChar(0xC0);
+                // // 7E 00 0F 10 01 0000 0000 0000 0000 FFFE 00 00 31 C0
 
-            if (this->stateReciever == XBeeProS2CStateReciever::PROCESSING_API)
-            {
-                /*                char m[50] = "_GMT:                    :";
-                                if ( (uint8_t) this->recieveBuffer[0] == 0x90 ) { // Recieve packet, check the checksum!!
-                                    for (uint8_t i=0; i < 10; i++ ) { // Get address 64+16 bit
-                                        uint8_t h2 = (this->recieveBuffer[i+1] & 0b11110000) >>4;
-                                        uint8_t h1 = this->recieveBuffer[i+1] & 0b00001111;
-                                        m[5+i*2] = (h2 < 10 ? h2+'0' : h2-10+'A');
-                                        m[6+i*2] = (h1 < 10 ? h1+'0' : h1-10+'A');
-                                    }
-
-                                    for (uint8_t i=12; i < this->apiLength; i++ ) { // Get the Message
-                                        m[26+i-12] = this->recieveBuffer[i];
-                                    }
-                                    m[26+this->apiLength-12] = '\n';
-
-                                    if ( Atmega324PBSerial0::getInstance()->isBusy() ) {
-                                        Atmega324PBSerial0::getInstance()->print("HELP: You should create a buffer here!!");
-                                    }
-                                    Atmega324PBSerial0::getInstance()->printAsync(m);
-                                    this->sendToNode(); // test
-
-                                } else { // Print the packet
-                */
-                for (uint8_t i = 0; i <= this->apiLength; i++)
+                if (this->transmitQueue.size() > 0)
                 {
-                    uint8_t h2 = (this->recieveBuffer[i] & 0b11110000) >> 4;
-                    uint8_t h1 = this->recieveBuffer[i] & 0b00001111;
-                    Atmega324PBSerial0::getInstance()->transmitChar((h2 < 10 ? h2 + '0' : h2 - 10 + 'A'));
-                    Atmega324PBSerial0::getInstance()->transmitChar((h1 < 10 ? h1 + '0' : h1 - 10 + 'A'));
-                    Atmega324PBSerial0::getInstance()->transmitChar(' ');
-                }
-                Atmega324PBSerial0::getInstance()->transmitChar('\n');
-                //               }
+                    SmartSensorBoard::getBoard()->debug_P(PSTR("XBEE SEND\n"));
+                    while (this->transmitQueue.size() > 0)
+                    {
+                        Message *message = this->transmitQueue.peek();
 
-                this->stateReciever = XBeeProS2CStateReciever::IDLE;
+                        if (message->getType() == MessageType::MEASUREMENT)
+                        {
+                            this->sendMessageToCoordinator(this->transmitQueue.pop()->getMessage());
+                        }
+                        else
+                        {
+                            this->transmitQueue.pop();
+                        }
+                    }
+                }
             }
+            else
+            {
+                if (this->stateReciever == XBeeProS2CStateReciever::PROCESSING)
+                {
+                    // SmartSensorBoard::getBoard()->debugf_P(PSTR("XBeeProS2C Message: %s\n"), this->recieveBuffer);
+                    this->stateReciever = XBeeProS2CStateReciever::IDLE;
+                }
+
+                if (this->stateReciever == XBeeProS2CStateReciever::PROCESSING_API)
+                {
+                    /*                char m[50] = "_GMT:                    :";
+                                    if ( (uint8_t) this->recieveBuffer[0] == 0x90 ) { // Recieve packet, check the checksum!!
+                                        for (uint8_t i=0; i < 10; i++ ) { // Get address 64+16 bit
+                                            uint8_t h2 = (this->recieveBuffer[i+1] & 0b11110000) >>4;
+                                            uint8_t h1 = this->recieveBuffer[i+1] & 0b00001111;
+                                            m[5+i*2] = (h2 < 10 ? h2+'0' : h2-10+'A');
+                                            m[6+i*2] = (h1 < 10 ? h1+'0' : h1-10+'A');
+                                        }
+
+                                        for (uint8_t i=12; i < this->apiLength; i++ ) { // Get the Message
+                                            m[26+i-12] = this->recieveBuffer[i];
+                                        }
+                                        m[26+this->apiLength-12] = '\n';
+
+                                        if ( Atmega324PBSerial0::getInstance()->isBusy() ) {
+                                            Atmega324PBSerial0::getInstance()->print("HELP: You should create a buffer here!!");
+                                        }
+                                        Atmega324PBSerial0::getInstance()->printAsync(m);
+                                        this->sendToNode(); // test
+
+                                    } else { // Print the packet
+                    */
+                    for (uint8_t i = 0; i <= this->apiLength; i++)
+                    {
+                        uint8_t h2 = (this->recieveBuffer[i] & 0b11110000) >> 4;
+                        uint8_t h1 = this->recieveBuffer[i] & 0b00001111;
+                        Atmega324PBSerial0::getInstance()->transmitChar((h2 < 10 ? h2 + '0' : h2 - 10 + 'A'));
+                        Atmega324PBSerial0::getInstance()->transmitChar((h1 < 10 ? h1 + '0' : h1 - 10 + 'A'));
+                        Atmega324PBSerial0::getInstance()->transmitChar(' ');
+                    }
+                    Atmega324PBSerial0::getInstance()->transmitChar('\n');
+                    //               }
+
+                    this->stateReciever = XBeeProS2CStateReciever::IDLE;
+                }
+            }
+            break;
+            // case waiting 1->recieved message from XBee as coordinator (relay to gateway), 2->sending message to coordinator
         }
-        break;
-        // case waiting 1->recieved message from XBee as coordinator (relay to gateway), 2->sending message to coordinator
     }
 
     return 0;
@@ -596,4 +615,9 @@ void XBeeProS2C::atSetNodeIdentifier(const char *id)
 void XBeeProS2C::atWrite()
 {
     Atmega324PBSerial1::getInstance()->printAsync_P(PSTR("ATWR\r"));
+}
+
+void XBeeProS2C::addMessageForTransfer(Message message)
+{
+    this->transmitQueue.add(message);
 }

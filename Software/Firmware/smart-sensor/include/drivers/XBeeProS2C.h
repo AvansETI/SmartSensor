@@ -10,7 +10,7 @@
  * @license    : GNU version 3
  * @todo       : -
  * @changes
- * 
+ *
  */
 #include <stdint.h>
 
@@ -19,6 +19,9 @@
 #include <drivers/Driver.h>
 #include <tasks/Atmega324PBSerial1.h>
 
+#include <stdio.h>
+#include <boards/Board.h>
+
 #define XBEEPROS2C_SLEEP_PIN PB1
 #define XBEEPROS2C_SLEEP_DDR DDRB
 #define XBEEPROS2C_SLEEP_PORT PORTB
@@ -26,10 +29,12 @@
 #define XBEEPROS2C_RECIEVE_BUFFER_AMOUNT 50
 #define XBEEPROS2C_TIMEOUT_TIME_S 5000
 #define XBEEPROS2C_PAN_ID "2316"
+#define XBEEPROS2C_MAX_MESSAGES 50
 
-enum XBeeProS2CStateReciever {
-    IDLE, // Nothing todo...
-    BUSY, // Started recieving something that is not an API request.
+enum XBeeProS2CStateReciever
+{
+    IDLE,              // Nothing todo...
+    BUSY,              // Started recieving something that is not an API request.
     BUSY_API_LENGTH_H, // Busy with processing an received API message length
     BUSY_API_LENGTH_L, // Busy with processing an received API message length
     BUSY_API_DATA,
@@ -37,11 +42,12 @@ enum XBeeProS2CStateReciever {
     PROCESSING // Processing the recieved data
 };
 
-#define XBEEPROS2C_STATE_RUNNING  199
+#define XBEEPROS2C_STATE_RUNNING 199
 #define XBEEPROS2C_STATE_NOTFOUND 200
 
 /* The class LedDriver handles the two leds that are on the board. */
-class XBeeProS2C: public Driver, public SerialRecievedCharacter {
+class XBeeProS2C : public Driver, public SerialRecievedCharacter
+{
 private:
     uint8_t state;
     XBeeProS2CStateReciever stateReciever;
@@ -57,14 +63,16 @@ private:
     uint16_t counter;
 
     void transmitAndChecksum(char transmitChar, int *checksum);
+    Queue<Message, XBEEPROS2C_MAX_MESSAGES> transmitQueue;
 
 protected:
     /* Protected constructor in order to create a singleton class. */
-    XBeeProS2C(MessageInterface* messageInterface): Driver(messageInterface), state(0), stateReciever(XBeeProS2CStateReciever::IDLE), recieveBufferPointer(0), isCoordinator(false), timestamp(0) {}
+    XBeeProS2C(MessageInterface *messageInterface) : Driver(messageInterface), state(0), stateReciever(XBeeProS2CStateReciever::IDLE), recieveBufferPointer(0), isCoordinator(false), timestamp(0) {}
 
 public:
     /* Returns the singleton instance to this class. */
-    static XBeeProS2C* getInstance(MessageInterface* messageInterface) {
+    static XBeeProS2C *getInstance(MessageInterface *messageInterface)
+    {
         static XBeeProS2C _xbeeProS2CDriver(messageInterface);
         return &_xbeeProS2CDriver;
     }
@@ -82,7 +90,7 @@ public:
      */
     void recievedCharacter(char c);
 
-    void enableCoordinator(); 
+    void enableCoordinator();
 
     /* methods for AT commands */
 
@@ -91,30 +99,39 @@ public:
     void atGetCoordinatorEnable();
     void atGetSerialNumberHigh();
     void atGetSerialNumberLow();
-    
-    void atSetPanId(const char* id);
+
+    void atSetPanId(const char *id);
     void atSetCoordinator(bool enable);
-    void atSetNodeIdentifier(const char* id);
+    void atSetNodeIdentifier(const char *id);
     void atWrite();
 
     bool checkResultOk();
 
     bool isInstalled() { return (this->state != XBEEPROS2C_STATE_NOTFOUND); }
 
-    
-    bool isSendAvailable() { return this->state == XBEEPROS2C_STATE_RUNNING; }
+    bool isSendAvailable()
+    {
+        char running_state[50];
+        sprintf(running_state, "state: %d\n", this->state);
+        SmartSensorBoard::getBoard()->debug(running_state);
+        return this->state == XBEEPROS2C_STATE_RUNNING;
+    }
 
     /**
      * @brief converts the given message to bytes and sends it to the coordinator
-     * 
+     *
      * @param message the message to send
      */
     void sendMessageToCoordinator(const char *message);
 
+    /**
+     * @brief adds a message to the queue to be sent over zigbee when available
+     * 
+     * @param message the message to send
+     */
+    void addMessageForTransfer(Message message);
+
     void sendToNode();
 
-
-
 private:
-
 };
