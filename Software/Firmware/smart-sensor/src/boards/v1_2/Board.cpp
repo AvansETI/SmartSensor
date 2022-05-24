@@ -216,7 +216,7 @@ void SmartSensorBoardV1_2::sendInitMessage()
 void SmartSensorBoardV1_2::addXBeeMessage(Message message)
 {
     this->xbeeProS2CDriver->addMessageForTransfer(message);
-    
+
     this->ledDriver->led1On();
     _delay_ms(100);
     this->ledDriver->led1Off();
