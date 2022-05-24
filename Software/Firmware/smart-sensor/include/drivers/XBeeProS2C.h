@@ -113,9 +113,6 @@ public:
 
     bool isSendAvailable()
     {
-        char running_state[50];
-        sprintf(running_state, "state: %d\n", this->state);
-        SmartSensorBoard::getBoard()->debug(running_state);
         return this->state == XBEEPROS2C_STATE_RUNNING;
     }
 
