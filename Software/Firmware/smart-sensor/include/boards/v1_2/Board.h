@@ -99,6 +99,7 @@ public:
     uint8_t sendDataString(const char* data);
     uint8_t sendDataString_P(const char* data);
     uint8_t sendDataStringAvailable();
+    uint8_t waitOnSendDataStringAvailable();
 
     /**
      * @brief Adds a message to the zigbee driver to be sent over zigbee when available
