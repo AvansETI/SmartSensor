@@ -69,6 +69,10 @@ uint8_t XBeeProS2C::loop(uint32_t millis)
 
     // TODO: Check timeout when it is not in a waiting state!
 
+    // char m[5];
+    // sprintf_P(m,PSTR("%d\n"), this->state);
+    // SmartSensorBoard::getBoard()->debug(m);
+    
     switch (this->state)
     {
     case 0: // Start to write and read configuration of the XBee
@@ -157,11 +161,11 @@ uint8_t XBeeProS2C::loop(uint32_t millis)
             {
                 this->state++;
             }
-            else
-            {
-                this->state = 0; // start over? TODO
-            }
-            this->stateReciever = XBeeProS2CStateReciever::IDLE;
+            // else
+            // {
+            //     this->state = 0; // start over? TODO
+            // }
+            // this->stateReciever = XBeeProS2CStateReciever::IDLE;
         }
         break;
 
@@ -276,38 +280,17 @@ uint8_t XBeeProS2C::loop(uint32_t millis)
     case XBEEPROS2C_STATE_RUNNING: // Waiting on recieve a message from XBee or sending data to the coordinator
         if (!this->isCoordinator)
         {
-            if (!Atmega324PBSerial1::getInstance()->isBusy() && millis - this->timestamp > 5000)
-            {
+            if (!Atmega324PBSerial1::getInstance()->isBusy() && millis - this->timestamp > XBEEPROS2C_SEND_DELAY)
+            {                
                 
-                // Atmega324PBSerial1::getInstance()->printAsync_P(PSTR("temperature:24.5\r"));
                 this->timestamp = millis;
-
-                // Atmega324PBSerial1::getInstance()->transmitChar(0x7E);
-                // Atmega324PBSerial1::getInstance()->transmitChar(0x00);
-                // Atmega324PBSerial1::getInstance()->transmitChar(0x0F);
-                // Atmega324PBSerial1::getInstance()->transmitChar(0x10);
-                // Atmega324PBSerial1::getInstance()->transmitChar(0x01);
-                // Atmega324PBSerial1::getInstance()->transmitChar(0x00);
-                // Atmega324PBSerial1::getInstance()->transmitChar(0x00);
-                // Atmega324PBSerial1::getInstance()->transmitChar(0x00);
-                // Atmega324PBSerial1::getInstance()->transmitChar(0x00);
-                // Atmega324PBSerial1::getInstance()->transmitChar(0x00);
-                // Atmega324PBSerial1::getInstance()->transmitChar(0x00);
-                // Atmega324PBSerial1::getInstance()->transmitChar(0x00);
-                // Atmega324PBSerial1::getInstance()->transmitChar(0x00);
-                // Atmega324PBSerial1::getInstance()->transmitChar(0xFF);
-                // Atmega324PBSerial1::getInstance()->transmitChar(0xFE);
-                // Atmega324PBSerial1::getInstance()->transmitChar(0x00);
-                // Atmega324PBSerial1::getInstance()->transmitChar(0x00);
-                // Atmega324PBSerial1::getInstance()->transmitChar(0x31);
-                // Atmega324PBSerial1::getInstance()->transmitChar(0xC0);
-                // // 7E 00 0F 10 01 0000 0000 0000 0000 FFFE 00 00 31 C0
 
                 if (this->transmitQueue.size() > 0)
                 {
-                    SmartSensorBoard::getBoard()->debug_P(PSTR("XBEE SEND\n"));
+                    SmartSensorBoard::getBoard()->debugf_P(PSTR("XBee size: %d\n"), this->transmitQueue.size());
                     while (this->transmitQueue.size() > 0)
                     {
+                        SmartSensorBoard::getBoard()->debugf_P(PSTR("%d\n"), this->transmitQueue.size());
                         Message *message = this->transmitQueue.peek();
 
                         if (message->getType() == MessageType::MEASUREMENT)
@@ -320,6 +303,7 @@ uint8_t XBeeProS2C::loop(uint32_t millis)
                         }
                     }
                 }
+                this->stateReciever = XBeeProS2CStateReciever::IDLE;
             }
             else
             {
@@ -520,7 +504,7 @@ void XBeeProS2C::transmitAndChecksum(char transmitChar, int *checksum)
 
 void XBeeProS2C::sendMessageToCoordinator(const char *message)
 {
-    SmartSensorBoard::getBoard()->debug("sending msg to coordinator");
+    SmartSensorBoard::getBoard()->debug("sending msg to coordinator\n");
     int checksum = 0xFF;
     Atmega324PBSerial1::getInstance()->transmitChar(0x7E);                    /* start delimiter */
     uint16_t length = 11 + (sizeof(message) / sizeof(message[0]));            /* length: length of message + 8 bytes address + 1 byte Frame ID + 1 byte Frame type + 1 byte options*/
@@ -619,5 +603,6 @@ void XBeeProS2C::atWrite()
 
 void XBeeProS2C::addMessageForTransfer(Message message)
 {
-    this->transmitQueue.add(message);
+    this->transmitQueue.add(message,true);
+    SmartSensorBoard::getBoard()->debugf_P(PSTR("add size: %d\n"), this->transmitQueue.size());
 }
