@@ -47,11 +47,11 @@ void SmartSensorBoardV1_2::setup()
     this->addTask(this->ccs811Driver, PSTR("CCS811Driver"));
 
     this->xbeeProS2CDriver = XBeeProS2C::getInstance(this);
-    // if (!this->adapterInUse())
-    // {                                                // The test has the node at the power and the coordinator to the computer.
-    //     this->xbeeProS2CDriver->enableCoordinator(); // TODO: Must be switched on when adapter is in use and wemos is connected. Print it to the serial
-    // }
-    // this->addTask(this->xbeeProS2CDriver, PSTR("XbeeProS2CDriver"));
+    if (!this->adapterInUse())
+    {                                                // The test has the node at the power and the coordinator to the computer.
+        this->xbeeProS2CDriver->enableCoordinator(); // TODO: Must be switched on when adapter is in use and wemos is connected. Print it to the serial
+    }
+    this->addTask(this->xbeeProS2CDriver, PSTR("XbeeProS2CDriver"));
 
     this->max4466Driver = MAX4466Driver::getInstance(this, this);
     this->addTask(this->max4466Driver, PSTR("MAX4466Driver"));
