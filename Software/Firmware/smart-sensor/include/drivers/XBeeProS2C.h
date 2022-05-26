@@ -29,7 +29,9 @@
 #define XBEEPROS2C_RECIEVE_BUFFER_AMOUNT 50
 #define XBEEPROS2C_TIMEOUT_TIME_S 5000
 #define XBEEPROS2C_PAN_ID "2316"
-#define XBEEPROS2C_MAX_MESSAGES 5
+#define XBEEPROS2C_MAX_MESSAGES 5 /* max amount of messages in the xbee message queue */
+
+#define XBEEPROS2C_SEND_MSG_WITH_BOARD_ID 0 /* wether or not the board id should be sent with an xbee message */
 
 enum XBeeProS2CStateReciever
 {
