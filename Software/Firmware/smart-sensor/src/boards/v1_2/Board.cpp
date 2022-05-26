@@ -39,12 +39,11 @@ void SmartSensorBoardV1_2::setup() {
     this->mcp7940nDriver = MCP7940NDriver::getInstance(this);
     this->addTask(this->mcp7940nDriver, PSTR("MCP7940NDriver"));
 
-    this->vml7700Driver = VEML7700Driver::getInstance(this);
-    this->addTask(this->vml7700Driver, PSTR("VEML7700Driver"));
+    //this->vml7700Driver = VEML7700Driver::getInstance(this);
+    //this->addTask(this->vml7700Driver, PSTR("VEML7700Driver"));
 
-    this->ccs811Driver = CCS811Driver::getInstance(this); // When enabled, the sensor starts twice, something goes wrong? Watchdog?
-    this->addTask(this->ccs811Driver, PSTR("CCS811Driver"));
-
+    //this->ccs811Driver = CCS811Driver::getInstance(this); // When enabled, the sensor starts twice, something goes wrong? Watchdog?
+    //this->addTask(this->ccs811Driver, PSTR("CCS811Driver"));
 
     this->xbeeProS2CDriver = XBeeProS2C::getInstance(this);
     if ( !this->adapterInUse() ) { // The test has the node at the power and the coordinator to the computer.
@@ -54,6 +53,9 @@ void SmartSensorBoardV1_2::setup() {
 
     this->max4466Driver = MAX4466Driver::getInstance(this);
     this->addTask(this->max4466Driver, PSTR("MAX4466Driver"));    
+
+    this->potMeterDriver = PotMeterDriver::getInstance(this);
+    this->addTask(this->potMeterDriver, PSTR("PotMeterDriver"));
 
     SmartSensorBoard::setup(); // Base class setup() when everything is loaded.
 
