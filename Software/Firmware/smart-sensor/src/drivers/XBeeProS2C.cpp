@@ -309,7 +309,7 @@ uint8_t XBeeProS2C::loop(uint32_t millis)
                             int msgLength = getSize(SmartSensorBoard::getBoard()->getID()) + getSize(cur->getMessage());
                             char msg[msgLength];
                             sprintf_P(msg, PSTR("%s:%s"), SmartSensorBoard::getBoard()->getID(), cur->getMessage());
-                            this->sendMessageToCoordinator(msg);
+                            this->sendMessageToCoordinator(msg); //TODO fix that its getting stuck
 #else
                             this->sendMessageToCoordinator(cur->getMessage());
 #endif
