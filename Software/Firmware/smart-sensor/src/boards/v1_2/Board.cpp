@@ -223,8 +223,17 @@ void SmartSensorBoardV1_2::sendInitMessage()
 void SmartSensorBoardV1_2::addXBeeMessage(Message message)
 {
     this->xbeeProS2CDriver->addMessageForTransfer(message);
-
+#if BOARDV1_2_XBEE_DEBUG_LED == 1
     this->ledDriver->led1On();
     _delay_ms(100);
     this->ledDriver->led1Off();
+#endif
+}
+
+void SmartSensorBoardV1_2::addMessage(Message message)
+{
+#if BOARDV1_2_XBEE_SEND_ALL_MSGS == 1
+    // this->addXBeeMessage(message);
+#endif
+    this->queueMessages.add(message);
 }

@@ -135,6 +135,7 @@ bool SmartSensorBoard::resetCauseExternalReset() {
 }
 
 void SmartSensorBoard::addMessage(Message  message) {
+    this->debug("send msg orig board\n");
     this->queueMessages.add(message);
 }
 

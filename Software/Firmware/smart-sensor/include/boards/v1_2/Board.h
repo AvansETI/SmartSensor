@@ -12,6 +12,8 @@
 #define BOARDV1_2_ADAPTER_IN_USE_PIN PA6
 #define BOARDV1_2_ADAPTER_IN_USE_DDR DDRA
 #define BOARDV1_2_ADAPTER_IN_USE_PORT PINA
+#define BOARDV1_2_XBEE_DEBUG_LED 0
+#define BOARDV1_2_XBEE_SEND_ALL_MSGS 1
 
 #include <stdint.h>
 #include <stdio.h>
@@ -107,6 +109,9 @@ public:
      * @param message the message to send
      */
     void addXBeeMessage(Message message);
+
+    //overrides addMessage in SmartSensorBoard
+    virtual void addMessage(Message message);
 
     uint8_t processCommand(const char* data);
 
