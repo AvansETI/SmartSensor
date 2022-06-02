@@ -31,7 +31,7 @@
 #define XBEEPROS2C_PAN_ID "2316"
 #define XBEEPROS2C_MAX_MESSAGES 5 /* max amount of messages in the xbee message queue */
 
-#define XBEEPROS2C_SEND_MSG_WITH_BOARD_ID 1 /* wether or not the board id should be sent with an xbee message */
+#define XBEEPROS2C_USE_API_MODE_MSG 1 /* wether the message that is sent over zigbee must use the API frame format or just sends the message data on its own*/
 
 enum XBeeProS2CStateReciever
 {

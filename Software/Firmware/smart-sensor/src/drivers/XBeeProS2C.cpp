@@ -11,7 +11,7 @@
 
 /**
  * @brief Get the Size of the input string
- * 
+ *
  * @param s the input string
  * @return size_t the size of the string
  */
@@ -81,7 +81,7 @@ uint8_t XBeeProS2C::loop(uint32_t millis)
     // char m[5];
     // sprintf_P(m,PSTR("%d\n"), this->state);
     // SmartSensorBoard::getBoard()->debug(m);
-    
+
     switch (this->state)
     {
     case 0: // Start to write and read configuration of the XBee
@@ -290,8 +290,8 @@ uint8_t XBeeProS2C::loop(uint32_t millis)
         if (!this->isCoordinator)
         {
             if (!Atmega324PBSerial1::getInstance()->isBusy() && millis - this->timestamp > XBEEPROS2C_SEND_DELAY)
-            {                
-                
+            {
+
                 this->timestamp = millis;
 
                 if (this->transmitQueue.size() > 0)
@@ -304,12 +304,12 @@ uint8_t XBeeProS2C::loop(uint32_t millis)
 
                         if (message->getType() == MessageType::MEASUREMENT)
                         {
-                            Message* cur = this->transmitQueue.pop();
+                            Message *cur = this->transmitQueue.pop();
 #if XBEEPROS2C_SEND_MSG_WITH_BOARD_ID == 1
                             int msgLength = getSize(SmartSensorBoard::getBoard()->getID()) + getSize(cur->getMessage());
                             char msg[msgLength];
                             sprintf_P(msg, PSTR("%s:%s"), SmartSensorBoard::getBoard()->getID(), cur->getMessage());
-                            this->sendMessageToCoordinator(msg); //TODO fix that its getting stuck
+                            this->sendMessageToCoordinator(msg); // TODO fix that its getting stuck
 #else
                             this->sendMessageToCoordinator(cur->getMessage());
 #endif
@@ -519,17 +519,21 @@ void XBeeProS2C::transmitAndChecksum(char transmitChar, int *checksum)
     Atmega324PBSerial1::getInstance()->transmitChar(transmitChar);
 }
 
-
 void XBeeProS2C::sendMessageToCoordinator(const char *message)
 {
+#if XBEEPROS2C_USE_API_MODE_MSG == 1
+
     char buf[50];
     size_t size = getSize(message);
-    sprintf_P(buf, PSTR("got msg: %s of length %d\n"), message, size);
+
+    size_t sizeID = getSize(SmartSensorBoard::getBoard()->getID());
+    sprintf_P(buf, PSTR("got msg: %s of length %d with id: %d\n"), message, size, size + sizeID);
     SmartSensorBoard::getBoard()->debug(buf);
 
     int checksum = 0xFF;
+
     Atmega324PBSerial1::getInstance()->transmitChar(0x7E);                    /* start delimiter */
-    uint16_t length = 11 + size;                                              /* length: length of message + 8 bytes address + 1 byte Frame ID + 1 byte Frame type + 1 byte options*/
+    uint16_t length = 11 + size + sizeID;                                     /* length: length of message + 8 bytes address + 1 byte Frame ID + 1 byte Frame type + 1 byte options*/
     Atmega324PBSerial1::getInstance()->transmitChar((char)(length & 0xFF00)); /* length first byte */
     Atmega324PBSerial1::getInstance()->transmitChar((char)(length & 0xFF));   /* length second byte */
     this->transmitAndChecksum(0x00, &checksum);                               /* frame type */
@@ -542,10 +546,19 @@ void XBeeProS2C::sendMessageToCoordinator(const char *message)
     }
     this->transmitAndChecksum(0x00, &checksum); /* options */
 
+    for (i = 0; i < sizeID; i++)
+    {
+        this->transmitAndChecksum(SmartSensorBoard::getBoard()->getID()[i], &checksum);
+    }
+    this->transmitAndChecksum(':', &checksum);
+
     for (i = 0; i < size; i++) /* transmit all bytes of the message */
     {
         this->transmitAndChecksum(message[i], &checksum);
     }
+
+    this->transmitAndChecksum('\r', &checksum);
+    this->transmitAndChecksum('\n', &checksum);
 
     /* calculate the checksum
 
@@ -556,6 +569,17 @@ void XBeeProS2C::sendMessageToCoordinator(const char *message)
         Subtract this quantity from 0xFF.
      */
     Atmega324PBSerial1::getInstance()->transmitChar((char)(checksum & 0xFF));
+#else
+    size_t size = getSize(message);
+
+    for (i = 0; i < size; i++) /* transmit all bytes of the message */
+    {
+        this->transmitAndChecksum(message[i], &checksum);
+    }
+
+    this->transmitAndChecksum('\r', &checksum);
+    this->transmitAndChecksum('\n', &checksum);
+#endif
 }
 
 void XBeeProS2C::enableCoordinator()
@@ -625,11 +649,11 @@ void XBeeProS2C::atWrite()
 
 void XBeeProS2C::addMessageForTransfer(Message message)
 {
-    this->transmitQueue.add(message,true);
+    this->transmitQueue.add(message, true);
     SmartSensorBoard::getBoard()->debugf_P(PSTR("add size: %d\n"), this->transmitQueue.size());
 }
 
-size_t getSize ( const char * s ) 
+size_t getSize(const char *s)
 {
     size_t size = 0;
     while (*s++)
