@@ -233,7 +233,7 @@ void SmartSensorBoardV1_2::addXBeeMessage(Message message)
 void SmartSensorBoardV1_2::addMessage(Message message)
 {
 #if BOARDV1_2_XBEE_SEND_ALL_MSGS == 1
-    // this->addXBeeMessage(message);
+    this->addXBeeMessage(message);
 #endif
     this->queueMessages.add(message);
 }

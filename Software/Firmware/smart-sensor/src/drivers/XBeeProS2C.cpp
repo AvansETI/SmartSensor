@@ -504,10 +504,12 @@ void XBeeProS2C::transmitAndChecksum(char transmitChar, int *checksum)
 
 void XBeeProS2C::sendMessageToCoordinator(const char *message)
 {
+    SmartSensorBoard::getBoard()->debugf_P(PSTR("xb: %s\n"), message);
     size_t size = getSize(message);
     int checksum = 0xFF;
     uint16_t i;
     size_t sizeID = getSize(SmartSensorBoard::getBoard()->getID());
+
     
 #if XBEEPROS2C_USE_API_MODE_MSG == 1
 
@@ -641,7 +643,7 @@ void XBeeProS2C::addMessageForTransfer(Message message)
         this->transmitQueue.add(message, true);
     }
 
-    SmartSensorBoard::getBoard()->debugf_P(PSTR("add message %s size: %d %s\n"), message.getMessage(), this->transmitQueue.size(), this->transmitQueue.peek()->getMessage());
+    // SmartSensorBoard::getBoard()->debugf_P(PSTR("add message %s size: %d %s\n"), message.getMessage(), this->transmitQueue.size(), this->transmitQueue.peek()->getMessage());
 }
 
 size_t getSize(const char *s)
