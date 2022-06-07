@@ -79,7 +79,7 @@ private:
     uint16_t counter;
 
     void transmitAndChecksum(char transmitChar, int *checksum);
-    Queue<char**, XBEEPROS2C_MAX_MESSAGES> transmitQueue;
+    Queue<Message, XBEEPROS2C_MAX_MESSAGES> transmitQueue;
 
 protected:
     /* Protected constructor in order to create a singleton class. */
