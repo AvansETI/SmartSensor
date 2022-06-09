@@ -45,7 +45,7 @@ uint8_t MAX4466Driver::late_loop(uint32_t millis)
     char message[15];
     sprintf_P(message, PSTR("so:%d"), this->envelope);
     this->getMessageInterface()->addMessage(Message(MessageType::MEASUREMENT, message));
-    this->debug_println("add xbee msg");
+    // this->debug_println("add xbee msg");
 
     return 0;
 }

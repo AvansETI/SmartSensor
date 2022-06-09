@@ -29,7 +29,7 @@
 #define XBEEPROS2C_RECIEVE_BUFFER_AMOUNT 50
 #define XBEEPROS2C_TIMEOUT_TIME_S 5000
 #define XBEEPROS2C_PAN_ID "2316"
-#define XBEEPROS2C_MAX_MESSAGES 10 /* max amount of messages in the xbee message queue */
+#define XBEEPROS2C_MAX_MESSAGES 7 /* max amount of messages in the xbee message queue */
 
 #define XBEEPROS2C_USE_API_MODE_MSG 0 /* wether the message that is sent over zigbee must use the API frame format or just sends the message data on its own*/
 

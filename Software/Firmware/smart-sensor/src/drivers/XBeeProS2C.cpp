@@ -296,10 +296,10 @@ uint8_t XBeeProS2C::loop(uint32_t millis)
 
                 if (this->transmitQueue.size() > 0)
                 {
-                    SmartSensorBoard::getBoard()->debugf_P(PSTR("XBee size: %d\n"), this->transmitQueue.size());
+                    // SmartSensorBoard::getBoard()->debugf_P(PSTR("XBee size: %d\n"), this->transmitQueue.size());
                     while (this->transmitQueue.size() > 0)
                     {
-                        SmartSensorBoard::getBoard()->debugf_P(PSTR("%d\n"), this->transmitQueue.size());
+                        // SmartSensorBoard::getBoard()->debugf_P(PSTR("%d\n"), this->transmitQueue.size());
                         this->sendMessageToCoordinator(this->transmitQueue.pop()->getMessage());
                     }
                 }
@@ -641,7 +641,7 @@ void XBeeProS2C::atWrite()
 
 void XBeeProS2C::addMessageForTransfer(Message message)
 {
-    if (message.getType() == MessageType::MEASUREMENT)
+    if (message.getType() == MessageType::MEASUREMENT || message.getType() == MessageType::TIMESTAMP)
     {
         this->transmitQueue.add(message, true);
     }

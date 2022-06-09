@@ -44,8 +44,8 @@ void SmartSensorBoardV1_2::setup()
     //this->addTask(this->vml7700Driver, PSTR("VEML7700Driver"));
 
 
-    //this->ccs811Driver = CCS811Driver::getInstance(this); // When enabled, the sensor starts twice, something goes wrong? Watchdog?
-    //this->addTask(this->ccs811Driver, PSTR("CCS811Driver"));
+    this->ccs811Driver = CCS811Driver::getInstance(this); // When enabled, the sensor starts twice, something goes wrong? Watchdog?
+    this->addTask(this->ccs811Driver, PSTR("CCS811Driver"));
   
     this->xbeeProS2CDriver = XBeeProS2C::getInstance(this);
     if (this->adapterInUse())
@@ -236,7 +236,7 @@ void SmartSensorBoardV1_2::addXBeeMessage(Message message)
 
 void SmartSensorBoardV1_2::addMessage(Message message)
 {
-    SmartSensorBoard::getBoard()->debug("add message v1.2\n");
+    // SmartSensorBoard::getBoard()->debug("add message v1.2\n");
 #if BOARDV1_2_XBEE_SEND_ALL_MSGS == 1
     this->addXBeeMessage(message);
 #endif
