@@ -33,6 +33,7 @@
 #include <drivers/VEML7700.h>
 #include <drivers/CCS811.h>
 #include <drivers/XBeeProS2C.h>
+#include <drivers/PotMeterDriver.h>
 
 #include <drivers/MAX4466Driver.h>
 
@@ -67,6 +68,8 @@ private:
     VEML7700Driver* vml7700Driver;
 
     CCS811Driver* ccs811Driver;
+
+    PotMeterDriver* potMeterDriver;
 
     /* The class that handles the XBeeProS2C communication and configuration. */
     XBeeProS2C* xbeeProS2CDriver;
