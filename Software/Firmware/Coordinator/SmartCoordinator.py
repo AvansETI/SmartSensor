@@ -212,7 +212,8 @@ while (1):
                     client.publish("node/data", json.dumps(get_data_message(smartnodes[id])))
                     #print("node/data", json.dumps(get_data_message(smartnodes[id])))
                     smartnodes[id]["values"] = []
-    except:
+    except Exception as ex:
+        print(ex)
         pass
     
 client.loop_stop()
