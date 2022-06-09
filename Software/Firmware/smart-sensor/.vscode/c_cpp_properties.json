@@ -8,23 +8,21 @@
         {
             "name": "PlatformIO",
             "includePath": [
-                "d:/Projects/SmartSensor/Software/Firmware/smart-sensor/include",
-                "d:/Projects/SmartSensor/Software/Firmware/smart-sensor/src",
-                "C:/Users/macsnoer/.platformio/packages/tool-unity",
+                "/mnt/Homework/Avans/Jaar_3_differientiatie/Project/SmartSensorB4B/Software/Firmware/smart-sensor/include",
+                "/mnt/Homework/Avans/Jaar_3_differientiatie/Project/SmartSensorB4B/Software/Firmware/smart-sensor/src",
                 ""
             ],
             "browse": {
                 "limitSymbolsToIncludedHeaders": true,
                 "path": [
-                    "d:/Projects/SmartSensor/Software/Firmware/smart-sensor/include",
-                    "d:/Projects/SmartSensor/Software/Firmware/smart-sensor/src",
-                    "C:/Users/macsnoer/.platformio/packages/tool-unity",
+                    "/mnt/Homework/Avans/Jaar_3_differientiatie/Project/SmartSensorB4B/Software/Firmware/smart-sensor/include",
+                    "/mnt/Homework/Avans/Jaar_3_differientiatie/Project/SmartSensorB4B/Software/Firmware/smart-sensor/src",
                     ""
                 ]
             },
             "defines": [
                 "F_CPU=20000000L",
-                "PLATFORMIO=50204",
+                "PLATFORMIO=60002",
                 "ARDUINO_AVR_ATmega324",
                 "SMARTSENSOR_BOARD_1_2",
                 "__AVR_ATmega324PB__",
@@ -32,7 +30,7 @@
             ],
             "cStandard": "c11",
             "cppStandard": "c++17",
-            "compilerPath": "C:/Users/macsnoer/.platformio/packages/toolchain-atmelavr/bin/avr-gcc.exe",
+            "compilerPath": "/home/sem/.platformio/packages/toolchain-atmelavr/bin/avr-gcc",
             "compilerArgs": [
                 "-mmcu=atmega324pb",
                 ""

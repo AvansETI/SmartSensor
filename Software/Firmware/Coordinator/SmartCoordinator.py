@@ -89,6 +89,8 @@ actuators_mapping = {
     }
 }
 
+# init_ids = [] # list with ids we have already sent an init message for
+# add = False
 # All the smartnodes that have been found
 smartnodes = {}
 
@@ -157,7 +159,8 @@ client.username_pw_set("node", password="smartmeternode")
 client.connect("sendlab.nl", 11883, 60)
 client.loop_start()
 
-ser = serial.Serial('/dev/ttyTHS1')
+
+ser = serial.Serial('/dev/ttyUSB0') # /dev/ttyTHS1 on nano4
 
 while (1):
     try:
@@ -202,8 +205,9 @@ while (1):
             print("id is " + str(id))
             print(smartnodes[id])
             msginfo = client.publish("node/init", json.dumps(get_init_message(smartnodes[id])))
-            print(msginfo.rc)
-            print("node/init", json.dumps(get_init_message(smartnodes[id])))
+            print(str(init_ids) + ", " + str(id in init_ids))
+            # print(msginfo.rc == mqtt.MQTT_ERR_SUCCESS)
+            # print("node/init", json.dumps(get_init_message(smartnodes[id])))
             print("Send init message for: " + id)
 
         #86FF1312170E0932554E:te:22.7
@@ -218,8 +222,11 @@ while (1):
 
                 if ( key == "ts" ):
                     print("got timestamp, publishing...")
-                    client.publish("node/data", json.dumps(get_data_message(smartnodes[id])))
-                    #print("node/data", json.dumps(get_data_message(smartnodes[id])))
+                    msginfo = client.publish("node/data", json.dumps(get_data_message(smartnodes[id]))).wait_for_publish()
+
+                    # https://pypi.org/project/paho-mqtt/#publishing
+                    print("publish msg was success: " + str(msginfo.rc == mqtt.MQTT_ERR_SUCCESS) + " publish: " + str(msginfo.is_published()))
+                    msginfo.wait_for_publish();
                     smartnodes[id]["values"] = []
     except Exception as ex:
         print("Got exception! " + str(ex) + " .")
