@@ -167,6 +167,7 @@ while (1):
         #INIT:86FF1312170E0932554E:smartnode-v1.2
         match = re.match("^INIT:(.+):(.+)$", line)
         if match:
+            print("init match")
             id   = match.groups()[0]
             name = match.groups()[1]
             smartnodes[id] = { 
@@ -180,6 +181,7 @@ while (1):
         #MEA:86FF1312170E0932554E:lt:te:hu:li:c2:gi:ai:rs
         match = re.match("^MEA:([^:]+):(.+)$", line)
         if match:
+            print("measurement match")
             id   = match.groups()[0]
             measurements = match.groups()[1]
             smartnodes[id]["measurements"] = measurements
@@ -187,6 +189,7 @@ while (1):
         #ACT:86FF1312170E0932554E:bm:gs:go:rs
         match = re.match("^ACT:([^:]+):(.+)$", line)
         if match:
+            print("actuators match")
             id   = match.groups()[0]
             actuators = match.groups()[1]
             smartnodes[id]["actuators"] = actuators
@@ -194,10 +197,14 @@ while (1):
         #END:86FF1312170E0932554E
         match = re.match("^END:(.+)$", line)
         if match:
+            print("end match")
             id   = match.groups()[0]
-            client.publish("node/init", json.dumps(get_init_message(smartnodes[id])))
-            #print("node/init", json.dumps(get_init_message(smartnodes[id])))
-            #print("Send init message for: " + id)
+            print("id is " + str(id))
+            print(smartnodes[id])
+            msginfo = client.publish("node/init", json.dumps(get_init_message(smartnodes[id])))
+            print(msginfo.rc)
+            print("node/init", json.dumps(get_init_message(smartnodes[id])))
+            print("Send init message for: " + id)
 
         #86FF1312170E0932554E:te:22.7
         match = re.match("^([^:]+):([^:]+):(.+)$", line)
@@ -210,12 +217,12 @@ while (1):
                 smartnodes[id]["values"].append({key: value})
 
                 if ( key == "ts" ):
+                    print("got timestamp, publishing...")
                     client.publish("node/data", json.dumps(get_data_message(smartnodes[id])))
                     #print("node/data", json.dumps(get_data_message(smartnodes[id])))
                     smartnodes[id]["values"] = []
     except Exception as ex:
-        print(ex)
-        pass
+        print("Got exception! " + str(ex) + " .")
     
 client.loop_stop()
 
