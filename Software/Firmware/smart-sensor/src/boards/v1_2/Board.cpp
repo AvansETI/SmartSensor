@@ -58,7 +58,7 @@ void SmartSensorBoardV1_2::setup()
     this->max4466Driver = MAX4466Driver::getInstance(this, this);
     this->addTask(this->max4466Driver, PSTR("MAX4466Driver"));
 
-    this->potMeterDriver = PotMeterDriver::getInstance(this);
+    this->potMeterDriver = PotMeterDriver::getInstance(this, this);
     this->addTask(this->potMeterDriver, PSTR("PotMeterDriver"));
 
     SmartSensorBoard::setup(); // Base class setup() when everything is loaded.
