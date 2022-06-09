@@ -139,7 +139,8 @@ def get_data_message(smartnode):
             if re.match("^\d+.\d+$|^\d+$", str(value[key])):
                 value[key] = float(value[key])
             
-            measurements[measurements_mapping[key]["name"]] = value[key]
+            if (key in measurements_mapping):
+                measurements[measurements_mapping[key]["name"]] = value[key]
 
     return {
         "id": smartnode["name"] + "-" + smartnode["id"],
