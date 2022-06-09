@@ -55,10 +55,10 @@ void SmartSensorBoardV1_2::setup()
     }
     this->addTask(this->xbeeProS2CDriver, PSTR("XbeeProS2CDriver"));
 
-    this->max4466Driver = MAX4466Driver::getInstance(this, this);
+    this->max4466Driver = MAX4466Driver::getInstance(this);
     this->addTask(this->max4466Driver, PSTR("MAX4466Driver"));
 
-    this->potMeterDriver = PotMeterDriver::getInstance(this, this);
+    this->potMeterDriver = PotMeterDriver::getInstance(this);
     this->addTask(this->potMeterDriver, PSTR("PotMeterDriver"));
 
     SmartSensorBoard::setup(); // Base class setup() when everything is loaded.
@@ -236,6 +236,7 @@ void SmartSensorBoardV1_2::addXBeeMessage(Message message)
 
 void SmartSensorBoardV1_2::addMessage(Message message)
 {
+    SmartSensorBoard::getBoard()->debug("add message v1.2\n");
 #if BOARDV1_2_XBEE_SEND_ALL_MSGS == 1
     this->addXBeeMessage(message);
 #endif

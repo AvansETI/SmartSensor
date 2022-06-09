@@ -25,7 +25,7 @@ private:
     uint32_t lastMeasurement;
 protected:
     /* Protected constructor to create a singleton. */
-    PotMeterDriver(MessageInterface* messageInterface, XBeeMessageDeliverer* xBeeMessageDeliverer): AnalogDriver(messageInterface,xBeeMessageDeliverer) {};
+    PotMeterDriver(MessageInterface* messageInterface): AnalogDriver(messageInterface) {};
 
 public:
 
@@ -36,8 +36,8 @@ public:
     uint8_t initialize();
     void sample();
 
-    static PotMeterDriver* getInstance(MessageInterface* messageInterface, XBeeMessageDeliverer* xBeeMessageDeliverer) {
-        static PotMeterDriver _potMeterDriver(messageInterface, xBeeMessageDeliverer);
+    static PotMeterDriver* getInstance(MessageInterface* messageInterface) {
+        static PotMeterDriver _potMeterDriver(messageInterface);
         return &_potMeterDriver;
     }
 };

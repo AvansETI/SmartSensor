@@ -11,7 +11,7 @@ uint8_t MAX4466Driver::initialize()
     /* enable ADC 0, datasheet Atmega324P page 304*/
     this->analog_pin = 0;
     this->envelope = 0;
-    this->samplingInterval = MAX4466_SAMPLING_INTERVAL; /* 1 second interval */
+    this->samplingInterval = MAX4466_SAMPLING_INTERVAL; /* 5 seconds interval */
     this->samplingTimestamp = 0;
     this->samplingAmount = MAX4466_SAMPLING_AMOUNT;
 
@@ -42,15 +42,10 @@ uint8_t MAX4466Driver::late_loop(uint32_t millis)
     this->envelope = (int)((float)average / this->samplingAmount);
 
     // send the message over zigbee
-    char message[10];
+    char message[15];
     sprintf_P(message, PSTR("so:%d"), this->envelope);
-    // this->getXBeeMessageDeliverer()->addXBeeMessage(Message(MessageType::MEASUREMENT, message));
     this->getMessageInterface()->addMessage(Message(MessageType::MEASUREMENT, message));
-    this->debug_println("send xbee msg");
-
-    // char m[50];
-    // sprintf_P(m,PSTR("[MAX4466] : envelope is %d\n"), this->envelope);
-    // this->debug_println(m);
+    this->debug_println("add xbee msg");
 
     return 0;
 }

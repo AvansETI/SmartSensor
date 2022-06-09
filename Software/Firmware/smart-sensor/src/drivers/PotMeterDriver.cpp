@@ -15,7 +15,7 @@
 uint8_t PotMeterDriver::initialize()
 {
     this->analog_pin = 1; 
-    this->samplingInterval = 1000; 
+    this->samplingInterval = 10000; 
     return 0;
 }
 uint8_t PotMeterDriver::late_loop(uint32_t millis)

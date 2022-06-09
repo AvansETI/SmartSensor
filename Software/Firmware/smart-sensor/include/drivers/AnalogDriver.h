@@ -40,7 +40,7 @@ private:
 
 protected:
     // /* Protected constructor in order to create a singleton class. */
-    AnalogDriver(MessageInterface *messageInterface, XBeeMessageDeliverer* xBeeMessageDeliverer) : Driver(messageInterface) { this->xBeeMessageDeliverer = xBeeMessageDeliverer; }
+    AnalogDriver(MessageInterface *messageInterface) : Driver(messageInterface) {}
 
     /**
      * @brief The analog pin for this driver. This must be between 0 and 4 (inclusive).

@@ -509,7 +509,7 @@ void XBeeProS2C::sendMessageToCoordinator(const char *message)
     int checksum = 0xFF;
     uint16_t i;
     size_t sizeID = getSize(SmartSensorBoard::getBoard()->getID());
-
+    // SmartSensorBoard::getBoard()->debugf_P(PSTR("size with id: %d\n"), sizeID);
     
 #if XBEEPROS2C_USE_API_MODE_MSG == 1
 
@@ -556,10 +556,12 @@ void XBeeProS2C::sendMessageToCoordinator(const char *message)
     Atmega324PBSerial1::getInstance()->transmitChar((char)(checksum & 0xFF));
 #else
 
+    // SmartSensorBoard::getBoard()->debug("Transmitting id");
     for (i = 0; i < sizeID; i++)
     {
         this->transmitAndChecksum(SmartSensorBoard::getBoard()->getID()[i], &checksum);
     }
+    // SmartSensorBoard::getBoard()->debug("Transmitting msg");
     this->transmitAndChecksum(':', &checksum);
     for (i = 0; i < size; i++) /* transmit all bytes of the message */
     {
@@ -568,6 +570,7 @@ void XBeeProS2C::sendMessageToCoordinator(const char *message)
 
     this->transmitAndChecksum('\r', &checksum);
     this->transmitAndChecksum('\n', &checksum);
+    // SmartSensorBoard::getBoard()->debug("done");
 #endif
 }
 
