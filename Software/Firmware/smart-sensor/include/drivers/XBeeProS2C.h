@@ -144,6 +144,16 @@ public:
      */
     void addMessageForTransfer(Message message);
 
+    /**
+     * @brief sends the raw string to the coordinator
+     * 
+     * @param message the raw string
+     */
+    void sendStringToCoordinator(const char *message);
+
+    void sendStringToCoordinatorNoEnding(const char *message);
+    void sendEndStringToCoordinator();
+
     void sendToNode();
 
 private:

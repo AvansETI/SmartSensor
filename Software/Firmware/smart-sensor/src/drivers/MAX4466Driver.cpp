@@ -63,8 +63,8 @@ uint8_t MAX4466Driver::late_wakeup()
 void MAX4466Driver::debug_println(const char *message)
 {
 #if DEBUG_MODE == 1
-    SmartSensorBoard::getBoard()->debug("[MAX4466] : ");
-    SmartSensorBoard::getBoard()->debug(message);
-    SmartSensorBoard::getBoard()->debug("\n");
+    SmartSensorBoard::getBoard()->debug_P(PSTR("[MAX4466] : "));
+    SmartSensorBoard::getBoard()->debug_P(message);
+    SmartSensorBoard::getBoard()->debug_P("\n");
 #endif
 }

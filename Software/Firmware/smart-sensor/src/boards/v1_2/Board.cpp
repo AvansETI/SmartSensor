@@ -40,16 +40,15 @@ void SmartSensorBoardV1_2::setup()
     this->mcp7940nDriver = MCP7940NDriver::getInstance(this);
     this->addTask(this->mcp7940nDriver, PSTR("MCP7940NDriver"));
 
-    //this->vml7700Driver = VEML7700Driver::getInstance(this);
-    //this->addTask(this->vml7700Driver, PSTR("VEML7700Driver"));
-
+    this->vml7700Driver = VEML7700Driver::getInstance(this);
+    this->addTask(this->vml7700Driver, PSTR("VEML7700Driver"));
 
     this->ccs811Driver = CCS811Driver::getInstance(this); // When enabled, the sensor starts twice, something goes wrong? Watchdog?
     this->addTask(this->ccs811Driver, PSTR("CCS811Driver"));
-  
+
     this->xbeeProS2CDriver = XBeeProS2C::getInstance(this);
     if (this->adapterInUse())
-    {                                                // The test has the node at the power and the coordinator to the computer.
+    { // The test has the node at the power and the coordinator to the computer.
         SmartSensorBoard::getBoard()->debug_P(PSTR("coordinator\n"));
         this->xbeeProS2CDriver->enableCoordinator(); // TODO: Must be switched on when adapter is in use and wemos is connected. Print it to the serial
     }
@@ -169,9 +168,12 @@ uint8_t SmartSensorBoardV1_2::sendDataStringAvailable()
     return !this->serial0->isBusy();
 }
 
-uint8_t SmartSensorBoardV1_2::waitOnSendDataStringAvailable() {
-    while (this->serial0->isBusy()) {}
-    
+uint8_t SmartSensorBoardV1_2::waitOnSendDataStringAvailable()
+{
+    while (this->serial0->isBusy())
+    {
+    }
+
     return 0;
 }
 
@@ -209,19 +211,35 @@ void SmartSensorBoardV1_2::sendInitMessage()
     Note: Select the correct channel to send the data!
     */
 
+    this->debug(PSTR("sending init msg\n"));
     char message[MESSAGE_LENGTH + 20];
 
     sprintf_P(message, PSTR("INIT:%s:smartnode-v1-2\n"), this->getID());
     this->serial0->print(message);
+    this->xbeeProS2CDriver->sendStringToCoordinatorNoEnding("INIT:");
+    this->xbeeProS2CDriver->sendStringToCoordinatorNoEnding(this->getID());
+    this->xbeeProS2CDriver->sendStringToCoordinatorNoEnding(":smartnode-v1-2");
+    this->xbeeProS2CDriver->sendEndStringToCoordinator();
 
     sprintf_P(message, PSTR("MEA:%s:lt:te:hu:li:c2:gi:ai:rs\n"), this->getID());
     this->serial0->print(message);
+    this->xbeeProS2CDriver->sendStringToCoordinatorNoEnding("MEA:");
+    this->xbeeProS2CDriver->sendStringToCoordinatorNoEnding(this->getID());
+    this->xbeeProS2CDriver->sendStringToCoordinatorNoEnding(":lt:te:hu:li:c2:gi:ai:rs");
+    this->xbeeProS2CDriver->sendEndStringToCoordinator();
 
     sprintf_P(message, PSTR("ACT:%s:bm:gs:go:rs\n"), this->getID());
     this->serial0->print(message);
+    this->xbeeProS2CDriver->sendStringToCoordinatorNoEnding("ACT:");
+    this->xbeeProS2CDriver->sendStringToCoordinatorNoEnding(this->getID());
+    this->xbeeProS2CDriver->sendStringToCoordinatorNoEnding(":bm:gs:go:rs");
+    this->xbeeProS2CDriver->sendEndStringToCoordinator();
 
     sprintf_P(message, PSTR("END:%s\n"), this->getID());
     this->serial0->print(message);
+    this->xbeeProS2CDriver->sendStringToCoordinatorNoEnding("END:");
+    this->xbeeProS2CDriver->sendStringToCoordinatorNoEnding(this->getID());
+    this->xbeeProS2CDriver->sendEndStringToCoordinator();
 }
 
 void SmartSensorBoardV1_2::addXBeeMessage(Message message)

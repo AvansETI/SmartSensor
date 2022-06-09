@@ -502,6 +502,39 @@ void XBeeProS2C::transmitAndChecksum(char transmitChar, int *checksum)
     Atmega324PBSerial1::getInstance()->transmitChar(transmitChar);
 }
 
+void XBeeProS2C::sendStringToCoordinatorNoEnding(const char *message)
+{
+    // SmartSensorBoard::getBoard()->debugf("string xb: %s\n", message);
+    size_t size = getSize(message);
+    // SmartSensorBoard::getBoard()->debugf_P(PSTR("string size: %d\n"), size);
+    uint16_t i;
+    for (i = 0; i < size; i++) /* transmit all bytes of the message */
+    {
+        Atmega324PBSerial1::getInstance()->transmitChar(message[i]);
+    }
+}
+
+void XBeeProS2C::sendEndStringToCoordinator()
+{
+    Atmega324PBSerial1::getInstance()->transmitChar('\r');
+    Atmega324PBSerial1::getInstance()->transmitChar('\n');
+}
+
+void XBeeProS2C::sendStringToCoordinator(const char *message)
+{
+    // SmartSensorBoard::getBoard()->debugf("string xb: %s\n", message);
+    size_t size = getSize(message);
+    // SmartSensorBoard::getBoard()->debugf_P(PSTR("string size: %d\n"), size);
+    uint16_t i;
+    for (i = 0; i < size; i++) /* transmit all bytes of the message */
+    {
+        Atmega324PBSerial1::getInstance()->transmitChar(message[i]);
+    }
+
+    Atmega324PBSerial1::getInstance()->transmitChar('\r');
+    Atmega324PBSerial1::getInstance()->transmitChar('\n');
+}
+
 void XBeeProS2C::sendMessageToCoordinator(const char *message)
 {
     SmartSensorBoard::getBoard()->debugf_P(PSTR("xb: %s\n"), message);
@@ -510,7 +543,7 @@ void XBeeProS2C::sendMessageToCoordinator(const char *message)
     uint16_t i;
     size_t sizeID = getSize(SmartSensorBoard::getBoard()->getID());
     // SmartSensorBoard::getBoard()->debugf_P(PSTR("size with id: %d\n"), sizeID);
-    
+
 #if XBEEPROS2C_USE_API_MODE_MSG == 1
 
     char buf[50];
@@ -557,19 +590,21 @@ void XBeeProS2C::sendMessageToCoordinator(const char *message)
 #else
 
     // SmartSensorBoard::getBoard()->debug("Transmitting id");
+    const char *id = SmartSensorBoard::getBoard()->getID();
+
     for (i = 0; i < sizeID; i++)
     {
-        this->transmitAndChecksum(SmartSensorBoard::getBoard()->getID()[i], &checksum);
+        Atmega324PBSerial1::getInstance()->transmitChar(id[i]);
     }
     // SmartSensorBoard::getBoard()->debug("Transmitting msg");
-    this->transmitAndChecksum(':', &checksum);
+    Atmega324PBSerial1::getInstance()->transmitChar(':');
     for (i = 0; i < size; i++) /* transmit all bytes of the message */
     {
-        this->transmitAndChecksum(message[i], &checksum);
+        Atmega324PBSerial1::getInstance()->transmitChar(message[i]);
     }
 
-    this->transmitAndChecksum('\r', &checksum);
-    this->transmitAndChecksum('\n', &checksum);
+    Atmega324PBSerial1::getInstance()->transmitChar('\r');
+    Atmega324PBSerial1::getInstance()->transmitChar('\n');
     // SmartSensorBoard::getBoard()->debug("done");
 #endif
 }
@@ -645,8 +680,6 @@ void XBeeProS2C::addMessageForTransfer(Message message)
     {
         this->transmitQueue.add(message, true);
     }
-
-    // SmartSensorBoard::getBoard()->debugf_P(PSTR("add message %s size: %d %s\n"), message.getMessage(), this->transmitQueue.size(), this->transmitQueue.peek()->getMessage());
 }
 
 size_t getSize(const char *s)
