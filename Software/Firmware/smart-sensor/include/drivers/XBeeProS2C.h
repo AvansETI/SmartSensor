@@ -58,7 +58,7 @@ enum XBeeProS2CStateReciever
 #define XBEEPROS2C_STATE_RUNNING 199
 #define XBEEPROS2C_STATE_NOTFOUND 200
 
-#define XBEEPROS2C_SEND_DELAY 2000 
+#define XBEEPROS2C_SEND_DELAY 5000 
 
 /* The class LedDriver handles the two leds that are on the board. */
 class XBeeProS2C : public Driver,
