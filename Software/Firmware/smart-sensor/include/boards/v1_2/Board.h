@@ -12,6 +12,8 @@
 #define BOARDV1_2_ADAPTER_IN_USE_PIN PA6
 #define BOARDV1_2_ADAPTER_IN_USE_DDR DDRA
 #define BOARDV1_2_ADAPTER_IN_USE_PORT PINA
+#define BOARDV1_2_XBEE_DEBUG_LED 0
+#define BOARDV1_2_XBEE_SEND_ALL_MSGS 1
 
 #include <stdint.h>
 #include <stdio.h>
@@ -40,7 +42,7 @@
 #include <tasks/Atmega324PBI2C0.h>
 
 /* Class SmartSensorBoardV1_2 implements the specific hardware for the board version 1.2. */ 
-class SmartSensorBoardV1_2: public SmartSensorBoard, public SerialRecievedCharacter {
+class SmartSensorBoardV1_2: public SmartSensorBoard, public SerialRecievedCharacter, public XBeeMessageDeliverer {
 private:
     /* The timing class that implements millis(). */
     Timing* timing;
@@ -102,6 +104,17 @@ public:
     uint8_t sendDataString(const char* data);
     uint8_t sendDataString_P(const char* data);
     uint8_t sendDataStringAvailable();
+    uint8_t waitOnSendDataStringAvailable();
+
+    /**
+     * @brief Adds a message to the zigbee driver to be sent over zigbee when available
+     * 
+     * @param message the message to send
+     */
+    void addXBeeMessage(Message message);
+
+    //overrides addMessage in SmartSensorBoard
+    virtual void addMessage(Message message);
 
     uint8_t processCommand(const char* data);
 

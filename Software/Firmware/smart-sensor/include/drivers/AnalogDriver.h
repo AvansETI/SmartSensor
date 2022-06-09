@@ -13,6 +13,7 @@
 
 #include <drivers/Driver.h>
 #include <boards/Board.h>
+#include <drivers/XBeeMessageDeliverer.h>
 
 #define MAX_ANALOG_PIN 4
 
@@ -27,18 +28,19 @@
 
 /**
  * @brief Analog Driver class that facilitates functionality for sensors that read from an analog pin.
- * The analog pin can be set with the analog_pin variable. To implement the methods of the Driver class, 
- * the late_ methods can be used. They will be called in the normal driver functions. The initialize function 
+ * The analog pin can be set with the analog_pin variable. To implement the methods of the Driver class,
+ * the late_ methods can be used. They will be called in the normal driver functions. The initialize function
  * is called after the setup function, so you can use this to execute any setup code you want your driver to perform.
  *
  */
 class AnalogDriver : public Driver
 {
 private:
+    XBeeMessageDeliverer *xBeeMessageDeliverer;
 
 protected:
     // /* Protected constructor in order to create a singleton class. */
-    AnalogDriver(MessageInterface *messageInterface) : Driver(messageInterface) {}
+    AnalogDriver(MessageInterface *messageInterface, XBeeMessageDeliverer* xBeeMessageDeliverer) : Driver(messageInterface) { this->xBeeMessageDeliverer = xBeeMessageDeliverer; }
 
     /**
      * @brief The analog pin for this driver. This must be between 0 and 4 (inclusive).
@@ -140,4 +142,6 @@ public:
      * @return uint8_t return value exit code.
      */
     virtual uint8_t late_wakeup() = 0;
+
+    XBeeMessageDeliverer *getXBeeMessageDeliverer() { return this->xBeeMessageDeliverer; }
 };

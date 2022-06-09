@@ -54,6 +54,12 @@ public:
 
 class MessageInterface {
 public:
+
+    /**
+     * @brief add a message to be printed to the serial peripheral
+     * 
+     * @param message the message to be printed
+     */
     virtual void addMessage(Message  message) = 0;
 };
 

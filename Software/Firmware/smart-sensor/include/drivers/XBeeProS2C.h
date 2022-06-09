@@ -10,7 +10,7 @@
  * @license    : GNU version 3
  * @todo       : -
  * @changes
- * 
+ *
  */
 #include <stdint.h>
 
@@ -19,6 +19,9 @@
 #include <drivers/Driver.h>
 #include <tasks/Atmega324PBSerial1.h>
 
+#include <stdio.h>
+#include <boards/Board.h>
+
 #define XBEEPROS2C_SLEEP_PIN PB1
 #define XBEEPROS2C_SLEEP_DDR DDRB
 #define XBEEPROS2C_SLEEP_PORT PORTB
@@ -26,22 +29,41 @@
 #define XBEEPROS2C_RECIEVE_BUFFER_AMOUNT 50
 #define XBEEPROS2C_TIMEOUT_TIME_S 5000
 #define XBEEPROS2C_PAN_ID "2316"
+#define XBEEPROS2C_MAX_MESSAGES 10 /* max amount of messages in the xbee message queue */
 
-enum XBeeProS2CStateReciever {
-    IDLE, // Nothing todo...
-    BUSY, // Started recieving something that is not an API request.
-    BUSY_API_LENGTH_H, // Busy with processing an API message length
-    BUSY_API_LENGTH_L, // Busy with processing an API message length
+#define XBEEPROS2C_USE_API_MODE_MSG 0 /* wether the message that is sent over zigbee must use the API frame format or just sends the message data on its own*/
+
+enum XBeeProS2CStateReciever
+{
+    IDLE,              // Nothing todo...
+    BUSY,              // Started recieving something that is not an API request.
+    BUSY_API_LENGTH_H, // Busy with processing an received API message length
+    BUSY_API_LENGTH_L, // Busy with processing an received API message length
     BUSY_API_DATA,
     PROCESSING_API,
     PROCESSING // Processing the recieved data
 };
 
-#define XBEEPROS2C_STATE_RUNNING  199
+
+// class XBeeProS2CMessage
+// {
+//     public:
+
+//         XBeeProS2CMessage() {}
+//         XBeeProS2CMessage(char* msg) : msg(msg){}
+//         char *msg;
+
+// };
+
+#define XBEEPROS2C_STATE_RUNNING 199
 #define XBEEPROS2C_STATE_NOTFOUND 200
 
+#define XBEEPROS2C_SEND_DELAY 2000 
+
 /* The class LedDriver handles the two leds that are on the board. */
-class XBeeProS2C: public Driver, public SerialRecievedCharacter {
+class XBeeProS2C : public Driver,
+                   public SerialRecievedCharacter
+{
 private:
     uint8_t state;
     XBeeProS2CStateReciever stateReciever;
@@ -55,14 +77,18 @@ private:
 
     uint16_t apiLength;
     uint16_t counter;
-    
+
+    void transmitAndChecksum(char transmitChar, int *checksum);
+    Queue<Message, XBEEPROS2C_MAX_MESSAGES> transmitQueue;
+
 protected:
     /* Protected constructor in order to create a singleton class. */
-    XBeeProS2C(MessageInterface* messageInterface): Driver(messageInterface), state(0), stateReciever(XBeeProS2CStateReciever::IDLE), recieveBufferPointer(0), isCoordinator(false), timestamp(0) {}
+    XBeeProS2C(MessageInterface *messageInterface) : Driver(messageInterface), state(0), stateReciever(XBeeProS2CStateReciever::IDLE), recieveBufferPointer(0), isCoordinator(false), timestamp(0) {}
 
 public:
     /* Returns the singleton instance to this class. */
-    static XBeeProS2C* getInstance(MessageInterface* messageInterface) {
+    static XBeeProS2C *getInstance(MessageInterface *messageInterface)
+    {
         static XBeeProS2C _xbeeProS2CDriver(messageInterface);
         return &_xbeeProS2CDriver;
     }
@@ -80,25 +106,45 @@ public:
      */
     void recievedCharacter(char c);
 
-    void enableCoordinator(); 
+    void enableCoordinator();
+
+    /* methods for AT commands */
 
     void atStart();
     void atGetPanId();
     void atGetCoordinatorEnable();
     void atGetSerialNumberHigh();
     void atGetSerialNumberLow();
-    
-    void atSetPanId(const char* id);
+
+    void atSetPanId(const char *id);
     void atSetCoordinator(bool enable);
-    void atSetNodeIdentifier(const char* id);
+    void atSetNodeIdentifier(const char *id);
     void atWrite();
 
     bool checkResultOk();
 
     bool isInstalled() { return (this->state != XBEEPROS2C_STATE_NOTFOUND); }
 
+    bool isSendAvailable()
+    {
+        return this->state == XBEEPROS2C_STATE_RUNNING;
+    }
+
+    /**
+     * @brief converts the given message to bytes and sends it to the coordinator
+     *
+     * @param message the message to send
+     */
+    void sendMessageToCoordinator(const char *message);
+
+    /**
+     * @brief adds a message to the queue to be sent over zigbee when available
+     * 
+     * @param message the message to send
+     */
+    void addMessageForTransfer(Message message);
+
     void sendToNode();
 
 private:
-
 };

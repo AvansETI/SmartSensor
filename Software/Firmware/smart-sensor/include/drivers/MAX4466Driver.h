@@ -20,8 +20,11 @@
 #define MAX4466_DDR DDRA
 #define MAX4466_PORT PORTA
 
-#define MAX4466_SAMPLING_INTERVAL 1000
+#define MAX4466_SAMPLING_INTERVAL 5000
 #define MAX4466_SAMPLING_AMOUNT 1
+
+/* set this to 1 if debug messages need to be printed */
+#define DEBUG_MODE 1
 
 /**
  * @brief driver class for the sound detector
@@ -42,7 +45,7 @@ private:
 
 protected:
     /* Protected constructor in order to create a singleton class. */
-    MAX4466Driver(MessageInterface* messageInterface) : AnalogDriver(messageInterface) {}
+    MAX4466Driver(MessageInterface* messageInterface,XBeeMessageDeliverer* xBeeMessageDeliverer ) : AnalogDriver(messageInterface, xBeeMessageDeliverer) {}
 
 public:
     /**
@@ -50,9 +53,9 @@ public:
      * 
      * @return SparkfunDoundDetectorDriver* : the singleton instance to this class.
      */
-    static MAX4466Driver *getInstance(MessageInterface* messageInterface)
+    static MAX4466Driver *getInstance(MessageInterface* messageInterface, XBeeMessageDeliverer* xBeeMessageDeliverer)
     {
-        static MAX4466Driver _soundDetectorDriver(messageInterface);
+        static MAX4466Driver _soundDetectorDriver(messageInterface, xBeeMessageDeliverer);
         return &_soundDetectorDriver;
     }
 

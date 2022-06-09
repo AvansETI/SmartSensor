@@ -53,7 +53,7 @@ protected:
     /* Drivers that have been added to the board. 20 drivers maximum */
     ITask* drivers[SMARTSENSOR_MAX_TASKS]; // Maybe later having a split in resources? Or a resources class that can.
 
-    Queue<Message, SMARTSENSOR_MESSAGE_QUEUE_LENGTH> queueMessages;
+    Queue<Message, SMARTSENSOR_MESSAGE_QUEUE_LENGTH> queueMessages; /* queue for serial messages to print to the console */
 
     /* Holds the timestampe of the loop, so the total loop time can be calculated. */
     uint32_t loopTimstamp;
@@ -117,7 +117,7 @@ public:
 
     virtual uint8_t sendDataString(const char* data) = 0;
     virtual uint8_t sendDataStringAvailable() = 0;
-    virtual void waitOnSendDataStringAvailable();
+    virtual uint8_t waitOnSendDataStringAvailable() = 0;
 
     virtual uint8_t processCommand(const char* data) = 0;
 
