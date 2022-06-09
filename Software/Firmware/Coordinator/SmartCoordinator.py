@@ -156,7 +156,7 @@ client.username_pw_set("node", password="smartmeternode")
 client.connect("sendlab.nl", 11883, 60)
 client.loop_start()
 
-ser = serial.Serial('COM9')
+ser = serial.Serial('/dev/ttyTHS1')
 
 while (1):
     try:
