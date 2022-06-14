@@ -165,7 +165,7 @@ ser = serial.Serial('/dev/ttyUSB0') # /dev/ttyTHS1 on nano4
 while (1):
     try:
         line = bytes(ser.readline()).decode('utf-8') # ser.readline().decode('utf-8')
-        print(line.rstrip())
+        # print(line.rstrip())
 
         #INIT:86FF1312170E0932554E:smartnode-v1.2
         match = re.match("^INIT:(.+):(.+)$", line)
@@ -205,10 +205,11 @@ while (1):
             print("id is " + str(id))
             print(smartnodes[id])
             msginfo = client.publish("node/init", json.dumps(get_init_message(smartnodes[id])))
-            print(str(init_ids) + ", " + str(id in init_ids))
-            # print(msginfo.rc == mqtt.MQTT_ERR_SUCCESS)
-            # print("node/init", json.dumps(get_init_message(smartnodes[id])))
-            print("Send init message for: " + id)
+            # print(str(init_ids) + ", " + str(id in init_ids))
+            print("init msg infor success:" + str(msginfo.rc == mqtt.MQTT_ERR_SUCCESS))
+            print("node/init", json.dumps(get_init_message(smartnodes[id])))
+            time.sleep(3)
+            print("Send init message for: " + str(id))
 
         #86FF1312170E0932554E:te:22.7
         match = re.match("^([^:]+):([^:]+):(.+)$", line)
@@ -222,12 +223,15 @@ while (1):
 
                 if ( key == "ts" ):
                     print("got timestamp, publishing...")
-                    msginfo = client.publish("node/data", json.dumps(get_data_message(smartnodes[id]))).wait_for_publish()
+                    # msginfo = client.publish("node/data", json.dumps(get_data_message(smartnodes[id])))
+                    msginfo = client.publish("node/data", "test?")
 
                     # https://pypi.org/project/paho-mqtt/#publishing
                     print("publish msg was success: " + str(msginfo.rc == mqtt.MQTT_ERR_SUCCESS) + " publish: " + str(msginfo.is_published()))
-                    msginfo.wait_for_publish();
-                    smartnodes[id]["values"] = []
+                    while(msginfo.is_published() == False):
+                        print("waiting on publish data msg")
+                    print("published msg: " + str(msginfo.is_published()))
+                    # smartnodes[id]["values"] = []
     except Exception as ex:
         print("Got exception! " + str(ex) + " .")
     
