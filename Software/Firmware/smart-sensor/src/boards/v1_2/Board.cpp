@@ -221,19 +221,20 @@ void SmartSensorBoardV1_2::sendInitMessage()
     this->xbeeProS2CDriver->sendStringToCoordinatorNoEnding(":smartnode-v1-2");
     this->xbeeProS2CDriver->sendEndStringToCoordinator();
 
-    sprintf_P(message, PSTR("MEA:%s:lt:te:hu:li:c2:gi:ai:rs\n"), this->getID());
+    sprintf_P(message, PSTR("MEA:%s:lt:te:hu:li:c2:so\n"), this->getID());
     this->serial0->print(message);
     this->xbeeProS2CDriver->sendStringToCoordinatorNoEnding("MEA:");
     this->xbeeProS2CDriver->sendStringToCoordinatorNoEnding(this->getID());
-    this->xbeeProS2CDriver->sendStringToCoordinatorNoEnding(":lt:te:hu:li:c2:gi:ai:rs");
+    this->xbeeProS2CDriver->sendStringToCoordinatorNoEnding(":lt:te:hu:li:c2:so");
     this->xbeeProS2CDriver->sendEndStringToCoordinator();
 
-    sprintf_P(message, PSTR("ACT:%s:bm:gs:go:rs\n"), this->getID());
-    this->serial0->print(message);
-    this->xbeeProS2CDriver->sendStringToCoordinatorNoEnding("ACT:");
-    this->xbeeProS2CDriver->sendStringToCoordinatorNoEnding(this->getID());
-    this->xbeeProS2CDriver->sendStringToCoordinatorNoEnding(":bm:gs:go:rs");
-    this->xbeeProS2CDriver->sendEndStringToCoordinator();
+    // this board does not have any actuators
+    // sprintf_P(message, PSTR("ACT:%s:bm:gs:go:rs\n"), this->getID());
+    // this->serial0->print(message);
+    // this->xbeeProS2CDriver->sendStringToCoordinatorNoEnding("ACT:");
+    // this->xbeeProS2CDriver->sendStringToCoordinatorNoEnding(this->getID());
+    // this->xbeeProS2CDriver->sendStringToCoordinatorNoEnding(":bm:gs:go:rs");
+    // this->xbeeProS2CDriver->sendEndStringToCoordinator();
 
     sprintf_P(message, PSTR("END:%s\n"), this->getID());
     this->serial0->print(message);
