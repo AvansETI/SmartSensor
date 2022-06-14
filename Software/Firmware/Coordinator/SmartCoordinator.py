@@ -66,6 +66,11 @@ measurements_mapping = {
         "name": "sound",
         "description": "sound level",
         "unit": "db"
+    },
+    "pot": {
+        "name": "pot",
+        "description": "potmeter value",
+        "unit": "-"
     }
 }
 
@@ -117,6 +122,8 @@ def on_message(client, userdata, msg):
     pass
 
 def get_init_message(smartnode):
+    print("get init message")
+    print("============== NAME IS name: " + smartnode["name"])
     measurements_line:str = smartnode["measurements"]
     actuators_line:str = smartnode["actuators"]
 
@@ -124,9 +131,12 @@ def get_init_message(smartnode):
     actuators = []
     for m in measurements_line.split(":"):
         measurements.append(measurements_mapping[m])
-    for a in actuators_line.split(":"):
-        actuators.append(actuators_mapping[a])
+    act = actuators_line.split(":")
+    if (len(act) > 0):
+        for a in actuators_line.split(":"):
+            actuators.append(actuators_mapping[a])
 
+    
     return {
         "type":  "smartnode",
         "mode": 0,
@@ -203,6 +213,8 @@ while (1):
             smartnodes[id]["actuators"] = actuators
 
         #END:86FF1312170E0932554E
+        # init: {'id': '86FF1312170E0932554E', 'name': 'smartnode-v1-2', 'measurements': 'lt:te:hu:li:c2:so', 'actuators': '', 'values': []}
+        # data: {"id": "smartnode-v1-2-86FF1312170E0932554E", "measurements": [{"sound": 31.0, "loop_time": 0.0, "timestamp": "2000-00-00T00:00:00"}], "timestamp": "2000-00-00T00:00:00"}
         match = re.match("^END:(.+)$", line)
         if match:
             print("end match")
@@ -232,6 +244,11 @@ while (1):
                     print()
                     print(json.dumps(get_data_message(smartnodes[id])))
                     print()
+
+                    data = {
+                        "id" : id,
+                        "measurements": smartnodes[id][measurements]
+                    }
                     # https://pypi.org/project/paho-mqtt/#publishing
                     print("publish msg was success: " + str(msginfo.rc == mqtt.MQTT_ERR_SUCCESS) + " publish: " + str(msginfo.is_published()))
                     while(msginfo.is_published() == False):
