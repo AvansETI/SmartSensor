@@ -33,7 +33,7 @@ uint8_t AnalogDriver::setup()
     return 0;
 }
 
-uint32_t AnalogDriver::measure_analog_value()
+uint16_t AnalogDriver::measure_analog_value()
 {
     ADMUX &= ~(1 << this->analog_pin); /* set channel to selected pin */
     ADCSRA |= (1 << ADSC);             /* Start conversion */

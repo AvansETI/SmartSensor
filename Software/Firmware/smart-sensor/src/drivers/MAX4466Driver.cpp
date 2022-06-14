@@ -5,7 +5,7 @@
  */
 
 #include "drivers/MAX4466Driver.h"
-
+#include <math.h>
 uint8_t MAX4466Driver::initialize()
 {
     /* enable ADC 0, datasheet Atmega324P page 304*/
@@ -30,14 +30,24 @@ uint8_t MAX4466Driver::late_reset()
     return 0;
 }
 
+uint8_t get_db_level(uint16_t measurement)
+{
+
+    // https://en.wikipedia.org/wiki/Sound_pressure#Sound_pressure_level
+    // dB = 20 x log10(A);
+    return (uint8_t) (20 * log10(measurement));
+}
+
 uint8_t MAX4466Driver::late_loop(uint32_t millis)
 {
 
     int average = 0;
     for (uint8_t i = 0; i < this->samplingAmount; i++)
     {
-        uint32_t measurement = this->measure_analog_value();
-        average += measurement;
+        uint16_t measurement = this->measure_analog_value();
+        // SmartSensorBoard::getBoard()->debugf_P(PSTR("measurement: %d, db: %d\n"), measurement, get_db_level(measurement));
+        average += get_db_level(measurement);
+        // average += measurement;
     }
     this->envelope = (int)((float)average / this->samplingAmount);
 

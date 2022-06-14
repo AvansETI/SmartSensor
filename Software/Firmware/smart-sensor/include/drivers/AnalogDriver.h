@@ -74,9 +74,9 @@ public:
     /**
      * @brief measures a value and parses it with the ADC on the specified pin ()
      *
-     * @return uint32_t the measured value of the ADC.
+     * @return uint16_t the measured value of the ADC.
      */
-    uint32_t measure_analog_value();
+    uint16_t measure_analog_value();
 
     /**
      * @brief this function is called after the setup() function that initializes the ADC. Implment this if you want to add functionality to the setup of your driver.
