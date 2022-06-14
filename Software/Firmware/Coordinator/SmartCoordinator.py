@@ -61,6 +61,11 @@ measurements_mapping = {
         "name": "timestamp",
         "description": "Is not a measurement, but is send!",
         "unit": "-"
+    },
+    "so": {
+        "name": "sound",
+        "description": "sound level",
+        "unit": "db"
     }
 }
 
@@ -207,8 +212,7 @@ while (1):
             msginfo = client.publish("node/init", json.dumps(get_init_message(smartnodes[id])))
             # print(str(init_ids) + ", " + str(id in init_ids))
             print("init msg infor success:" + str(msginfo.rc == mqtt.MQTT_ERR_SUCCESS))
-            print("node/init", json.dumps(get_init_message(smartnodes[id])))
-            time.sleep(3)
+            print("\n", json.dumps(get_init_message(smartnodes[id])), '\n')
             print("Send init message for: " + str(id))
 
         #86FF1312170E0932554E:te:22.7
@@ -219,19 +223,21 @@ while (1):
             value = match.groups()[2]
 
             if id in smartnodes:
+                print("got key: " + key)
                 smartnodes[id]["values"].append({key: value})
 
                 if ( key == "ts" ):
                     print("got timestamp, publishing...")
-                    # msginfo = client.publish("node/data", json.dumps(get_data_message(smartnodes[id])))
-                    msginfo = client.publish("node/data", "test?")
-
+                    msginfo = client.publish("node/data", json.dumps(get_data_message(smartnodes[id])))
+                    print()
+                    print(json.dumps(get_data_message(smartnodes[id])))
+                    print()
                     # https://pypi.org/project/paho-mqtt/#publishing
                     print("publish msg was success: " + str(msginfo.rc == mqtt.MQTT_ERR_SUCCESS) + " publish: " + str(msginfo.is_published()))
                     while(msginfo.is_published() == False):
                         print("waiting on publish data msg")
                     print("published msg: " + str(msginfo.is_published()))
-                    # smartnodes[id]["values"] = []
+                    smartnodes[id]["values"] = []
     except Exception as ex:
         print("Got exception! " + str(ex) + " .")
     
