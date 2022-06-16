@@ -142,7 +142,7 @@ def get_init_message(smartnode):
         "id": smartnode["name"] + "-" + smartnode["id"],
         "name":  smartnode["name"],
         "measurements": measurements,
-        "actuators": actuators,
+        # "actuators": actuators,
     }
 
 def get_data_message(smartnode):
@@ -241,6 +241,8 @@ while (1):
 
                 if ( key == "ts" ):
                     print("got timestamp, publishing...")
+                    
+                    # msginfo = client.publish("node/data", "{\"id\":\"smartnode-v1-2-86FF1312170E0932554E\",\"measurements\":[{\"loop_time\":0.0,\"tvoc\":0.0,\"light\":358.5,\"co2\":400.0,\"sound\":33.0,\"pot\":22.0,\"timestamp\":\"2000-00-00T00:00:00\"}],\"timestamp\":\"2000-00-00T00:00:00\"}")
                     msginfo = client.publish("node/data", json.dumps(get_data_message(smartnodes[id])))
                     print()
                     print(json.dumps(get_data_message(smartnodes[id])))
