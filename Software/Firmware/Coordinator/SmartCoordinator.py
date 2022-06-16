@@ -123,11 +123,10 @@ def on_message(client, userdata, msg):
 
 def get_init_message(smartnode):
     print("get init message")
-    print("============== NAME IS name: " + smartnode["name"])
     measurements_line:str = smartnode["measurements"]
     actuators_line:str = smartnode["actuators"]
 
-    measurements = []
+    measurements = []  
     actuators = []
     for m in measurements_line.split(":"):
         measurements.append(measurements_mapping[m])
@@ -222,6 +221,8 @@ while (1):
             print("id is " + str(id))
             print(smartnodes[id])
             msginfo = client.publish("node/init", json.dumps(get_init_message(smartnodes[id])))
+            while(not msginfo.is_published):
+                print("waiting on publish")
             # print(str(init_ids) + ", " + str(id in init_ids))
             print("init msg infor success:" + str(msginfo.rc == mqtt.MQTT_ERR_SUCCESS))
             print("\n", json.dumps(get_init_message(smartnodes[id])), '\n')
