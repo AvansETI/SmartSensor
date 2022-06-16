@@ -246,10 +246,7 @@ while (1):
                     print(json.dumps(get_data_message(smartnodes[id])))
                     print()
 
-                    data = {
-                        "id" : id,
-                        "measurements": smartnodes[id][measurements]
-                    }
+                    print(msginfo)
                     # https://pypi.org/project/paho-mqtt/#publishing
                     print("publish msg was success: " + str(msginfo.rc == mqtt.MQTT_ERR_SUCCESS) + " publish: " + str(msginfo.is_published()))
                     while(msginfo.is_published() == False):
