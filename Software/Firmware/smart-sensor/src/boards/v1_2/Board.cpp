@@ -229,12 +229,12 @@ void SmartSensorBoardV1_2::sendInitMessage()
     this->xbeeProS2CDriver->sendEndStringToCoordinator();
 
     // this board does not have any actuators
-    // sprintf_P(message, PSTR("ACT:%s:bm:gs:go:rs\n"), this->getID());
-    // this->serial0->print(message);
-    // this->xbeeProS2CDriver->sendStringToCoordinatorNoEnding("ACT:");
-    // this->xbeeProS2CDriver->sendStringToCoordinatorNoEnding(this->getID());
-    // this->xbeeProS2CDriver->sendStringToCoordinatorNoEnding(":bm:gs:go:rs");
-    // this->xbeeProS2CDriver->sendEndStringToCoordinator();
+    sprintf_P(message, PSTR("ACT:%s:bm:gs:go:rs\n"), this->getID());
+    this->serial0->print(message);
+    this->xbeeProS2CDriver->sendStringToCoordinatorNoEnding("ACT:");
+    this->xbeeProS2CDriver->sendStringToCoordinatorNoEnding(this->getID());
+    this->xbeeProS2CDriver->sendStringToCoordinatorNoEnding(":bm:gs:go:rs");
+    this->xbeeProS2CDriver->sendEndStringToCoordinator();
 
     sprintf_P(message, PSTR("END:%s\n"), this->getID());
     this->serial0->print(message);
