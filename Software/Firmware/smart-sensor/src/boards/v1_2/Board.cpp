@@ -221,8 +221,9 @@ void SmartSensorBoardV1_2::sendInitMessage()
     this->xbeeProS2CDriver->sendStringToCoordinatorNoEnding(":smartnode-v1-2");
     this->xbeeProS2CDriver->sendEndStringToCoordinator();
 
-    sprintf_P(message, PSTR("MEA:%s:lt:te:hu:li:c2:so\n"), this->getID());
+    sprintf_P(message, PSTR("MEA:%s:lt:tv:"), this->getID());
     this->serial0->print(message);
+    this->serial0->print("li:c2:so:pot\n");
     this->xbeeProS2CDriver->sendStringToCoordinatorNoEnding("MEA:");
     this->xbeeProS2CDriver->sendStringToCoordinatorNoEnding(this->getID());
     this->xbeeProS2CDriver->sendStringToCoordinatorNoEnding(":lt:te:hu:li:c2:so");
