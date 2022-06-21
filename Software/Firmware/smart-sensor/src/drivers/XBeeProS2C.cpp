@@ -516,7 +516,7 @@ void XBeeProS2C::sendStringToCoordinatorNoEnding(const char *message)
 
 void XBeeProS2C::sendEndStringToCoordinator()
 {
-    Atmega324PBSerial1::getInstance()->transmitChar('\r');
+    // Atmega324PBSerial1::getInstance()->transmitChar('\r');
     Atmega324PBSerial1::getInstance()->transmitChar('\n');
 }
 
@@ -531,7 +531,7 @@ void XBeeProS2C::sendStringToCoordinator(const char *message)
         Atmega324PBSerial1::getInstance()->transmitChar(message[i]);
     }
 
-    Atmega324PBSerial1::getInstance()->transmitChar('\r');
+    // Atmega324PBSerial1::getInstance()->transmitChar('\r');
     Atmega324PBSerial1::getInstance()->transmitChar('\n');
 }
 
@@ -575,7 +575,7 @@ void XBeeProS2C::sendMessageToCoordinator(const char *message)
         this->transmitAndChecksum(message[i], &checksum);
     }
 
-    this->transmitAndChecksum('\r', &checksum);
+    // this->transmitAndChecksum('\r', &checksum);
     this->transmitAndChecksum('\n', &checksum);
 
     /* calculate the checksum
@@ -603,7 +603,7 @@ void XBeeProS2C::sendMessageToCoordinator(const char *message)
         Atmega324PBSerial1::getInstance()->transmitChar(message[i]);
     }
 
-    Atmega324PBSerial1::getInstance()->transmitChar('\r');
+    // Atmega324PBSerial1::getInstance()->transmitChar('\r');
     Atmega324PBSerial1::getInstance()->transmitChar('\n');
     // SmartSensorBoard::getBoard()->debug("done");
 #endif
