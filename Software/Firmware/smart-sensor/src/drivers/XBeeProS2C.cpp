@@ -300,7 +300,9 @@ uint8_t XBeeProS2C::loop(uint32_t millis)
                     while (this->transmitQueue.size() > 0)
                     {
                         // SmartSensorBoard::getBoard()->debugf_P(PSTR("%d\n"), this->transmitQueue.size());
-                        this->sendMessageToCoordinator(this->transmitQueue.pop()->getMessage());
+                        Message *msg = this->transmitQueue.pop();
+                        this->sendMessageToCoordinator(msg->getMessage());
+                        free((void *)msg);
                     }
                 }
                 this->stateReciever = XBeeProS2CStateReciever::IDLE;
@@ -539,12 +541,12 @@ void XBeeProS2C::sendMessageToCoordinator(const char *message)
 {
     SmartSensorBoard::getBoard()->debugf_P(PSTR("xb: %s\n"), message);
     size_t size = getSize(message);
-    int checksum = 0xFF;
     uint16_t i;
     size_t sizeID = getSize(SmartSensorBoard::getBoard()->getID());
     // SmartSensorBoard::getBoard()->debugf_P(PSTR("size with id: %d\n"), sizeID);
 
 #if XBEEPROS2C_USE_API_MODE_MSG == 1
+    int checksum = 0xFF;
 
     char buf[50];
 
@@ -607,6 +609,7 @@ void XBeeProS2C::sendMessageToCoordinator(const char *message)
     Atmega324PBSerial1::getInstance()->transmitChar('\n');
     // SmartSensorBoard::getBoard()->debug("done");
 #endif
+    free((void *)message);
 }
 
 void XBeeProS2C::enableCoordinator()

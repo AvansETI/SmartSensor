@@ -30,14 +30,6 @@ uint8_t MAX4466Driver::late_reset()
     return 0;
 }
 
-uint8_t get_db_level(uint16_t measurement)
-{
-
-    // https://en.wikipedia.org/wiki/Sound_pressure#Sound_pressure_level
-    // dB = 20 x log10(A);
-    return (uint8_t) (20 * log10(measurement));
-}
-
 uint8_t MAX4466Driver::late_loop(uint32_t millis)
 {
 
@@ -46,7 +38,10 @@ uint8_t MAX4466Driver::late_loop(uint32_t millis)
     {
         uint16_t measurement = this->measure_analog_value();
         // SmartSensorBoard::getBoard()->debugf_P(PSTR("measurement: %d, db: %d\n"), measurement, get_db_level(measurement));
-        average += get_db_level(measurement);
+
+        // https://en.wikipedia.org/wiki/Sound_pressure#Sound_pressure_level
+        // dB = 20 x log10(A);
+        average += (uint8_t) (20 * log10(measurement));
         // average += measurement;
     }
     this->envelope = (int)((float)average / this->samplingAmount);
