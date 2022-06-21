@@ -11,7 +11,7 @@ uint8_t MAX4466Driver::initialize()
     /* enable ADC 0, datasheet Atmega324P page 304*/
     this->analog_pin = 0;
     this->envelope = 0;
-    this->samplingInterval = MAX4466_SAMPLING_INTERVAL; /* 5 seconds interval */
+    this->samplingInterval = MAX4466_SAMPLING_INTERVAL;
     this->samplingTimestamp = 0;
     this->samplingAmount = MAX4466_SAMPLING_AMOUNT;
 
