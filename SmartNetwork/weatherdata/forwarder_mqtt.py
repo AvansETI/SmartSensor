@@ -33,6 +33,7 @@ mqtt_azure         = mqtt.Client()
 # The callback for when the client receives a CONNACK response from the server.
 def on_connect_smart_network(client, userdata, flags, rc):
     print("Connected with smart network: result code "+str(rc))
+    mqtt_smart_network.subscribe("#")
 
 # The callback for when the client receives a CONNACK response from the server.
 def on_connect_azure(client, userdata, flags, rc):
@@ -51,7 +52,8 @@ def on_disconnect_azure(client, userdata, rc):
 
 # The callback for when a PUBLISH message is received from the server.
 def on_message_smart_network(client, userdata, msg):
-    print("smart network topic: " + msg.topic + ": " + msg.payload)
+    print("smart network topic: " + msg.topic + ": " + str(msg.payload))
+    mqtt_azure.publish(msg.topic, msg.payload)
 
 # The callback for when a PUBLISH message is received from the server.
 def on_message_azure(client, userdata, msg):
@@ -72,7 +74,7 @@ mqtt_smart_network.connect("sendlab.nl", 11884, 60)
 
 #mqtt_azure.username_pw_set(config["azure_user"], password=config["azure_password"])
 #mqtt_azure.connect("avansiotdemo.westeurope.azurecontainer.io", 1883, 60)
-mqtt_azure.connect("51.138.51.249", 1883, 60)
+mqtt_azure.connect("20.61.180.134", 1883, 60)
 
 mqtt_smart_network.loop_start()
 mqtt_azure.loop_start()
