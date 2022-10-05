@@ -1,0 +1,6 @@
+{
+    "smartmeter_user": "smartmeter_admin",
+    "smartmeter_password": "xxxx",
+    "smartnetwork_user": "node",
+    "smartnetwork_password": "xxxx"
+}

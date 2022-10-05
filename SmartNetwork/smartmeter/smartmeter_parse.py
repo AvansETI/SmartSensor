@@ -19,7 +19,18 @@ import re
 
 import paho.mqtt.client as mqtt # pip install paho-mqtt
 
-os.chdir(os.path.dirname(sys.argv[0]))
+# Go to the working directory of this python script
+os.chdir(os.path.dirname(os.path.abspath(__file__)))
+
+# Read the config file!
+try:
+  config_json = open("config-smartmeter_parse.json", "r").read()
+  config = json.loads(config_json)
+except Exception as e:
+  print("Cannot read the config.json file, which is required for execution.")
+  print(config_json)
+  print(e)
+  quit()
 
 clientSmartMeter   = mqtt.Client()
 clientSmartNetwork = mqtt.Client()
@@ -212,19 +223,20 @@ def on_message(client, userdata, msg):
             data = json.loads(msg.payload)
             process_smartmeter_data(data)
 
-        except:
+       except:
             print("Error processing data:\n" + str(msg.payload) + "\n---------------------\n")
 
     else:
         print("topic: " + msg.topic + ": " + msg.payload)
 
-### SmartMeter MQTT    
+### SmartMeter MQTT
 clientSmartMeter.on_connect = on_connect_smartmeter
 clientSmartMeter.on_disconnect = on_disconnect
 clientSmartMeter.on_message = on_message
 
 #clientSmartMeter.username_pw_set("smartmeter_data", password="data")
-clientSmartMeter.username_pw_set("smartmeter_admin", password="s3_sm4rtm3t3r")
+#clientSmartMeter.username_pw_set("smartmeter_admin", password="s3_sm4rtm3t3r")
+clientSmartMeter.username_pw_set(config["smartmeter_user"], password=config["smartmeter_password"])
 clientSmartMeter.connect("sendlab.nl", 11884, 60)
 #clientSmartMeter.connect("10.0.0.31", 1884, 60)
 
@@ -233,7 +245,8 @@ clientSmartNetwork.on_connect = on_connect_smartnetwork
 clientSmartNetwork.on_disconnect = on_disconnect
 clientSmartNetwork.on_message = on_message
 
-clientSmartNetwork.username_pw_set("node", password="smartmeternode")
+#clientSmartNetwork.username_pw_set("node", password="smartmeternode")
+clientSmartNetwork.username_pw_set(config["smartnetwork_user"], password=config["smartnetwork_password"])
 clientSmartNetwork.connect("sendlab.nl", 11884, 60)
 
 clientSmartMeter.loop_start()
