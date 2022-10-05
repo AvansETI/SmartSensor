@@ -3,6 +3,8 @@
 # Todo: Implement message subscription, so the sensor known when a init message have been received
 # Todo: Implement mode 1 for this sensor
 
+import os
+import sys
 import json
 from json.encoder import JSONEncoder
 import random
@@ -12,6 +14,8 @@ import time
 from datetime import datetime, timezone
 
 import paho.mqtt.client as mqtt # pip install paho-mqtt
+
+os.chdir(os.path.dirname(sys.argv[0]))
 
 clientSmartNetwork = mqtt.Client()
 

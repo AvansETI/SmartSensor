@@ -8,6 +8,8 @@
 # - https://www.netbeheernederland.nl/_upload/Files/Slimme_meter_15_32ffe3cc38.pdf
 # - OBIS: https://www.promotic.eu/en/pmdoc/Subsystems/Comm/PmDrivers/IEC62056_OBIS.htm
 
+import os
+import sys
 import json
 from json.encoder import JSONEncoder
 import random
@@ -16,6 +18,8 @@ from datetime import datetime, timezone
 import re
 
 import paho.mqtt.client as mqtt # pip install paho-mqtt
+
+os.chdir(os.path.dirname(sys.argv[0]))
 
 clientSmartMeter   = mqtt.Client()
 clientSmartNetwork = mqtt.Client()
@@ -203,11 +207,13 @@ def on_message(client, userdata, msg):
         return
 
     if ( msg.topic == "smartmeter/raw" ):
-        try:
+       # BUG FIX ISSUE #2: https://github.com/AvansETI/SENDLAB/issues/2
+       try:
             data = json.loads(msg.payload)
+            process_smartmeter_data(data)
+
         except:
             print("Error processing data:\n" + str(msg.payload) + "\n---------------------\n")
-        process_smartmeter_data(data)
 
     else:
         print("topic: " + msg.topic + ": " + msg.payload)
@@ -218,7 +224,7 @@ clientSmartMeter.on_disconnect = on_disconnect
 clientSmartMeter.on_message = on_message
 
 #clientSmartMeter.username_pw_set("smartmeter_data", password="data")
-clientSmartMeter.username_pw_set("smartmeter_admin", password="EbRZ3V")
+clientSmartMeter.username_pw_set("smartmeter_admin", password="s3_sm4rtm3t3r")
 clientSmartMeter.connect("sendlab.nl", 11884, 60)
 #clientSmartMeter.connect("10.0.0.31", 1884, 60)
 

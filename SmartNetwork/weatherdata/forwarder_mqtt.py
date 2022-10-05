@@ -4,6 +4,7 @@
 # Todo: Implement mode 1 for this sensor
 
 import os
+import sys
 import json
 from json.encoder import JSONEncoder
 import random
