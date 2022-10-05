@@ -234,18 +234,14 @@ clientSmartMeter.on_connect = on_connect_smartmeter
 clientSmartMeter.on_disconnect = on_disconnect
 clientSmartMeter.on_message = on_message
 
-#clientSmartMeter.username_pw_set("smartmeter_data", password="data")
-#clientSmartMeter.username_pw_set("smartmeter_admin", password="s3_sm4rtm3t3r")
 clientSmartMeter.username_pw_set(config["smartmeter_user"], password=config["smartmeter_password"])
 clientSmartMeter.connect("sendlab.nl", 11884, 60)
-#clientSmartMeter.connect("10.0.0.31", 1884, 60)
 
 ### SmartNetwork MQTT
 clientSmartNetwork.on_connect = on_connect_smartnetwork
 clientSmartNetwork.on_disconnect = on_disconnect
 clientSmartNetwork.on_message = on_message
 
-#clientSmartNetwork.username_pw_set("node", password="smartmeternode")
 clientSmartNetwork.username_pw_set(config["smartnetwork_user"], password=config["smartnetwork_password"])
 clientSmartNetwork.connect("sendlab.nl", 11884, 60)
 
