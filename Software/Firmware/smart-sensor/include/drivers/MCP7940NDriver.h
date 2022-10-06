@@ -84,7 +84,7 @@ public:
     uint8_t wakeup();
     
     /* TODO: Add POWER-DOWN/POWER-UP TIME-STAMP. Do we need this?  */
-    //RTCTime getPowerDownTimestamp();
+    // RTCTime getPowerDownTimestamp();
 
     /* The class is going to ask the RTC chip a new time. When available it calls the callback. */
     void requestTime();
