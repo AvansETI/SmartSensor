@@ -15,8 +15,10 @@ import json
 from datetime import datetime, timezone
 import paho.mqtt.client as mqtt # pip install paho-mqtt
 
+from urllib3 import Retry
 from influxdb_client import InfluxDBClient, Point, WritePrecision #pip install influxdb-client
 from influxdb_client.client.write_api import SYNCHRONOUS
+from influxdb_client.client.exceptions import InfluxDBError
 
 from smartnetwork.smartnode0 import SmartNode0
 from smartnetwork.smartnode1 import SmartNode1
@@ -58,7 +60,7 @@ class SmartNetwork(threading.Thread):
         print("Connecting with influxdb...")
         self.host = self.config["influxdb"]["host"]
         self.org = self.config["influxdb"]["org"]
-        self.influx = InfluxDBClient(url=self.host, token=self.config["influxdb"]["token"])
+        self.influx = InfluxDBClient(url=self.host, token=self.config["influxdb"]["token"],  retries=Retry(connect=5, read=2, redirect=5))
         self.write  = self.influx.write_api(write_options=SYNCHRONOUS)
         self.query  = self.influx.query_api()
         self.delete = self.influx.delete_api()
@@ -215,44 +217,62 @@ class SmartNetwork(threading.Thread):
         if not "mode" in data:
             data["mode"] = 0 # Add the simplest mode to the sensor data!
 
-        node = self.get_node_from_id(data["id"])
-        smart_node = self.get_smart_node(data["mode"])
-        if ( node == None ):
-            smart_node.add_node_to_network(data)
-        else:
-            smart_node.welcome_node_to_network(data)
+        try:
+            node = self.get_node_from_id(data["id"])
+            smart_node = self.get_smart_node(data["mode"])
+            if ( node == None ):
+                smart_node.add_node_to_network(data)
+            else:
+                smart_node.welcome_node_to_network(data)
+
+        except InfluxDBError as e:
+            print("ERROR: process_node_init (%s)" % e.response.status)
+            print(e)
+            return None
 
     def process_node_data(self, data):
         """Process the node/data message that has been received by the MQTT server."""
         if not "id" in data:
             return # Do nothing when id is not found in the data!
 
-        data["id"] = str(data["id"]) # Make sure the id is a string!
-        node = self.get_node_from_id(data["id"])
-        if node != None:
-            smart_node = self.get_smart_node(node["mode"])
-            smart_node.process_node_data(data)
-        else:
-            print("process_node_data: no sensor found!")
-
-        if self.test:
-            if "mode" in data:
-                smart_node = self.get_smart_node(data["mode"])
+        try:
+            data["id"] = str(data["id"]) # Make sure the id is a string!
+            node = self.get_node_from_id(data["id"])
+            if node != None:
+                smart_node = self.get_smart_node(node["mode"])
                 smart_node.process_node_data(data)
             else:
-                print("TEST: Simulating the sensor based on data, please provide mode for testing!")
+                print("process_node_data: no sensor found!")
+
+            if self.test:
+                if "mode" in data:
+                    smart_node = self.get_smart_node(data["mode"])
+                    smart_node.process_node_data(data)
+                else:
+                    print("TEST: Simulating the sensor based on data, please provide mode for testing!")
+
+        except InfluxDBError as e:
+            print("ERROR: process_node_data (%s)" % e.response.status)
+            print(e)
+            return None
 
     def process_node_info(self, data):
         """Process the node/info message that has been received by the MQTT server."""
         if not "id" in data:
             return # Do nothing when id is not found in the data!
 
-        node = self.get_node_from_id(data["id"])
-        if ( node != None ):
-            smart_node = self.get_smart_node(node["mode"])
-            smart_node.process_node_info(data)
-        else:
-            print("process_node_info: no sensor found!")
+        try:
+            node = self.get_node_from_id(data["id"])
+            if ( node != None ):
+                smart_node = self.get_smart_node(node["mode"])
+                smart_node.process_node_info(data)
+            else:
+                print("process_node_info: no sensor found!")
+
+        except InfluxDBError as e:
+            print("ERROR: process_node_info (%s)" % e.response.status)
+            print(e)
+            return None
 
     def stop(self):
         """Stop the smart network."""
