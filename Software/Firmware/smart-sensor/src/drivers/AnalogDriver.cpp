@@ -38,6 +38,7 @@ uint16_t AnalogDriver::measure_analog_value()
     ADMUX &= ~(1 << this->analog_pin); /* set channel to selected pin */
     ADCSRA |= (1 << ADSC);             /* Start conversion */
 
+    // BUG: This is blocking!! Should be handled without blocking code!
     while ((ADCSRA & (1 << ADIF)) == 0)
         ; /* wait for conversion to complete */
 

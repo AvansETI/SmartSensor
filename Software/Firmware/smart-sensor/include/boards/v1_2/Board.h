@@ -27,22 +27,22 @@
 #include <util/Serial.h>
 #include <util/Message.h>
 
+#include <tasks/Atmega324PBSerial0.h>
+#include <tasks/Atmega324PBSerial1.h>
+#include <tasks/Atmega324PBI2C0.h>
+
 #include <drivers/LedDriver.h>
 #include <drivers/SHTC3Driver.h>
 #include <drivers/MCP7940NDriver.h>
 #include <drivers/VEML7700.h>
 #include <drivers/CCS811.h>
 #include <drivers/XBeeProS2C.h>
-#include <drivers/PotMeterDriver.h>
 
-#include <drivers/MAX4466Driver.h>
-
-#include <tasks/Atmega324PBSerial0.h>
-#include <tasks/Atmega324PBSerial1.h>
-#include <tasks/Atmega324PBI2C0.h>
+//#include <drivers/PotMeterDriver.h>
+//#include <drivers/MAX4466Driver.h>
 
 /* Class SmartSensorBoardV1_2 implements the specific hardware for the board version 1.2. */ 
-class SmartSensorBoardV1_2: public SmartSensorBoard, public SerialRecievedCharacter, public XBeeMessageDeliverer {
+class SmartSensorBoardV1_2: public SmartSensorBoard, public SerialRecievedCharacter/*, public XBeeMessageDeliverer*/ {
 private:
     /* The timing class that implements millis(). */
     Timing* timing;
@@ -69,13 +69,13 @@ private:
 
     CCS811Driver* ccs811Driver;
 
-    PotMeterDriver* potMeterDriver;
+    //PotMeterDriver* potMeterDriver;
 
     /* The class that handles the XBeeProS2C communication and configuration. */
     XBeeProS2C* xbeeProS2CDriver;
 
     /* Driver for the MAX4466 sound detector driver */
-    MAX4466Driver *max4466Driver;
+    //MAX4466Driver *max4466Driver;
 
     SerialBuffer<MESSAGE_LENGTH> serialBuffer;
 
