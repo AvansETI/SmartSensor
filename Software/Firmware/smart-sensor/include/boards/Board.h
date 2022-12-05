@@ -123,13 +123,7 @@ public:
 
     /* Before you send a data string, please check if it is possible to send, otherwise it is not send! */
     virtual uint8_t sendDataStringAvailable() = 0;
-<<<<<<< HEAD
     virtual uint8_t waitOnSendDataStringAvailable() = 0;
-=======
-
-    /* A blocking function to wait on the data string available, use with care! */
-    virtual void waitOnSendDataStringAvailable();
->>>>>>> feature_wireless
 
     virtual uint8_t processCommand(const char* data) = 0;
 
