@@ -19,6 +19,7 @@ import re
 
 import paho.mqtt.client as mqtt # pip install paho-mqtt
 
+<<<<<<< HEAD:SmartNetwork/smartmeter/smartmeter_parse.py
 # Go to the working directory of this python script
 os.chdir(os.path.dirname(os.path.abspath(__file__)))
 
@@ -30,6 +31,16 @@ except Exception as e:
   print("Cannot read the config.json file, which is required for execution.")
   print(config_json)
   print(e)
+=======
+config = {}
+
+# Read the config file!
+try:
+  config_json = open("smartmeter.json", "r").read()
+  config = json.loads(config_json)
+except Exception as e:
+  print("Cannot parse the config.json file: " + str(e))
+>>>>>>> feature_wireless:SmartNetwork/smartnodes/smartmeter/smartmeter_parse.py
   quit()
 
 clientSmartMeter   = mqtt.Client()
@@ -39,6 +50,7 @@ sensor_id = "smartmeter-"
 
 # dict storing the signatures that have been seen
 signatures = []
+
 
 # Send the init message to the smartnetwork
 def send_init_message(signature):
@@ -94,16 +106,15 @@ def send_init_message(signature):
 
 # Process the smart meter data
 def process_smartmeter_data(data):
-    print(data["datagram"])
+  if ( "datagram" in data ) and "signature" in data["datagram"] and "p1" in data["datagram"]:
     print("Processing: " + data["datagram"]["signature"])
     
     if ( data["datagram"]["signature"] not in signatures ):
-        print("Sending init message for this smartmeter!")
+        print("Sending init message for "+ data["datagram"]["signature"])
         send_init_message(data["datagram"]["signature"])
         signatures.append(data["datagram"]["signature"])
     
     try:
-
         record = process_smartmeter_data_raw(data)
         record["timestamp"] =  datetime.now(timezone.utc).isoformat()
 
@@ -114,18 +125,15 @@ def process_smartmeter_data(data):
         }))
 
     except Exception as e:
-        print("EXCEPTION")
+        print("EXCEPTION: Could not process the raw data.")
         print(data)
         print(e)
 
 # Process the smart meter data
 def process_smartmeter_data_raw(data):
-
   lines = str(data["datagram"]["p1"]).splitlines()
   version = lines[0]
   endline = lines[len(lines)-1]
-  print("version: " + version)
-  print("end    : " + endline)
   data = {}
   for i in range(2,len(lines)-1):
     matches = re.match("^(\d+)-(\d+):(\d+)\.(\d+)\.(\d+)\((.*)\)$", lines[i])
@@ -197,14 +205,14 @@ def process_p1_lines(medium, channel, physical_value, algorithm, measurement_typ
 
 # The callback for when the client receives a CONNACK response from the server.
 def on_connect_smartnetwork(client, userdata, flags, rc):
-    print("Connected with result code "+str(rc))
+    print("Connected with SmartNetwork MQTT: " + str(rc))
 
     # Subscribing in on_connect() means that if we lose the connection and
     # reconnect then subscriptions will be renewed.
 
 # The callback for when the client receives a CONNACK response from the server.
 def on_connect_smartmeter(client, userdata, flags, rc):
-    print("Connected with result code "+str(rc))
+    print("Connected with SmartMeter MQTT: " + str(rc))
     clientSmartMeter.subscribe("smartmeter/raw", qos=0)
 
 # The callback for when the client receives a CONNACK response from the server.
@@ -225,7 +233,15 @@ def on_message(client, userdata, msg):
 
        except:
             print("Error processing data:\n" + str(msg.payload) + "\n---------------------\n")
+<<<<<<< HEAD:SmartNetwork/smartmeter/smartmeter_parse.py
 
+=======
+        
+        try:
+          process_smartmeter_data(data)
+        except:
+          print("Error processing SmartMeter data.\n")
+>>>>>>> feature_wireless:SmartNetwork/smartnodes/smartmeter/smartmeter_parse.py
     else:
         print("topic: " + msg.topic + ": " + msg.payload)
 
@@ -234,16 +250,26 @@ clientSmartMeter.on_connect = on_connect_smartmeter
 clientSmartMeter.on_disconnect = on_disconnect
 clientSmartMeter.on_message = on_message
 
+<<<<<<< HEAD:SmartNetwork/smartmeter/smartmeter_parse.py
 clientSmartMeter.username_pw_set(config["smartmeter_user"], password=config["smartmeter_password"])
 clientSmartMeter.connect("sendlab.nl", 11884, 60)
+=======
+clientSmartMeter.username_pw_set(config["smartmeter_mqtt"]["username"], password=config["smartmeter_mqtt"]["password"])
+clientSmartMeter.connect(config["smartmeter_mqtt"]["host"], config["smartmeter_mqtt"]["port"], 60)
+>>>>>>> feature_wireless:SmartNetwork/smartnodes/smartmeter/smartmeter_parse.py
 
 ### SmartNetwork MQTT
 clientSmartNetwork.on_connect = on_connect_smartnetwork
 clientSmartNetwork.on_disconnect = on_disconnect
 clientSmartNetwork.on_message = on_message
 
+<<<<<<< HEAD:SmartNetwork/smartmeter/smartmeter_parse.py
 clientSmartNetwork.username_pw_set(config["smartnetwork_user"], password=config["smartnetwork_password"])
 clientSmartNetwork.connect("sendlab.nl", 11884, 60)
+=======
+clientSmartNetwork.username_pw_set(config["smartnetwork_mqtt"]["username"], password=config["smartnetwork_mqtt"]["password"])
+clientSmartNetwork.connect(config["smartnetwork_mqtt"]["host"], config["smartnetwork_mqtt"]["port"], 60)
+>>>>>>> feature_wireless:SmartNetwork/smartnodes/smartmeter/smartmeter_parse.py
 
 clientSmartMeter.loop_start()
 clientSmartNetwork.loop_start()

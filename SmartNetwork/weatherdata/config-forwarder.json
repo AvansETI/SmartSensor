@@ -1,0 +1,6 @@
+{
+    "smart_network_user": "server",
+    "smart_network_password": "servernode",
+    "azure_user": "node",
+    "azure_password": "smartmeternode"
+}

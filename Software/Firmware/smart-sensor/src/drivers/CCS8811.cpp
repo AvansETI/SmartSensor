@@ -13,9 +13,9 @@
 
 uint8_t CCS811Driver::setup() {
     // MS: These statements below causes the avr to reset once, why I do not know!
-    CCS811_NWAKE_DDR = CCS811_NWAKE_DDR | (1 << CCS811_NWAKE_PIN); // Set nWake  as output!
     CCS811_INT_DDR = CCS811_INT_DDR & ~(1 << CCS811_INT_PIN); // set int pin as input
-
+    CCS811_NWAKE_DDR = CCS811_NWAKE_DDR | (1 << CCS811_NWAKE_PIN); // Set nWake  as output!
+    
     this->lowWakePin(); // set wake pin to low!
 
     if ( !this->isConnected() ) {
@@ -29,7 +29,7 @@ uint8_t CCS811Driver::setup() {
     this->setMode(1); // Set mode 1
 
     this->samplingInterval = 10; // 10s
-    this->samplingTimestamp = 0;
+    this->busy             = false;
 
     return 0;
 }
@@ -40,17 +40,20 @@ bool CCS811Driver::isConnected() {
 }
 
 uint8_t CCS811Driver::loop(uint32_t millis) {
-    if ( this->samplingTimestamp == 0 ) {
-        this->samplingTimestamp = millis/1000;
+    uint32_t seconds = (millis / 1000);
+    uint8_t  modulo  = seconds % this->samplingInterval;
+
+    if ( modulo > 0 && modulo < (this->samplingInterval / 2) ) {
+        if ( !this->busy ) {
+            this->busy = true;
+            this->sample();
+        }
+    } else {
+        this->busy = false;
     }
 
     if ( this->waitingOnI2C ) { // Last time the sample could not be processed.
         this->sample();
-    }
-
-    if ( (millis/1000) - this->samplingTimestamp > this->samplingInterval ) {
-        this->samplingTimestamp = millis/1000;
-        this->sample(); // Start the sampling process using callbacks when the measurement is ready!
     }
 
     return 0;
@@ -155,7 +158,7 @@ uint8_t CCS811Driver::appStart() {
     this->data[CCS811Data::STATUS] = i2c->getData();
     i2c->stop();
 
-    if ( this->data[CCS811Data::STATUS] & 0x90 != 0x90 ) { // FW_MODE=1 and APP_LOADED=1 otherwise cannot work!
+    if ( (this->data[CCS811Data::STATUS] & 0x90) != 0x90 ) { // FW_MODE=1 and APP_LOADED=1 otherwise cannot work!
         return 1;
     }
 

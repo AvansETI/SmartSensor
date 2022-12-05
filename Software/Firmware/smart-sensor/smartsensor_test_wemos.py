@@ -1,5 +1,4 @@
 #!/usr/bin/python3
-
 import serial
 import logging
 import threading
@@ -62,16 +61,6 @@ measurements_mapping = {
         "name": "timestamp",
         "description": "Is not a measurement, but is send!",
         "unit": "-"
-    },
-    "so": {
-        "name": "sound",
-        "description": "sound level",
-        "unit": "db"
-    },
-    "pot": {
-        "name": "pot",
-        "description": "potmeter value",
-        "unit": "-"
     }
 }
 
@@ -100,8 +89,6 @@ actuators_mapping = {
     }
 }
 
-# init_ids = [] # list with ids we have already sent an init message for
-# add = False
 # All the smartnodes that have been found
 smartnodes = {}
 
@@ -123,27 +110,23 @@ def on_message(client, userdata, msg):
     pass
 
 def get_init_message(smartnode):
-    print("get init message")
     measurements_line:str = smartnode["measurements"]
     actuators_line:str = smartnode["actuators"]
 
-    measurements = []  
+    measurements = []
     actuators = []
     for m in measurements_line.split(":"):
         measurements.append(measurements_mapping[m])
-    act = actuators_line.split(":")
-    if (len(act) > 0):
-        for a in actuators_line.split(":"):
-            actuators.append(actuators_mapping[a])
+    for a in actuators_line.split(":"):
+        actuators.append(actuators_mapping[a])
 
-    
     return {
         "type":  "smartnode",
         "mode": 0,
-        "id": smartnode["id"], # smartnode["name"] + "-" + smartnode["id"],
+        "id": smartnode["name"] + "-" + smartnode["id"],
         "name":  smartnode["name"],
         "measurements": measurements,
-        # "actuators": actuators,
+        "actuators": actuators,
     }
 
 def get_data_message(smartnode):
@@ -153,15 +136,10 @@ def get_data_message(smartnode):
             if re.match("^\d+.\d+$|^\d+$", str(value[key])):
                 value[key] = float(value[key])
             
-            if (key in measurements_mapping):
-                measurements[measurements_mapping[key]["name"]] = value[key]
+            measurements[measurements_mapping[key]["name"]] = value[key]
 
-    if (measurements["timestamp"] == "2000-00-00T00:00:00"):
-        measurements["timestamp"] = str(datetime.now());
-        print("timestamp was false, it is now " + measurements["timestamp"])
-    
     return {
-        "id": smartnode["id"], # smartnode["name"] + "-" + smartnode["id"],
+        "id": smartnode["name"] + "-" + smartnode["id"],
         "measurements": [measurements],
         "timestamp": measurements["timestamp"]
     }
@@ -175,18 +153,33 @@ client.username_pw_set("node", password="smartmeternode")
 client.connect("sendlab.nl", 11883, 60)
 client.loop_start()
 
+def thread_function(ser):
+    while (1):
+        time.sleep(10)
+        print("writing!")
+        ser.write(b"INIT:86FF1312170E0932554E:smartnode-v1.2\n")
+        ser.write(b"MEA:86FF1312170E0932554E:lt:te:hu:li:c2:gi:ai:rs\n")
+        ser.write(b"ACT:86FF1312170E0932554E:bm:gs:go:rs\n")
+        ser.write(b"END:86FF1312170E0932554E\n")
+        time.sleep(5)
+        ser.write(b"86FF1312170E0932554E:te:22.7\n")
+        ser.write(b"86FF1312170E0932554E:hu:58.2\n")
+        ser.write(b"86FF1312170E0932554E:ts:2022-01-12T20:29:00\n")
 
-ser = serial.Serial('/dev/ttyUSB0') # /dev/ttyTHS1 on nano4
+
+ser = serial.Serial('COM3')
+
+x = threading.Thread(target=thread_function, args=(ser,))
+x.start()
 
 while (1):
     try:
         line = bytes(ser.readline()).decode('utf-8') # ser.readline().decode('utf-8')
-        # print(line.rstrip())
+        print(line.rstrip())
 
         #INIT:86FF1312170E0932554E:smartnode-v1.2
         match = re.match("^INIT:(.+):(.+)$", line)
         if match:
-            print("init match")
             id   = match.groups()[0]
             name = match.groups()[1]
             smartnodes[id] = { 
@@ -200,7 +193,6 @@ while (1):
         #MEA:86FF1312170E0932554E:lt:te:hu:li:c2:gi:ai:rs
         match = re.match("^MEA:([^:]+):(.+)$", line)
         if match:
-            print("measurement match")
             id   = match.groups()[0]
             measurements = match.groups()[1]
             smartnodes[id]["measurements"] = measurements
@@ -208,26 +200,17 @@ while (1):
         #ACT:86FF1312170E0932554E:bm:gs:go:rs
         match = re.match("^ACT:([^:]+):(.+)$", line)
         if match:
-            print("actuators match")
             id   = match.groups()[0]
             actuators = match.groups()[1]
             smartnodes[id]["actuators"] = actuators
 
         #END:86FF1312170E0932554E
-        # init: {'id': '86FF1312170E0932554E', 'name': 'smartnode-v1-2', 'measurements': 'lt:te:hu:li:c2:so', 'actuators': '', 'values': []}
-        # data: {"id": "smartnode-v1-2-86FF1312170E0932554E", "measurements": [{"sound": 31.0, "loop_time": 0.0, "timestamp": "2000-00-00T00:00:00"}], "timestamp": "2000-00-00T00:00:00"}
         match = re.match("^END:(.+)$", line)
         if match:
-            print("end match")
             id   = match.groups()[0]
-            client.publish("node/init", json.dumps(get_init_message(smartnodes[id])))
-            print("node/init", json.dumps(get_init_message(smartnodes[id])))
-
-        #GWAV => TODO
-        match = re.match("^GWAV\n$", line)
-        if match:
-            print("Matched GWAV")
-
+            #client.publish("node/init", json.dumps(get_init_message(smartnodes[id])))
+            #print("node/init", json.dumps(get_init_message(smartnodes[id])))
+            #print("Send init message for: " + id)
 
         #86FF1312170E0932554E:te:22.7
         match = re.match("^([^:]+):([^:]+):(.+)$", line)
@@ -235,20 +218,18 @@ while (1):
             id    = match.groups()[0]
             key   = match.groups()[1]
             value = match.groups()[2]
-            
-            if not id in smartnodes:
-                smartnodes[id] = {"id": id, "values": []}
 
-            smartnodes[id]["values"].append({key: value})
+            if id in smartnodes:
+                smartnodes[id]["values"].append({key: value})
 
-            if ( key == "ts" ):
-                if len(smartnodes[id]["values"]) <= 1:
-                    print("MMMM??!")
-                else:
-                    pass
-                    client.publish("node/data", json.dumps(get_data_message(smartnodes[id])))
-                    print("node/data", json.dumps(get_data_message(smartnodes[id])))
-                smartnodes[id]["values"] = []
+                if ( key == "ts" ):
+                    if len(smartnodes[id]["values"]) <= 1:
+                        print("MMMM??!")
+                    else:
+                        pass
+                        #client.publish("node/data", json.dumps(get_data_message(smartnodes[id])))
+                        #print("node/data", json.dumps(get_data_message(smartnodes[id])))
+                    smartnodes[id]["values"] = []
     except:
         pass
     

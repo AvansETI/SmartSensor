@@ -7,6 +7,7 @@
 
 #include <string.h>
 
+#include <util/delay.h>
 #include <avr/io.h>
 #include <avr/pgmspace.h>
 #include <avr/interrupt.h>
@@ -135,4 +136,29 @@ bool Atmega324PBSerial0::isCharacterReceieved() {
 
 char Atmega324PBSerial0::readCharacter() {
     return UDR1;
+}
+
+bool Atmega324PBSerial0::readLine(char* line, uint8_t timeout, uint8_t length) {
+    uint8_t counter = 0;
+    uint8_t index   = 0;
+    
+    for (uint8_t i=0; i < timeout; ++i) {
+        if ( this->isCharacterReceieved() ) {
+            char c = this->readCharacter();
+            this->transmitChar(c);
+            if ( c == '\n' ) return true;
+            line[index] = c;
+            line[index+1] = '\0';
+            index++;
+            
+        } else {
+            _delay_ms(100);
+        }
+
+        if ( index >= length - 1 ) {
+            return true;
+        }
+    }
+
+    return false;
 }

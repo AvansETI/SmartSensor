@@ -8,6 +8,7 @@
 #include <string.h>
 
 #include <avr/boot.h>
+#include <avr/wdt.h>
 #include <avr/io.h>
 #include <avr/interrupt.h>
 #include <avr/pgmspace.h>
@@ -16,6 +17,8 @@
 void SmartSensorBoardV1_2::setup()
 {
     BOARDV1_2_ADAPTER_IN_USE_DDR = BOARDV1_2_ADAPTER_IN_USE_DDR & ~(1 << BOARDV1_2_ADAPTER_IN_USE_PIN); // Set pin for adapter in use as input.
+
+    this->createID(); // TODO => Is not working
 
     this->timing = Timing::getInstance(); // TODO: We could calibrate the timer loop using the RTC!
     this->timing->setup();
@@ -72,6 +75,7 @@ void SmartSensorBoardV1_2::setup()
         this->debug_P(PSTR("No\n"));
     }
 
+    /* Send the ID of the SmartNode.*/
     this->debugf_P(PSTR("ID: %s\n"), this->getID());
 
     /* Show the user that we have started up, by one-second led on and then flash led. */
@@ -83,23 +87,50 @@ void SmartSensorBoardV1_2::setup()
     _delay_ms(100);
     this->ledDriver->led1Off();
 
+<<<<<<< HEAD
     if (this->isGateway())
     {
         this->ledDriver->led1Flash(5'000, 2'500);
     }
     else
     {
+=======
+    //this->checkGatewayAvailable();
+    this->debug_P(PSTR("Gateway: "));
+    if ( this->isGateway() ) {
+        this->debug_P(PSTR("Yes\n"));
+        this->ledDriver->led1Flash(5'000, 2'500);
+    } else {
+        this->debug_P(PSTR("No\n"));
+>>>>>>> feature_wireless
         this->ledDriver->led1Flash(5'000, 100);
     }
+
+    this->sendInitMessage();
 
     sei(); // Enable the interrupts!
 
     this->serial0->setCallback(this);
 }
 
+<<<<<<< HEAD
 bool SmartSensorBoardV1_2::adapterInUse()
 {
     return ((BOARDV1_2_ADAPTER_IN_USE_PORT & (1 << BOARDV1_2_ADAPTER_IN_USE_PIN)) != 0);
+=======
+bool SmartSensorBoardV1_2::checkGatewayAvailable() {
+    char line[10] = "\0";
+    this->serial0->print_P(PSTR("GWAV\n"));
+    this->serial0->readLine(line, 10, 10);
+    this->debugf("LINE: %s\n", line);
+    this->gateway = strcmp(line, "GWAV!") == 0;
+    //this->gateway = true;
+    return this->gateway;
+}
+
+bool SmartSensorBoardV1_2::adapterInUse() {
+    return ( ( BOARDV1_2_ADAPTER_IN_USE_PORT & (1 << BOARDV1_2_ADAPTER_IN_USE_PIN) ) != 0 );
+>>>>>>> feature_wireless
 }
 
 // TODO: When the
@@ -123,11 +154,18 @@ void SmartSensorBoardV1_2::debug_P(const char *message)
     this->serial0->print_P(message);
 }
 
+<<<<<<< HEAD
 const char *SmartSensorBoardV1_2::getID()
 {
     // Get the Atmege unique serial number
     for (uint8_t i = 0; i < 20; i = i + 2)
     {
+=======
+void SmartSensorBoardV1_2::createID() {
+    // Get the Atmege unique serial number
+    // Create ID => SN<ATMEGA_ID>
+    for ( uint8_t i=0; i < 20; i=i+2 ) {
+>>>>>>> feature_wireless
         uint8_t b = boot_signature_byte_get(0x0E + i); // 0x0E => SER0
 
         uint8_t h1 = (b & 0b0000'1111);
@@ -140,7 +178,13 @@ const char *SmartSensorBoardV1_2::getID()
 
     this->id[20] = '\0';
 
-    return this->id;
+    for ( uint8_t i=0; i < 21; i++ ) {
+        this->id[21-1-i+3] = this->id[21-1-i];
+    }
+    
+    this->id[0] = 'S';
+    this->id[1] = 'N';
+    this->id[2] = '-';
 }
 
 void SmartSensorBoardV1_2::getActualTimestamp()

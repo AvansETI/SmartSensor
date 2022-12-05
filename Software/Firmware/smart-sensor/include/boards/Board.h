@@ -42,7 +42,7 @@ class SmartSensorBoard: public MessageInterface {
 
 protected:
     /* The id of the board that is used for identification with the back-end */
-    char id[21];
+    char id[30];
 
     /* Reset cause is hold by this variable. */
     uint8_t resetCause;
@@ -65,7 +65,10 @@ protected:
     SmartSensorBoard(): totalDrivers(0) {}
 
     /* Hold the timestamp in seconds where we have got a measurement. */
-    uint16_t measurementReceivedTimestamp;
+    uint32_t measurementReceivedTimestamp;
+
+    /* Hold the amount of measurements that have been send out! */
+    uint8_t totalMeasurementsSend;
 
 public:
     /* Returns the board that has been compiled. It returns the single instance of this class. */
@@ -115,14 +118,24 @@ public:
     /* Returns true when the reset cause is due an external reset. */
     bool resetCauseExternalReset ();
 
+    /* Send the data string that is implemented by the concrete board. */
     virtual uint8_t sendDataString(const char* data) = 0;
+
+    /* Before you send a data string, please check if it is possible to send, otherwise it is not send! */
     virtual uint8_t sendDataStringAvailable() = 0;
+<<<<<<< HEAD
     virtual uint8_t waitOnSendDataStringAvailable() = 0;
+=======
+
+    /* A blocking function to wait on the data string available, use with care! */
+    virtual void waitOnSendDataStringAvailable();
+>>>>>>> feature_wireless
 
     virtual uint8_t processCommand(const char* data) = 0;
 
-    // MessageInterface: addMessage
+    /* MessageInterface: addMessage */
     virtual void addMessage(Message  message);
 
+    /* Send the init message that is implemented by the concrete board! */
     virtual void sendInitMessage() = 0;
 };
